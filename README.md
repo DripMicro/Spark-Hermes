@@ -716,6 +716,8 @@ reading the model and then confirmed by generating from it — not chosen for it
 Hermes: the pinned artifact for ATEM is upstream's *own* template, committed byte for byte at
 [`hermes/templates/chat-template-atem.jinja`](hermes/templates/chat-template-atem.jinja), and the
 check runs the other way round — every marker the parser depends on must still be present in it.
+Whether that trade serves the project's goals, what forcing Hermes at this base measurably cost, and
+the one alternative worth taking seriously: [`docs/why-atem.md`](docs/why-atem.md).
 
 **It is multimodal, so "30B" is not 30B of text parameters** and every text hyperparameter lives
 under `text_config`. Anything reading the top level of `config.json` for `hidden_size` gets `None`
@@ -891,6 +893,13 @@ python -m hermes.challenge --episodes base.jsonl \
 `--keep-trajectories` is off by default and required for anything downstream that builds training
 data: the episode log otherwise carries counts only, and
 [`hermes/format.py`](hermes/format.py) renders rows from a trajectory.
+
+### One attempt, in detail
+
+[`docs/anatomy-of-an-attempt.md`](docs/anatomy-of-an-attempt.md) walks a real episode from the
+2026-08-11 run: the task, the trap firing, the recovery, both graders, the numbers it scored, and
+what a reader can verify afterwards. Every figure and line of transcript in it is copied from the
+episode log.
 
 ### The withheld half
 
