@@ -729,3 +729,95 @@ def test_a_malformed_leftover_is_still_counted():
     merged = _merge_leftover_calls(turn, text="", reasoning=truncated, dialect=DIALECTS["atem"], schemas={})
     assert merged.malformed, "the truncation is the measurement"
     assert merged.safe_calls == (), "and nothing from a turn that confused the parser executes"
+
+
+def test_the_parser_reads_the_reasoning_channel_without_a_structured_call():
+    """The hole the first version of this fix left.
+
+    `_merge_leftover_calls` runs only when the server returned structured `tool_calls`. When it
+    returned none, `next_steps` reaches the dialect's parser directly -- and that parser recorded the
+    supplied reasoning verbatim. A re-run of the suite measured 7 turns still carrying markup and 5
+    calls still lost through exactly this path, so the recovery belongs in the parser, where both
+    branches reach it.
+    """
+    from hermes.atem import parse_turn as parse_atem
+
+    turn = parse_atem("", reasoning=REAL_LEFTOVER)
+    assert [c.arguments["command"] for c in turn.calls] == ["ls -la logs"], "recovered, not lost"
+    assert "We have logs directory" in turn.scratch_pad, "the deliberation survives"
+    assert "<atem:" not in turn.scratch_pad, "the markup does not"
+
+
+def test_a_call_in_the_reasoning_that_the_content_also_has_runs_once():
+    """The echo case on the parser path: the server left the markup in the reasoning AND the model
+    emitted the same call in the content. Dedupe is against what the content already yielded."""
+    from hermes.atem import parse_turn as parse_atem
+
+    same = render_tool_call("terminal", {"command": "ls pkg"})
+    turn = parse_atem(same, reasoning="Let's look at pkg.\n" + same)
+    assert len(turn.calls) == 1, "one call, not two"
+    assert turn.scratch_pad == "Let's look at pkg."
+
+
+def test_a_truncated_call_in_the_reasoning_is_counted_not_swallowed():
+    """A leftover that broke mid-call is the reason `malformed_turns` exists. Recovering calls from
+    this channel must not turn a truncation into silence."""
+    from hermes.atem import parse_turn as parse_atem
+
+    truncated = '<atem:function_calls>\n<atem:invoke name="terminal">\n<atem:parameter name="command">ls'
+    turn = parse_atem("", reasoning="Let me look.\n" + truncated)
+    assert turn.malformed, "the truncation is the measurement"
+    assert turn.safe_calls == ()
+
+
+def test_reasoning_with_no_markup_is_untouched():
+    """The common case must not be reshaped by the recovery path -- a parser that rewrites ordinary
+    reasoning is a parser that changes every episode to fix a few."""
+    from hermes.atem import parse_turn as parse_atem
+
+    prose = "The file may not exist.\nI should check before reading it."
+    turn = parse_atem("", reasoning=prose)
+    assert turn.scratch_pad == prose
+    assert turn.calls == ()
+
+
+def test_a_recovered_call_is_not_fed_back_to_the_model_as_its_own_prose():
+    """The third consequence of the same defect, and the one that compounds.
+
+    `_messages` rebuilds the conversation from the trajectory on every turn, so a thinking step
+    holding raw call markup is re-sent to the model as something it said -- an unexecuted call with no
+    result, re-sent again on every later turn. Measured on the pre-fix log: 2 of 2 rebuilt assistant
+    messages carried it.
+
+    So the cleaning that keeps markup out of the corpus keeps it out of the context too. Asserted here
+    as well as in the corpus tests because these are two different consumers of one field, and a fix to
+    either alone leaves the other broken.
+    """
+    from pathlib import Path as _Path
+
+    from hermes.pin import load_tool_schemas
+    from hermes.protocol import DIALECTS
+    from hermes.trajectory import THINKING
+    from hermesbench.policy import ServedModelPolicy, steps_from_turn
+    from hermesbench.tasks import Task
+
+    atem = DIALECTS["atem"]
+    schemas = load_tool_schemas(_Path("hermesbench/harness/tools.json"))
+    policy = ServedModelPolicy(
+        complete=lambda messages, *, tools=None: ("", {}),
+        dialect=atem,
+        tool_schemas=schemas,
+    )
+    task = Task(task_id="t", prompt="p", tools=("terminal",), verify="true", tags=())
+
+    history = steps_from_turn(parse_turn("", reasoning=REAL_LEFTOVER, schemas=schemas))
+    assistant = [m for m in policy._messages(task, history) if m["role"] == "assistant"]
+    assert assistant, "the turn is replayed at all"
+    replayed = "\n".join(m["content"] for m in assistant)
+
+    assert "We have logs directory" in replayed, "the model still sees what it was reasoning about"
+    # Exactly one: the call the harness renders because it EXECUTED it. Two would mean the reasoning
+    # kept its own copy, which is the state that fed the model an unexecuted call.
+    assert replayed.count("<atem:function_calls>") == 1, replayed
+    reasoning_step = next(s for s in history if s.kind == THINKING)
+    assert "<atem:" not in reasoning_step.content, "and the recorded reasoning is clean at the source"
