@@ -40,6 +40,7 @@ from typing import Any
 
 from hermes.cost import OPENAI, Usage, usage_from_provider
 from hermes.protocol import (
+    RESPONSE_OPEN,
     Dialect,
     ParsedCall,
     ParsedTurn,
@@ -81,6 +82,18 @@ class ServedModelPolicy:
     tool_schemas: dict[str, dict[str, Any]]
     system: str = ""
     scratch_pad: bool = False
+    # Replay history as OpenAI function-calling messages rather than as dialect text.
+    #
+    # Off by default because the ATEM path depends on the text form: this harness passes `tools` with
+    # the request and the model's own chat template turns a `tool`-role message into
+    # `<tool_output name=...>`, which is exactly what it expects. That path measures 94.7%.
+    #
+    # A frontier model reached through an OpenAI-compatible gateway cannot read that history. It sees a
+    # `tool` message with no `tool_call_id` and no preceding `tool_calls`, so it cannot associate a
+    # result with a call it made. Measured on the first teacher rollout: 12 calls, 5 distinct, one
+    # command issued SIX times, then the step budget exhausted -- a frontier model looping because it
+    # never saw its own output. It reads as a hard task and is a malformed conversation.
+    native_tool_messages: bool = False
     _tokens: int = field(default=0, init=False)
     usage: Usage = field(default_factory=Usage, init=False)
     parse_failures: int = field(default=0, init=False)
@@ -133,6 +146,9 @@ class ServedModelPolicy:
         # leave the model with no tool definitions at all.
         messages = [{"role": "system", "content": system}] if system else []
         messages.append({"role": "user", "content": task.prompt})
+        if self.native_tool_messages:
+            return messages + _native_history(history)
+
         call_names: dict[str, str] = {}
         pending: list[str] = []
         for step in history:
@@ -150,7 +166,7 @@ class ServedModelPolicy:
                 body = step.content if step.ok else f"ERROR: {step.content}"
                 content = _render_response(name, body, self.dialect)
                 role = self.dialect.tool_result_role
-                merge_prefix = "<tool_output" if self.dialect.family == "atem" else "<tool_response>"
+                merge_prefix = _result_prefix(self.dialect)
                 if messages and messages[-1]["role"] == role and messages[-1]["content"].startswith(merge_prefix):
                     messages[-1]["content"] += "\n" + content
                 else:
@@ -204,6 +220,58 @@ class ServedModelPolicy:
         # tokens, so anything scoring efficiency is scoring against the protocol.
         self.parse_failures += len(turn.malformed)
         return steps_from_turn(turn)
+
+
+def _native_history(history: list[Step]) -> list[dict[str, Any]]:
+    """History as OpenAI function-calling messages: assistant `tool_calls`, `tool` with `tool_call_id`.
+
+    The distinction that matters is the id. Without it a model cannot tell which of its calls a result
+    belongs to -- and a model that cannot see its results reissues them, which is what the first
+    teacher rollout did six times before running out of budget.
+
+    Reasoning becomes assistant content on the same message as the calls, which is where these APIs
+    expect it. `arguments` is a JSON string, not a mapping, because that is what the wire format says
+    regardless of what any particular chat template prefers.
+    """
+    messages: list[dict[str, Any]] = []
+    reasoning: list[str] = []
+    calls: list[Step] = []
+
+    def flush() -> None:
+        nonlocal reasoning, calls
+        if not reasoning and not calls:
+            return
+        message: dict[str, Any] = {"role": "assistant", "content": "\n".join(r for r in reasoning if r)}
+        if calls:
+            message["tool_calls"] = [
+                {
+                    "id": call.call_id or f"c{index}",
+                    "type": "function",
+                    "function": {"name": call.tool or "", "arguments": json.dumps(call.args or {}, ensure_ascii=False)},
+                }
+                for index, call in enumerate(calls)
+            ]
+        messages.append(message)
+        reasoning, calls = [], []
+
+    for step in history:
+        if step.kind == THINKING:
+            reasoning.append(step.content)
+        elif step.kind == TOOL_CALL:
+            calls.append(step)
+        elif step.kind == TOOL_RESULT:
+            flush()
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": step.call_id or "c0",
+                    "content": step.content if step.ok else f"ERROR: {step.content}",
+                }
+            )
+        elif step.kind == FINAL:
+            reasoning.append(step.content)
+    flush()
+    return messages
 
 
 def _fingerprint(call: ParsedCall) -> tuple[str, str]:
@@ -304,6 +372,21 @@ def _turn_from_tool_calls(calls: list[dict[str, Any]], *, text: str, reasoning: 
     return ParsedTurn(calls=tuple(parsed), text=text.strip(), scratch_pad=reasoning.strip(), malformed=tuple(malformed))
 
 
+def _result_prefix(dialect: Dialect) -> str:
+    """What a rendered tool result starts with, used to decide whether to merge into the last message.
+
+    Consecutive results go in ONE message per this dialect's own template, so the prefix has to be
+    the dialect's. Getting it wrong does not raise -- it just stops merging, and the model sees a
+    run of separate result turns where its template would have written one. Read off the wire
+    module rather than branched on the family name, so a format added without touching this line
+    still merges correctly instead of silently splitting.
+    """
+    from hermes.protocol import wire_module
+
+    wire = wire_module(dialect)
+    return wire.RESULT_PREFIX if wire is not None else RESPONSE_OPEN
+
+
 def _render_call(step: Step, dialect: Dialect) -> str:
     """Rebuild an assistant turn's call in the dialect the model speaks.
 
@@ -311,20 +394,20 @@ def _render_call(step: Step, dialect: Dialect) -> str:
     conversation it did not have -- and a model reading its own prior turns in a foreign format
     is being taught, mid-episode, that the format is negotiable.
     """
-    if dialect.family == "atem":
-        from hermes.atem import render_tool_call as render_atem
+    from hermes.protocol import wire_module
 
-        return render_atem(step.tool or "", step.args)
+    if (wire := wire_module(dialect)) is not None:
+        return wire.render_tool_call(step.tool or "", step.args)
     from hermes.protocol import render_tool_call
 
     return render_tool_call(step.tool or "", step.args)
 
 
 def _render_response(name: str, content: str, dialect: Dialect) -> str:
-    if dialect.family == "atem":
-        from hermes.atem import render_tool_response as render_atem_response
+    from hermes.protocol import wire_module
 
-        return render_atem_response(name, content)
+    if (wire := wire_module(dialect)) is not None:
+        return wire.render_tool_response(name, content)
     return render_tool_response(name, content)
 
 
@@ -360,7 +443,7 @@ def openai_completion(
 
     It does care about one thing, and not by choice: a server that parses the wire format itself
     returns structured `tool_calls` and an EMPTY `content`, so both are carried back. See
-    `next_steps`, and docs/serving-muse-glimmer.md for what reading only `content` would score.
+    `next_steps`, and docs/serving-qwen3.8.md for what reading only `content` would score.
 
     Sampling parameters are passed through and belong in the run manifest, not here. They
     change the result as surely as the prompt does -- two runs at different temperatures are
