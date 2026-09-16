@@ -116,7 +116,7 @@
   }
 
   function submissions(live) {
-    const subs = live.submissions || [], st = live.standings || {};
+    const subs = Array.isArray(live.submissions) ? live.submissions : [], st = live.standings || {};
     $("subs-panel").hidden = live.stage !== "window";
     $("subs").innerHTML = subs.length ? subs.slice().sort((a, b) => a.pr - b.pr).map((s) => {
       const k = st[s.hotkey] || {};
@@ -222,8 +222,8 @@
     $("erow").hidden = live.stage === "window" || live.stage === "waiting";
     $("ebar").style.width = (total ? Math.round(100 * done / total) : live.stage === "done" ? 100 : 0) + "%";
     $("episodes").textContent = total ? done + " / " + total + " episodes" : "—";
-    const subs = live.submissions || [];
-    $("submissions").textContent = subs.length || Object.keys(live.active || {}).filter((h) => live.active[h].pr).length || "0";
+    const subs = Array.isArray(live.submissions) ? live.submissions : [];  // older states carried a count
+    $("submissions").textContent = subs.length || (typeof live.submissions === "number" ? live.submissions : 0) || Object.keys(live.active || {}).filter((h) => live.active[h].pr).length || "0";
     $("ntasks").textContent = live.tasks || 0;
     $("tasks-label").innerHTML = live.tasks ? '<a href="https://github.com/' + esc(live.repo) + "/tree/" + esc(live.branch) + "/rounds/" + esc(live.round_id) + '/tasks">tasks</a>' : "tasks";
     $("sealed").textContent = Object.keys(live.active || {}).length || "—";
