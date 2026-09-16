@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v2",
- "updated": 1789541419.3827379,
+ "updated": 1789543599.5025709,
  "round_id": "r0001",
  "stage": "evaluate",
  "started": 1789540619.835445,
@@ -16,6 +16,18 @@
   {
    "stage": "seal",
    "t": 1789541419.3791783
+  },
+  {
+   "stage": "publish_open",
+   "t": 1789541421.43442
+  },
+  {
+   "stage": "resume",
+   "t": 1789543545.7955995
+  },
+  {
+   "stage": "evaluate_resume",
+   "t": 1789543552.840111
   }
  ],
  "tasks": 8,
@@ -59,9 +71,26 @@
  },
  "rejected": {},
  "progress": {
-  "done": 0,
-  "total": 0,
-  "by_surface": {}
+  "done": 23,
+  "total": 64,
+  "by_surface": {
+   "5FMinimal": {
+    "n": 7,
+    "verified": 3
+   },
+   "5FPlanner": {
+    "n": 0,
+    "verified": 0
+   },
+   "canon": {
+    "n": 8,
+    "verified": 7
+   },
+   "null": {
+    "n": 8,
+    "verified": 7
+   }
+  }
  },
  "history": [],
  "repo": "gittensor-model-hub/Spark-Hermes",
