@@ -84,6 +84,15 @@
 </div>
 
 <section class="panel" style="margin-top:1rem">
+  <h2 id="standings-title">Standings</h2>
+  <div class="wrap"><table>
+    <thead id="standings-head"><tr><th>hotkey</th><th>verified</th><th>rate</th><th>vs baseline</th></tr></thead>
+    <tbody id="standings"><tr><td colspan="6" class="empty">no episodes yet</td></tr></tbody>
+  </table></div>
+  <p class="note" id="standings-note"></p>
+</section>
+
+<section class="panel" style="margin-top:1rem">
   <h2>Surfaces</h2>
   <div class="wrap"><table>
     <thead><tr><th>surface</th><th>episodes</th><th>verified</th><th>rate</th><th>source</th></tr></thead>
@@ -154,6 +163,48 @@
       return "<tr><td><span class='hk'>" + esc(s) + "</span>" + tag + "</td><td>" + r.n + "</td><td>" + r.verified +
              "</td><td>" + rate + "</td><td>" + src + "</td></tr>";
     }).join("") : '<tr><td colspan="5" class="empty">waiting for the seal</td></tr>';
+
+    // Standings: provisional pass rates against the baseline while the round runs; the real scores once it
+    // has closed. The two are deliberately different tables — a mid-round rate is not a score.
+    const miners = Object.keys(active).sort();
+    if (live.scores && live.scores.per_hotkey) {
+      const sc = live.scores;
+      $("standings-title").textContent = "Scores — final";
+      $("standings-head").innerHTML = "<tr><th>hotkey</th><th>episodes</th><th>mean d</th><th>Δc (paid)</th><th>score</th><th>weight</th></tr>";
+      const ranked = Object.entries(sc.per_hotkey).sort((a, b) => (sc.weights[b[0]] || 0) - (sc.weights[a[0]] || 0));
+      $("standings").innerHTML = ranked.map(([h, s]) => {
+        const w = sc.weights[h] || 0;
+        const crown = h === sc.king ? " <span class='king'>👑</span>" : "";
+        const why = s.reason ? "<div class='note' style='margin:0'>" + esc(s.reason) + "</div>" : "";
+        return "<tr><td><span class='hk'>" + esc(h) + "</span>" + crown + why + "</td><td>" + s.n + "</td>" +
+          "<td>" + (s.mean_d == null ? "—" : (s.mean_d >= 0 ? "+" : "") + s.mean_d.toFixed(3)) + "</td>" +
+          "<td>" + (s.delta_c || 0).toFixed(3) + "</td><td>" + (s.score || 0).toFixed(4) + "</td>" +
+          "<td class='" + (w ? "" : "zero") + "'>" + w.toFixed(3) + "</td></tr>";
+      }).join("") || '<tr><td colspan="6" class="empty">no miners were sealed</td></tr>';
+      const fs = Object.values(sc.family_stats || {})[0];
+      $("standings-note").textContent = "mean d is the miner's pass rate minus the baseline's on the same instances" +
+        (fs ? " (baseline " + (fs.null_p == null ? "—" : (100 * fs.null_p).toFixed(0) + "%") + ", canon " +
+              (fs.canon_p == null ? "—" : (100 * fs.canon_p).toFixed(0) + "%") + ")" : "") +
+        "; Δc is its one-sided 90 % lower bound and is what pays. A miner at the baseline earns nothing.";
+      if (sc.king) $("round").textContent = live.round_id + " · 👑 " + sc.king;
+    } else {
+      const nullR = by["null"] || { n: 0, verified: 0 };
+      const nullRate = nullR.n ? nullR.verified / nullR.n : null;
+      $("standings-title").textContent = "Standings — provisional";
+      $("standings-head").innerHTML = "<tr><th>hotkey</th><th>verified</th><th>rate</th><th>vs baseline</th></tr>";
+      $("standings").innerHTML = miners.length ? miners.map((h) => {
+        const r = by[h] || { n: 0, verified: 0 };
+        const rate = r.n ? r.verified / r.n : null;
+        const d = (rate != null && nullRate != null) ? rate - nullRate : null;
+        return "<tr><td><span class='hk'>" + esc(h) + "</span></td><td>" + r.verified + " / " + r.n + "</td>" +
+          "<td>" + (rate == null ? "—" : (100 * rate).toFixed(0) + "%") + "</td>" +
+          "<td class='" + (d == null ? "zero" : "") + "'>" + (d == null ? "—" : (d >= 0 ? "+" : "") + (100 * d).toFixed(0) + " pts") + "</td></tr>";
+      }).join("") : '<tr><td colspan="4" class="empty">no episodes yet</td></tr>';
+      $("standings-note").textContent = "Pass rates so far against the baseline's rate so far (" +
+        (nullRate == null ? "—" : (100 * nullRate).toFixed(0) + "%") + "). Not a score: instances land in " +
+        "different orders for different surfaces, and the score is computed once, at close, over all of them " +
+        "with its uncertainty.";
+    }
 
     const hist = (live.history || []).slice().reverse();
     $("history").innerHTML = hist.length ? hist.map((h) => {

@@ -152,6 +152,29 @@ def live(cfg: Config, rd: Path, stage: str, *, progress: dict | None = None, pus
     seal_path, index_path = rd / "seal.json", cfg.repo / "rounds" / "index.json"
     sealed = json.loads(seal_path.read_text()) if seal_path.exists() else {}
     history = json.loads(index_path.read_text())["rounds"] if index_path.exists() else []
+    # Once the round has closed, its scores travel with the live state so the dashboard can show them at once,
+    # in the same shape the leaderboard and scorecards use — the same numbers, never a re-derivation.
+    close_path = rd / "close" / "close.json"
+    closed = json.loads(close_path.read_text()) if close_path.exists() else None
+    scores = None
+    if closed:
+        weights = closed.get("weights", {})
+        scores = {
+            "weights": weights,
+            "king": max(weights, key=weights.get) if weights and max(weights.values()) > 0 else None,
+            "per_hotkey": {
+                h: {
+                    k: s.get(k)
+                    for k in ("n", "score", "mean_d", "se", "delta_c", "gate", "overfit_rate", "dq", "reason")
+                }
+                for h, s in closed.get("scores", {}).items()
+            },
+            "family_stats": {
+                f: {"null_p": r["null"].get("p"), "canon_p": r["canon"].get("p"), "label": r.get("label")}
+                for f, r in closed.get("family_stats", {}).items()
+            },
+            "commitments_ok": closed.get("commitments_ok"),
+        }
     state = {
         "schema": "sh-live-v2",
         "updated": time.time(),
@@ -163,6 +186,7 @@ def live(cfg: Config, rd: Path, stage: str, *, progress: dict | None = None, pus
         "active": sealed.get("active", {}),
         "rejected": sealed.get("rejected", {}),
         "progress": progress or {},
+        "scores": scores,
         "history": history[-20:],
         "repo": REPO,
         "branch": BRANCH,
