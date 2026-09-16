@@ -18,7 +18,8 @@ submissions/<hotkey>/
   attestation.json                     written by the CLI: your hotkey's signature over this round and this bundle
 ```
 
-No scripts, no config, no URLs, no `!\`…\`` inline shell, no `${HERMES_…}`. The validator executes *its* pinned
+No scripts, no config, no URLs, no `!\`…\`` inline shell, no `${HERMES_…}`. And not the round's answers: a bundle that reproduces the
+round's reference solutions or verifiers is refused at seal (S1) — write how to work, not what to type. The validator executes *its* pinned
 agent and model against your prose, which is what makes every submission comparable.
 
 ## The loop, as a miner
@@ -33,7 +34,8 @@ python -m sh.cli.miner submit --bundle my-strategy --key ~/.bittensor/wallets/<c
 python -m sh.cli.miner status --hotkey <ss58>
 ```
 
-`submit` signs `spark-hermes:<round>:<bundle_sha256>` with your hotkey (sr25519) and writes `attestation.json`.
+`submit` signs `spark-hermes:<repo>:<round>:<bundle_sha256>:<signed_at>` with your hotkey (sr25519) and writes
+`attestation.json`; your most recently signed submission is the one that counts.
 The seal accepts a PR only if the signature is your hotkey's, over *this* round and *this* digest, and the
 directory is named after the hotkey — a PR cannot be replayed into another round or altered after signing.
 

@@ -36,6 +36,17 @@ def test_a_signed_bundle_verifies_for_its_hotkey_and_round(tmp_path):
     assert r["attestation"] == {"hotkey": kp.ss58_address, "round_id": "r0007", "verified": True}
 
 
+def test_the_signing_time_is_part_of_what_was_signed(tmp_path):
+    """Moving signed_at to win the latest-submission rule breaks the signature."""
+    kp = _kp()
+    digest = bundle_digest({"SOUL.md": b"Be careful.\n"})
+    att = attest.sign(kp, "r0007", digest, signed_at=1000)
+    assert att["signed_at"] == 1000 and attest.verify(att)
+    assert not attest.verify({**att, "signed_at": 2000})
+    v1 = {k: v for k, v in att.items() if k != "signed_at"} | {"schema": "sh-attestation-v1"}
+    assert any("re-sign with the current CLI" in p for p in attest.problems(v1, digest=digest))
+
+
 def test_the_attestation_binds_the_round_the_digest_and_the_directory(tmp_path):
     kp = _kp()
     root = _bundle(tmp_path / "b", {"SOUL.md": "Be careful.\n"})

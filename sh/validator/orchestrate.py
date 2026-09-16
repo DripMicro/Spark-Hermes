@@ -43,6 +43,7 @@ from sh.cli.scorecard import render as render_scorecard
 from sh.exports.build import build as build_exports
 from sh.exports.upload import upload as upload_exports
 from sh.scoring.crown import crown as crown_rule
+from sh.validator import similarity
 from sh.validator.round import close as close_round
 from sh.validator.stats import load_episodes
 from sh.web.build import render as render_leaderboard
@@ -440,16 +441,36 @@ def _strategy_prs(cfg: Config, tip: str) -> list[dict]:
     return out
 
 
-def one_per_hotkey(prs: list[dict]) -> tuple[dict[str, dict], dict[int, str]]:
-    """Of several open PRs for one hotkey, the newest counts; the others are rejected as superseded. Pure."""
+def one_per_hotkey(prs: list[dict], *, now: float | None = None) -> tuple[dict[str, dict], dict[int, str]]:
+    """Of several open PRs for one hotkey, the one whose bundle was **signed** last counts; the others are rejected
+    as superseded. Signed bundles are public, so the PR number cannot decide: anyone could reopen a miner's older
+    bundle as a newer PR. A signing time in the future is not a submission (it would win every tie). Ties fall to
+    the PR number. Pure: `signed_at` is read from each head's attestation before this is called."""
+    now = time.time() if now is None else now
     keep: dict[str, dict] = {}
     superseded: dict[int, str] = {}
-    for pr in sorted(prs, key=lambda p: p["number"]):
+    order = lambda p: (p.get("signed_at") if isinstance(p.get("signed_at"), int) else -1, p["number"])  # noqa: E731
+    for pr in sorted(prs, key=order):
         hotkey = pr["changed"][0]
+        at = pr.get("signed_at")
+        if isinstance(at, int) and at > now + 600:
+            superseded[pr["number"]] = "signed_at is in the future"
+            continue
         if hotkey in keep:
-            superseded[keep[hotkey]["number"]] = f"superseded by #{pr['number']} (one PR per hotkey per round)"
+            superseded[keep[hotkey]["number"]] = (
+                f"superseded by #{pr['number']}, signed later (one submission per hotkey)"
+            )
         keep[hotkey] = pr
     return keep, superseded
+
+
+def _signed_at(cfg: Config, head: str, hotkey: str) -> int | None:
+    raw = sh(["git", "show", f"{head}:submissions/{hotkey}/attestation.json"], cwd=cfg.repo, check=False)
+    try:
+        at = json.loads(raw).get("signed_at")
+    except (ValueError, AttributeError):
+        return None
+    return at if isinstance(at, int) and not isinstance(at, bool) else None
 
 
 def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dict], dict[str, str]]:
@@ -458,7 +479,8 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
     **Incumbents**: strategies already merged into `submissions/` — a crowned king defends the crown every round
     without resubmitting. **Challengers**: every open PR touching exactly one `submissions/<hotkey>/`, taken at
     its head SHA, whose bundle lints and carries the hotkey's signature over *this* round and *this* digest. One
-    PR per hotkey: the newest wins. A challenger for a hotkey supersedes that hotkey's incumbent."""
+    submission per hotkey: the latest signed wins. A challenger that reproduces the round's private reference
+    answers is refused (S1, `sh/validator/similarity.py`). A challenger for a hotkey supersedes its incumbent."""
     sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
     bundles.mkdir(parents=True, exist_ok=True)
     tip = f"origin/{BRANCH}"
@@ -475,11 +497,21 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
     for pr in prs:
         if pr_role(pr["changed"]) == "malformed":
             rejected[str(pr["number"])] = f"{len(pr['changed'])} changed submission directories (need exactly 1)"
-    keep, superseded = one_per_hotkey([p for p in prs if pr_role(p["changed"]) == "strategy"])
+    strategies = [
+        {**p, "signed_at": _signed_at(cfg, p["headRefOid"], p["changed"][0])}
+        for p in prs
+        if pr_role(p["changed"]) == "strategy"
+    ]
+    keep, superseded = one_per_hotkey(strategies)
     rejected.update({str(n): why for n, why in superseded.items()})
+    answers = similarity.load(cfg.rounds / round_id)
     for hotkey, pr in keep.items():
         head = pr["headRefOid"]
         b = _bundle_from_tree(cfg, head, hotkey, bundles / hotkey, round_id=round_id)
+        if b is not None and not b["problems"] and answers:
+            files, _ = collect(bundles / hotkey)
+            if copied := answers.refuse(similarity.bundle_text(files)):
+                b["problems"] = [copied]
         if b is None or b["problems"]:
             rejected[str(pr["number"])] = (b or {}).get("problems", ["empty submission"])[0]
             shutil.rmtree(bundles / hotkey, ignore_errors=True)

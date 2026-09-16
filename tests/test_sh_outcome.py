@@ -64,14 +64,34 @@ def test_a_pull_request_is_a_strategy_by_what_it_touches_not_by_its_label():
     assert pr_role(["5Fa", "5Fb"]) == "malformed"
 
 
-def test_the_newest_pr_per_hotkey_counts_and_the_rest_are_superseded():
+def test_the_latest_signed_bundle_per_hotkey_counts_not_the_newest_pr():
+    """Signed bundles are public: reopening a miner's older bundle as a newer PR must not replace their latest."""
     from sh.validator.orchestrate import one_per_hotkey
 
     keep, superseded = one_per_hotkey(
-        [{"number": 7, "changed": ["A"]}, {"number": 9, "changed": ["B"]}, {"number": 12, "changed": ["A"]}]
+        [
+            {"number": 7, "changed": ["A"], "signed_at": 2000},  # the miner's latest
+            {"number": 9, "changed": ["B"], "signed_at": 1500},
+            {"number": 12, "changed": ["A"], "signed_at": 1000},  # an older bundle of A's, reopened later by anyone
+        ],
+        now=3000,
     )
-    assert keep["A"]["number"] == 12 and keep["B"]["number"] == 9
-    assert superseded == {7: "superseded by #12 (one PR per hotkey per round)"}
+    assert keep["A"]["number"] == 7 and keep["B"]["number"] == 9
+    assert superseded == {12: "superseded by #7, signed later (one submission per hotkey)"}
+
+
+def test_a_future_signing_time_is_not_a_submission_and_ties_fall_to_the_pr_number():
+    from sh.validator.orchestrate import one_per_hotkey
+
+    keep, superseded = one_per_hotkey(
+        [{"number": 3, "changed": ["A"], "signed_at": 1000}, {"number": 4, "changed": ["A"], "signed_at": 99999}],
+        now=1100,
+    )
+    assert keep["A"]["number"] == 3 and superseded == {4: "signed_at is in the future"}
+    keep, _ = one_per_hotkey(
+        [{"number": 5, "changed": ["A"], "signed_at": 10}, {"number": 6, "changed": ["A"], "signed_at": 10}], now=20
+    )
+    assert keep["A"]["number"] == 6
 
 
 def test_a_dethroned_incumbent_leaves_submissions():
