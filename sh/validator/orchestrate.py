@@ -140,7 +140,7 @@ def log(rd: Path, stage: str, **fields) -> None:
 def _commit(cfg: Config, message: str, paths: tuple[str, ...] = ("rounds", "docs/live", "docs/rounds")) -> None:
     sh(["git", "add", *paths], cwd=cfg.repo)
     if sh(["git", "status", "--porcelain", *paths], cwd=cfg.repo).strip():
-        sh(["git", "commit", "-q", "-m", message], cwd=cfg.repo)
+        sh(["git", "commit", "-q", "-m", message, "--", *paths], cwd=cfg.repo)  # only these paths, whatever else is staged
         sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)
         sh(["git", "push", "-q", "origin", BRANCH], cwd=cfg.repo)
 
