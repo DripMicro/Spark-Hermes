@@ -244,6 +244,8 @@ def open_round(cfg: Config) -> Path:
     (rd / "READY").unlink(missing_ok=True)
     for tag in _image_tags(rd):  # derivation is done; the images only cost disk here now
         subprocess.run(["docker", "image", "rm", "-f", tag], capture_output=True)
+    if _image_tags(rd):
+        subprocess.run(["docker", "builder", "prune", "-f", "--filter", "until=48h"], capture_output=True)
     now = time.time()
     (rd / "window.json").write_text(
         json.dumps({"opens_at": now, "closes_at": now + cfg.window_s, "seconds": cfg.window_s})
@@ -518,7 +520,8 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
     if tags := _image_tags(rd):
         _worker(
             cfg,
-            "docker image rm -f " + " ".join(tags) + " >/dev/null 2>&1; docker image prune -f >/dev/null 2>&1; true",
+            "docker image rm -f " + " ".join(tags) + " >/dev/null 2>&1; docker image prune -f >/dev/null 2>&1; "
+            "docker builder prune -f --filter until=48h >/dev/null 2>&1; true",
         )
     n = len(list((rd / "episodes").rglob("episode.json")))
     if not n:
@@ -875,11 +878,13 @@ def main(argv=None) -> int:
             result = run_round(cfg, mock, resume=resume)
             resume = None
             print(json.dumps(result), flush=True)
-        except Exception as e:  # a failed round is logged and the loop goes on
+        except Exception as e:  # a failed round is logged, and resumed — never abandoned for a fresh one
             print(f"round failed: {e!r}", flush=True)
             if a.once:
                 return 1
             time.sleep(60)
+            resume = unfinished_round(cfg)
+            continue
         if a.once:
             return 0
         time.sleep(a.pause)
