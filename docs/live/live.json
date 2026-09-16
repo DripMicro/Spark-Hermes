@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789555341.4632838,
+ "updated": 1789555389.2545,
  "round_id": "r0003",
  "stage": "window",
  "stages": [
@@ -20,6 +20,14 @@
   {
    "stage": "start",
    "t": 1789555341.4533556
+  },
+  {
+   "stage": "open",
+   "t": 1789555343.9363012
+  },
+  {
+   "stage": "mock_submit",
+   "t": 1789555377.7017193
   }
  ],
  "window": {
@@ -27,7 +35,7 @@
   "closes_at": 1789562541.452619,
   "seconds": 7200
  },
- "submissions": 0,
+ "submissions": 6,
  "tasks": 8,
  "active": {},
  "rejected": {},
