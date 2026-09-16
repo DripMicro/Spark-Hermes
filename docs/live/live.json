@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789555155.909371,
- "round_id": "r0002",
- "stage": "waiting",
+ "updated": 1789555341.4632838,
+ "round_id": "r0003",
+ "stage": "window",
  "stages": [
   "open",
   "window",
@@ -15,293 +15,33 @@
   "publish_close",
   "done"
  ],
- "started": 1789547707.977668,
+ "started": 1789555341.4533556,
  "phases": [
   {
    "stage": "start",
-   "t": 1789547707.977668
-  },
-  {
-   "stage": "mint",
-   "t": 1789548514.9284096
-  },
-  {
-   "stage": "seal",
-   "t": 1789548516.6178243
-  },
-  {
-   "stage": "publish_open",
-   "t": 1789548518.9859405
-  },
-  {
-   "stage": "resume",
-   "t": 1789550286.8944018
-  },
-  {
-   "stage": "evaluate_resume",
-   "t": 1789550294.147071
-  },
-  {
-   "stage": "resume",
-   "t": 1789552460.150476
-  },
-  {
-   "stage": "evaluate_resume",
-   "t": 1789552467.5184643
-  },
-  {
-   "stage": "evaluate",
-   "t": 1789553895.2075882
-  },
-  {
-   "stage": "close",
-   "t": 1789553899.0662591
-  },
-  {
-   "stage": "crown",
-   "t": 1789553899.0806298
-  },
-  {
-   "stage": "merge",
-   "t": 1789553925.0061631
-  },
-  {
-   "stage": "announce",
-   "t": 1789553936.824425
-  },
-  {
-   "stage": "export",
-   "t": 1789553941.6826427
-  },
-  {
-   "stage": "publish_close",
-   "t": 1789553944.5260606
-  },
-  {
-   "stage": "done",
-   "t": 1789553944.5267026
+   "t": 1789555341.4533556
   }
  ],
- "window": null,
- "submissions": null,
+ "window": {
+  "opens_at": 1789555341.452619,
+  "closes_at": 1789562541.452619,
+  "seconds": 7200
+ },
+ "submissions": 0,
  "tasks": 8,
- "active": {
-  "5FRefusalReader": {
-   "pr": 106,
-   "head": "5d0bceb000812b4d956e23c9b4305a242b4b448f",
-   "bundle_sha256": "8b8bbdbd45c5bb7c2dd08c44d75809e0d5213dd836c09bc043631ddd75b20986",
-   "incumbent": false
-  },
-  "5FPlanner": {
-   "pr": 105,
-   "head": "fe54d433023773b71d34964112ce50fc2273007d",
-   "bundle_sha256": "d81aa18146c34c3eb540d98bd46f0218443881f248d6490c88c0051ca57a7782",
-   "incumbent": false
-  },
-  "5FMinimal": {
-   "pr": 104,
-   "head": "156cbddb517a9671a74d8c08b2e3804eee42aa83",
-   "bundle_sha256": "1931157ea1be3df1ba6f894851b3afa6c23d77f61223ba19b0bb24f3f04fa016",
-   "incumbent": false
-  },
-  "5FHastyRunner": {
-   "pr": 103,
-   "head": "65482781eb377d2e52c6388ad2e7a64812c8b961",
-   "bundle_sha256": "e26dcd4bddb12b77ac11a45f6435796fafdc24d418e718b11ac0dcf87154619b",
-   "incumbent": false
-  },
-  "5FGoodOperator": {
-   "pr": 102,
-   "head": "a28edad1a4b61c04e5ad9255ac1caee38bf77d41",
-   "bundle_sha256": "4c490c109f8ef2045de835184755a059087d91aa2e28df59c9139d7e4e850024",
-   "incumbent": false
-  },
-  "5FCarefulOps": {
-   "pr": 101,
-   "head": "955a27ae858690c2d5d1b852e7880ef120b58e70",
-   "bundle_sha256": "bd5d7d2ec04153083a48fde33c149df46b34d3a7ea15709f86dfa33eaf3d9dab",
-   "incumbent": false
-  }
- },
+ "active": {},
  "rejected": {},
- "progress": {
-  "done": 64,
-  "total": 64,
-  "by_surface": {
-   "5FCarefulOps": {
-    "n": 8,
-    "verified": 8
-   },
-   "5FGoodOperator": {
-    "n": 8,
-    "verified": 8
-   },
-   "5FHastyRunner": {
-    "n": 8,
-    "verified": 7
-   },
-   "5FMinimal": {
-    "n": 8,
-    "verified": 7
-   },
-   "5FPlanner": {
-    "n": 8,
-    "verified": 7
-   },
-   "5FRefusalReader": {
-    "n": 8,
-    "verified": 7
-   },
-   "canon": {
-    "n": 8,
-    "verified": 8
-   },
-   "episodes.jsonl": {
-    "n": 0,
-    "verified": 0
-   },
-   "null": {
-    "n": 8,
-    "verified": 3
-   },
-   "summary.json": {
-    "n": 0,
-    "verified": 0
-   }
+ "progress": {},
+ "crown": null,
+ "scores": null,
+ "queue": [
+  {
+   "round_id": "r0003",
+   "tasks_sha256": "e4bc33ab27f07816426a4e7e670a60700c5ace5bbe372bbf3c7255a2c0d6f889",
+   "tasks": 8,
+   "minted_at": 1789555302.3709116
   }
- },
- "crown": {
-  "schema": "sh-crown-v1",
-  "round_id": "r0002",
-  "king": "5FGoodOperator",
-  "standings": {
-   "5FCarefulOps": {
-    "n": 8,
-    "verified": 8,
-    "delta": 0.625,
-    "rank": 2
-   },
-   "5FGoodOperator": {
-    "n": 8,
-    "verified": 8,
-    "delta": 0.625,
-    "rank": 1
-   },
-   "5FHastyRunner": {
-    "n": 8,
-    "verified": 7,
-    "delta": 0.5,
-    "rank": 4
-   },
-   "5FMinimal": {
-    "n": 8,
-    "verified": 7,
-    "delta": 0.5,
-    "rank": 5
-   },
-   "5FPlanner": {
-    "n": 8,
-    "verified": 7,
-    "delta": 0.5,
-    "rank": 6
-   },
-   "5FRefusalReader": {
-    "n": 8,
-    "verified": 7,
-    "delta": 0.5,
-    "rank": 3
-   }
-  },
-  "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired; ties by pooled \u0394c"
- },
- "scores": {
-  "weights": {
-   "5FCarefulOps": 0.0,
-   "5FGoodOperator": 0.7668486928263454,
-   "5FHastyRunner": 0.0,
-   "5FMinimal": 0.0,
-   "5FPlanner": 0.0,
-   "5FRefusalReader": 0.23315130717365465
-  },
-  "king": "5FGoodOperator",
-  "per_hotkey": {
-   "5FCarefulOps": {
-    "n": 16,
-    "score": 0.0,
-    "mean_d": 0.25,
-    "se": 0.148122,
-    "delta_c": 0.06040393815622999,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "the efficiency term outweighs \u0394c"
-   },
-   "5FGoodOperator": {
-    "n": 16,
-    "score": 0.036563534230614814,
-    "mean_d": 0.375,
-    "se": 0.121031,
-    "delta_c": 0.22008066615170332,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": null
-   },
-   "5FHastyRunner": {
-    "n": 16,
-    "score": 0.0,
-    "mean_d": 0.125,
-    "se": 0.164768,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 +0.125 \u00b1 0.165 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5FMinimal": {
-    "n": 16,
-    "score": 0.0,
-    "mean_d": 0.0625,
-    "se": 0.17021,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 +0.062 \u00b1 0.170 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5FPlanner": {
-    "n": 16,
-    "score": 0.0,
-    "mean_d": 0.1875,
-    "se": 0.157495,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 +0.188 \u00b1 0.157 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5FRefusalReader": {
-    "n": 16,
-    "score": 0.011116711654468425,
-    "mean_d": 0.3125,
-    "se": 0.136216,
-    "delta_c": 0.13814404225837304,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": null
-   }
-  },
-  "family_stats": {
-   "process_lifecycle": {
-    "null_p": 0.625,
-    "canon_p": 0.9375,
-    "label": "frontier"
-   }
-  },
-  "commitments_ok": true
- },
- "queue": [],
+ ],
  "history": [
   {
    "round_id": "s1",
