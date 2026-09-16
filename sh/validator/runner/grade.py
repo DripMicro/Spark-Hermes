@@ -12,7 +12,10 @@ import tarfile
 from pathlib import Path
 
 sys.path.insert(0, "/runner")
-import predicates  # noqa: E402
+try:
+    import predicates  # noqa: E402  — inside the image: /runner/predicates, copied from sh/predicates at build
+except ModuleNotFoundError:  # outside the image (the validator's own tests): the package it was copied from
+    from sh import predicates  # noqa: E402
 
 EP = Path(os.environ.get("SH_EP", "/ep"))
 WS = EP / "ws"
