@@ -3,7 +3,8 @@
 A round opens with 8 tasks and a **2-hour submission window**. During the window you fetch the tasks, write a
 strategy for them, and submit it as one signed pull request per hotkey; you may resubmit as often as you like
 and each submission replaces the last. When the window closes the validator seals every open strategy PR at
-its head SHA, evaluates, scores, crowns, and opens the next round. Nothing submitted after the close is sealed.
+its head SHA, evaluates, scores, crowns, and opens the next round. Nothing submitted after the close is sealed. If the
+window closes with no valid submission, the round is not sealed: it reopens with the same tasks and a fresh window.
 
 ## What a strategy is
 

@@ -22,7 +22,7 @@ deliberate, dated act — and a new era when it changes the reference arms' comp
 
 | Parameter | Pin | Where |
 |---|---|---|
-| submission window | **120 min** from open; the seal is taken at close, by PR head SHA. `submissions/` carries exactly the current king: a dethroned incumbent is removed at announce | `sh/validator/orchestrate.py --window-minutes` |
+| submission window | **120 min** from open; the seal is taken at close, by PR head SHA. A window that closes with no valid submission (an incumbent alone does not count) **reopens**: same round, same tasks, a fresh 120 min, recorded in `window.json` (`reopened`, `reason`) — nothing is sealed, evaluated or revealed. `submissions/` carries exactly the current king: a dethroned incumbent is removed at announce | `sh/validator/orchestrate.py --window-minutes` |
 | tasks per round | 8, minted ahead by `supply.queue` (`--ahead 3`); future rounds published only as digests in `rounds/queue.json` | private repo |
 | attestation | `sr25519(hotkey, "spark-hermes:<repo>:<round>:<bundle_sha256>")` in `attestation.json`; one PR per hotkey per round, newest counts | `sh/cli/attest.py` |
 | crown | best Δ vs baseline on **this round's** instances, > 0, ≥ 4 paired; ties by pooled Δc | `sh/scoring/crown.py` |

@@ -190,8 +190,9 @@
     $("round").textContent = live.round_id;
     $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale · " : "") + "updated " + ago(live.updated);
     const ph = PHASE[live.stage] || ["evaluate", LABEL[live.stage] || live.stage];
+    const wn = live.window && live.window.reopened ? live.window.reopened + 1 : 1;
     $("phase").className = "phase " + ph[0];
-    $("phase").textContent = ph[1];
+    $("phase").textContent = ph[1] + (live.stage === "window" && wn > 1 ? " · window " + wn : "");
 
     const stages = live.stages || Object.keys(LABEL);
     const reached = new Set((live.phases || []).map((p) => p.stage));
@@ -199,7 +200,9 @@
     $("stages").innerHTML = stages.map((s, i) =>
       '<span class="stage ' + (s === live.stage ? "now" : reached.has(s) || i < nowIdx ? "done" : "") + '">' + (LABEL[s] || s) + "</span>").join("");
     const w = live.window;
-    $("window-line").textContent = w ? "Window " + clock(w.opens_at) + " → " + clock(w.closes_at) + " (" + Math.round(w.seconds / 60) + " min). Submissions after the close are not sealed." : "";
+    $("window-line").textContent = !w ? "" : (w.reopened
+      ? "Window " + (w.reopened + 1) + ": " + clock(w.opens_at) + " → " + clock(w.closes_at) + ". Reopened — " + w.reason + ", so the round was not sealed; same tasks, a fresh window."
+      : "Window " + clock(w.opens_at) + " → " + clock(w.closes_at) + " (" + Math.round(w.seconds / 60) + " min). A window that closes with no submission reopens; submissions after a seal are not counted.");
 
     const p = live.progress || {}, done = p.done || 0, total = p.total || 0;
     $("erow").hidden = live.stage === "window" || live.stage === "waiting";

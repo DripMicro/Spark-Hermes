@@ -180,3 +180,64 @@ def test_a_pull_request_changes_only_what_it_forked_with(tmp_path):
     cfg = _cfg(tmp_path)
     cfg.repo = repo
     assert _changed_submissions(cfg, "main", git("rev-parse", "miner")) == ["B"]
+
+
+def test_a_reopened_window_is_the_same_length_counts_itself_and_says_why():
+    from sh.validator.orchestrate import reopened
+
+    first = {"opens_at": 1000.0, "closes_at": 8200.0, "seconds": 7200}
+    second = reopened(first, 7200, now=8300.0)
+    assert second == {
+        "opens_at": 8300.0,
+        "closes_at": 15500.0,
+        "seconds": 7200,
+        "reopened": 1,
+        "first_opened_at": 1000.0,
+        "reason": "no submissions in window 1",
+    }
+    third = reopened(second, 7200, now=15600.0)
+    assert (
+        third["reopened"] == 2
+        and third["first_opened_at"] == 1000.0
+        and third["reason"] == "no submissions in window 2"
+    )
+
+
+def test_only_challengers_count_as_submissions():
+    """An incumbent alone has nobody to defend against; evaluating it would spend the GPU on nothing."""
+    from sh.validator.orchestrate import challenger_count
+
+    assert challenger_count({}) == 0
+    assert challenger_count({"KING": {"pr": None, "incumbent": True}}) == 0
+    assert challenger_count({"KING": {"pr": None, "incumbent": True}, "A": {"pr": 7, "incumbent": False}}) == 1
+
+
+def test_an_empty_window_reopens_the_round_instead_of_sealing_it(tmp_path, monkeypatch):
+    """No seal, no evaluation, no new tasks: the same round waits again until someone submits."""
+    import sh.validator.orchestrate as o
+
+    cfg = _cfg(tmp_path)
+    rd = cfg.rounds / "r0009"
+    rd.mkdir(parents=True)
+    for stage in ("start", "open"):
+        o.log(rd, stage)
+    calls: list[str] = []
+    counts = iter([0, 0, 3])
+
+    class Sealed(Exception):
+        pass
+
+    def fake_seal(*a, **k):
+        raise Sealed
+
+    monkeypatch.setattr(o, "wait_window", lambda cfg, rd, mock: calls.append("wait"))
+    monkeypatch.setattr(o, "has_challengers", lambda cfg, round_id: next(counts))
+    monkeypatch.setattr(o, "reopen_window", lambda cfg, rd: calls.append("reopen"))
+    monkeypatch.setattr(o, "seal", fake_seal)
+    try:
+        o.run_round(cfg, resume=rd)
+    except Sealed:
+        pass
+    assert calls == ["wait", "reopen", "wait", "reopen", "wait"]
+    logged = [json.loads(line) for line in (rd / "phases.jsonl").read_text().splitlines()]
+    assert logged[-1]["stage"] == "window" and logged[-1]["submissions"] == 3

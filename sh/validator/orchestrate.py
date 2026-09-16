@@ -303,6 +303,20 @@ def _image_tags(rd: Path) -> list[str]:
     return [p.read_text().strip() for p in sorted((rd / "images").glob("*/TAG"))] if (rd / "images").exists() else []
 
 
+def reopened(window: dict, seconds: int, now: float) -> dict:
+    """The next window for a round whose window closed with no submission: same round, same tasks, a fresh
+    window of the same length. Nothing was sealed, evaluated or revealed, so the tasks are still fair. Pure."""
+    n = int(window.get("reopened", 0)) + 1
+    return {
+        "opens_at": now,
+        "closes_at": now + seconds,
+        "seconds": seconds,
+        "reopened": n,
+        "first_opened_at": window.get("first_opened_at", window["opens_at"]),
+        "reason": f"no submissions in window {n}",
+    }
+
+
 def window_state(rd: Path, now: float | None = None) -> dict:
     """Where the round is in its window: seconds left, and whether submissions are open."""
     w = _read(rd / "window.json")
@@ -328,8 +342,8 @@ def _submissions(cfg: Config) -> list[dict]:
 
 
 def wait_window(cfg: Config, rd: Path, mock: tuple[Path, Path] | None = None) -> None:
-    """Hold the round open until the window closes, showing the count of submissions on the board. Mock
-    challengers submit at the start of the window, signed for this round, like any miner would."""
+    """Hold the round open until the window closes, showing the submissions on the board. Mock challengers
+    submit once, at the start of the round's first window, signed for this round, like any miner would."""
     if mock and "mock_submit" not in done_stages(rd):
         from sh.cli.mock_miners import open_prs
 
@@ -344,7 +358,21 @@ def wait_window(cfg: Config, rd: Path, mock: tuple[Path, Path] | None = None) ->
             live(cfg, rd, "window", submissions=_submissions(cfg))
             last_push = time.time()
         time.sleep(min(60.0, max(1.0, st["remaining"])))
-    log(rd, "window", closed_at=time.time())
+
+
+def reopen_window(cfg: Config, rd: Path) -> dict:
+    """Give the round a fresh window, publish it, and say why on the board and in the round's history."""
+    w = reopened(_read(rd / "window.json"), cfg.window_s, time.time())
+    (rd / "window.json").write_text(json.dumps(w))
+    dest = cfg.repo / "rounds" / rd.name
+    dest.mkdir(parents=True, exist_ok=True)
+    shutil.copy(rd / "window.json", dest / "window.json")
+    live(cfg, rd, "window", submissions=[], push=False)
+    _commit(
+        cfg, f"{rd.name}: no submissions — window reopened ({w['reopened'] + 1}), closes in {cfg.window_s // 60} min"
+    )
+    log(rd, "reopen", window=w["reopened"] + 1, closes_at=w["closes_at"])
+    return w
 
 
 def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_id: str | None) -> dict | None:
@@ -424,16 +452,15 @@ def one_per_hotkey(prs: list[dict]) -> tuple[dict[str, dict], dict[int, str]]:
     return keep, superseded
 
 
-def seal(cfg: Config, round_id: str, rd: Path) -> dict:
-    """Which bundles are in this round, decided the instant the window closes and published before evaluation.
+def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dict], dict[str, str]]:
+    """What a seal taken now would contain: `(active, rejected)`, with every bundle materialised under `bundles`.
 
     **Incumbents**: strategies already merged into `submissions/` — a crowned king defends the crown every round
     without resubmitting. **Challengers**: every open PR touching exactly one `submissions/<hotkey>/`, taken at
     its head SHA, whose bundle lints and carries the hotkey's signature over *this* round and *this* digest. One
     PR per hotkey: the newest wins. A challenger for a hotkey supersedes that hotkey's incumbent."""
     sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
-    bundles = rd / "bundles"
-    bundles.mkdir(exist_ok=True)
+    bundles.mkdir(parents=True, exist_ok=True)
     tip = f"origin/{BRANCH}"
     active: dict[str, dict] = {}
     rejected: dict[str, str] = {}
@@ -460,6 +487,27 @@ def seal(cfg: Config, round_id: str, rd: Path) -> dict:
                 _bundle_from_tree(cfg, tip, hotkey, bundles / hotkey, round_id=None)  # the incumbent stands
             continue
         active[hotkey] = {"pr": pr["number"], "head": head, "bundle_sha256": b["digest"], "incumbent": False}
+    return active, rejected
+
+
+def challenger_count(active: dict[str, dict]) -> int:
+    """Submissions that would be sealed: an incumbent alone is nothing to evaluate against. Pure."""
+    return sum(1 for info in active.values() if not info.get("incumbent"))
+
+
+def has_challengers(cfg: Config, round_id: str) -> int:
+    """How many valid submissions a seal taken now would carry — checked when a window closes, with no side
+    effect on the round (bundles go to a temporary directory; nothing is labelled, written or published)."""
+    import tempfile
+
+    with tempfile.TemporaryDirectory(prefix="sh-candidates-") as tmp:
+        active, _ = candidates(cfg, round_id, Path(tmp))
+    return challenger_count(active)
+
+
+def seal(cfg: Config, round_id: str, rd: Path) -> dict:
+    """Which bundles are in this round, decided the instant the window closes and published before evaluation."""
+    active, rejected = candidates(cfg, round_id, rd / "bundles")
     for number in [i["pr"] for i in active.values() if i.get("pr")] + [int(n) for n in rejected]:
         _label(number, f"sh:round:{round_id}")
     record = {
@@ -861,7 +909,12 @@ def run_round(cfg: Config, mock: tuple[Path, Path] | None = None, resume: Path |
     if "open" not in done and "seal" not in done:  # a restart between taking a round and publishing it
         publish_round(cfg, rd)
     if "window" not in done and "seal" not in done:
-        wait_window(cfg, rd, mock)
+        while True:
+            wait_window(cfg, rd, mock)
+            if n := has_challengers(cfg, round_id):
+                break
+            reopen_window(cfg, rd)  # nothing to evaluate: same round, same tasks, a fresh window
+        log(rd, "window", closed_at=time.time(), submissions=n)
     if "seal" not in done:
         sealed = seal(cfg, round_id, rd)
     else:
