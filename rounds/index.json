@@ -1,0 +1,19 @@
+{
+ "schema": "sh-rounds-index-v2",
+ "rounds": [
+  {
+   "round_id": "s1",
+   "closed_at": 1789536780,
+   "episodes": 48,
+   "king": "5FGoodOperator",
+   "weights": {
+    "5FGoodOperator": 1.0,
+    "5FHastyRunner": 0.0
+   },
+   "commitments_ok": true,
+   "sft_rows": 39,
+   "dpo_pairs": 5,
+   "hf": null
+  }
+ ]
+}

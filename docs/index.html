@@ -1,201 +1,88 @@
 <!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
-<title>Spark-Hermes — verified agent improvement on SN74</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="One pinned model, an open competition on agent strategy, and every result checkable by a stranger. SN74 Gittensor.">
-<!--
-  The landing page. It replaced one about verified Triton kernels, which described a different
-  project: this repository is the agent-improvement subnet, and the Triton work lives in SparkProof.
-
-  Every number here is measured and dated, and the page says which are measurements and which are
-  design intent. A landing page that quotes an aspiration in the same typeface as a result is how a
-  reader ends up believing the wrong one.
-
-  Same palette as the board at board/ so the two read as one site. Nothing is loaded from a CDN.
--->
-<style>
-  :root {
-    --bg: #0b0d12; --panel: #12151d; --border: #232838; --fg: #e6e9f2; --dim: #9aa3ba;
-    --accent: #4d8dff; --good: #46c17c; --warn: #d8a534; --violet: #a879ff;
-    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-  }
-  @media (prefers-color-scheme: light) {
-    :root { --bg: #f7f8fb; --panel: #fff; --border: #dfe3ec; --fg: #171a21; --dim: #5c6579; }
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 0 20px 72px; background: var(--bg); color: var(--fg);
-    font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  }
-  main { max-width: 940px; margin: 0 auto; }
-  img.banner { width: 100%; max-width: 100%; border-radius: 14px; margin: 28px 0 30px; display: block; }
-  h1 { font-size: 1.9rem; letter-spacing: -0.02em; margin: 0 0 6px; }
-  h2 { font-size: 1.15rem; margin: 44px 0 12px; letter-spacing: -0.01em; }
-  h3 { font-size: 0.95rem; margin: 24px 0 8px; }
-  p.lead { font-size: 1.08rem; color: var(--fg); margin: 0 0 8px; }
-  p { margin: 0 0 14px; }
-  .dim { color: var(--dim); }
-  a { color: var(--accent); }
-  .row { display: flex; flex-wrap: wrap; gap: 12px; margin: 22px 0 6px; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 11px;
-    border: 1px solid var(--border); background: var(--panel); color: var(--fg);
-    text-decoration: none; font-weight: 650; font-size: 0.94rem;
-  }
-  .btn.primary { border-color: var(--accent); color: var(--accent); }
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin: 18px 0; }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px 17px; }
-  .card b { display: block; font-family: var(--mono); font-size: 1.42rem; font-weight: 650; letter-spacing: -0.02em; }
-  .card span { display: block; color: var(--dim); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 5px; }
-  .card small { display: block; color: var(--dim); font-size: 0.8rem; margin-top: 8px; line-height: 1.45; }
-  .good { color: var(--good); } .warn { color: var(--warn); } .violet { color: var(--violet); }
-  .wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; margin: 16px 0; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
-  th { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--dim); font-weight: 650; }
-  tr:last-child td { border-bottom: 0; }
-  td.mono, td code { font-family: var(--mono); font-size: 0.85em; }
-  pre {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    padding: 16px 18px; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 16px 0;
-  }
-  code { font-family: var(--mono); }
-  blockquote {
-    margin: 18px 0; padding: 12px 18px; border-left: 3px solid var(--violet);
-    background: var(--panel); border-radius: 0 10px 10px 0; color: var(--dim);
-  }
-  footer { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--border); color: var(--dim); font-size: 0.86rem; }
-</style>
+<title>Spark-Hermes</title>
+<meta name="description" content="A strategy competition on one pinned agent and model — SN74 Gittensor. Miners submit prose; the validator runs it, pays for beating the baseline, and publishes everything needed to check the result.">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<nav class="nav">
+  <a class="brand" href="./" aria-current="page">Spark-Hermes</a>
+  <a href="live/">Live</a>
+  <a href="live/#rounds">Rounds</a>
+  <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/submissions/README.md">Submit</a>
+  <a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Dataset</a>
+  <a href="https://github.com/gittensor-model-hub/Spark-Hermes">GitHub</a>
+</nav>
 
 <main>
-  <img class="banner" src="images/spark-hermes-3.8-27b.png" alt="Spark-Hermes-3.8-27B">
-
-  <h1>Spark-Hermes</h1>
-  <p class="lead">One pinned model. An open competition on how it is <em>used</em>. Every result
-  checkable by a stranger.</p>
-  <p class="dim">SN74 Gittensor · <code>Spark-Hermes-3.8-27B</code></p>
-
-  <div class="row">
-    <a class="btn primary" href="board/">Live board →</a>
-    <a class="btn" href="https://github.com/gittensor-model-hub/Spark-Hermes">Repository</a>
-    <a class="btn" href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/docs/miner-guide.md">Miner guide</a>
+  <div>
+    <h1>One pinned agent. A competition on how it is instructed.</h1>
+    <p class="muted" style="margin-top:.35rem">SN74 Gittensor · Hermes agent · pinned model, sampling and sandbox</p>
   </div>
 
-  <h2>What is being competed on</h2>
-  <p>Every miner runs the <strong>same weights</strong>, at the same revision, through the same
-  harness. What differs is a small prose surface — an operating identity and a few skills — and the
-  competition is whether that surface makes the model solve tasks it otherwise fails.</p>
-  <p>Nothing is self-reported. The validator executes the submitted surface itself, against a
-  published challenge, and grades it with a check nobody could read beforehand.</p>
+  <p class="lead">A strategy is prose — a <code>SOUL.md</code> and optional skills — and nothing else. The validator runs
+  the same agent and model under every strategy, in a sealed sandbox, on instances whose grading criteria were committed
+  before submissions opened. A strategy is paid for beating the strategy-less baseline on the same instances. The winner
+  becomes the incumbent; every verified trajectory becomes training data.</p>
 
-  <blockquote>Same model. Better rollout. Verified improvement. Better next model.</blockquote>
-
-  <h2>Measured, 2026-08-11</h2>
-  <p class="dim">The pinned model on the 19-task suite, bf16 on an RTX PRO 6000 Blackwell, served
-  through SGLang. These are results, not targets.</p>
-
-  <div class="cards">
-    <div class="card">
-      <b>94.7<span style="font-size:1rem">%</span></b>
-      <span>suite success</span>
-      <small>18 of 19 tasks, one attempt each. Was 73.7% until the harness stopped charging a
-      model's reasoning against its action budget — every one of those five failures had run out of
-      steps mid-work, not answered wrongly.</small>
-    </div>
-    <div class="card">
-      <b class="good">0</b>
-      <span>malformed turns</span>
-      <small>Across 1.69 M tokens and ~300 tool calls. The model and the parser agree completely on
-      the wire format.</small>
-    </div>
-    <div class="card">
-      <b class="good">19 / 19</b>
-      <span>withheld checks live</span>
-      <small>Every task's hidden verifier runs, and every one is proven able to pass a reference
-      solution — not merely to fail an unsolved workspace.</small>
-    </div>
-    <div class="card">
-      <b>0</b>
-      <span>overfit episodes</span>
-      <small>None passed the published check while failing the withheld one.</small>
-    </div>
+  <div class="strip" id="live" hidden>
+    <div class="stat"><b id="l-round">—</b><span>round</span></div>
+    <div class="stat"><b id="l-stage">—</b><span>stage</span></div>
+    <div class="stat"><b id="l-episodes">—</b><span>episodes graded</span></div>
+    <div class="stat"><b id="l-sealed">—</b><span>strategies sealed</span></div>
+    <div class="stat"><b id="l-king">—</b><span>last king</span></div>
   </div>
 
-  <h2>The loop, run end to end</h2>
-  <p>A full round on real hardware, every stage exercised:</p>
+  <section class="panel">
+    <h2>Compete</h2>
+    <ol class="steps">
+      <li>Write <code>submissions/&lt;hotkey&gt;/SOUL.md</code>, plus <code>skills/&lt;name&gt;/SKILL.md</code> if you want them.</li>
+      <li>Run <code>python -m sh.cli.lint submissions/&lt;hotkey&gt;</code> — the same check CI runs, and your <code>bundle_sha256</code>.</li>
+      <li>Open a pull request against <code>sh/v2-pipeline</code>. The next round seals every open strategy PR by head SHA.</li>
+      <li>Your scorecard is posted on the PR at close. The crowned PR is merged; the others are closed — resubmit for the next round.</li>
+    </ol>
+  </section>
 
-  <div class="wrap">
-    <table>
-      <thead><tr><th>Stage</th><th>What happened</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">open</td><td>challenge published, baseline <strong>0/10</strong> on the task, 12.2% token spread — <em>measured before the step-budget fix; see the note below</em></td></tr>
-        <tr><td class="mono">submit</td><td>surface uploaded privately; the digest committed publicly</td></tr>
-        <tr><td class="mono">freeze</td><td>submissions sealed — verdicts cannot exist before this</td></tr>
-        <tr><td class="mono">judge</td><td>validator ran the surface: <strong>2/10</strong> verified, <span class="warn">refused</span></td></tr>
-        <tr><td class="mono">crown</td><td><strong>no crown</strong> — nothing cleared the bar</td></tr>
-        <tr><td class="mono">audit</td><td>bundle published and independently verified</td></tr>
-        <tr><td class="mono">aggregate</td><td>2 SFT rows, 16 preference pairs</td></tr>
-      </tbody>
-    </table>
+  <section class="panel">
+    <h2>Check</h2>
+    <p>Each round publishes its tasks and seal when it opens, and <code>close.json</code>, <code>reveal.json</code> (every
+    withheld half and salt) and scorecards when it closes. <code>HMAC(salt, withheld)</code> must equal the commitment
+    published at open, and the scores recompute from the graded episodes — nothing here needs to be trusted.</p>
+  </section>
+
+  <div class="links">
+    <a class="primary" href="live/">Live dashboard</a>
+    <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/submissions/README.md">Submission guide</a>
+    <a href="https://github.com/gittensor-model-hub/Spark-Hermes/tree/sh/v2-pipeline/rounds">Round artefacts</a>
+    <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/docs/pins.md">Pins</a>
   </div>
-
-  <p class="dim"><strong>That baseline no longer holds.</strong> The round was opened on
-  <code>tc-log-rotation-order</code> when the pinned model scored 0/10 — but that was measured while
-  the harness charged every reasoning step against the action budget, and all ten attempts ended on
-  <code>step budget exhausted</code>. With that corrected the model passes the task unaided on the
-  first attempt. The stage-by-stage record above is still exactly what the pipeline did; the
-  challenge's premise needs re-establishing on a task the model actually fails.</p>
-
-  <p>Two of those are the point. A prose-only surface moved a task the model failed <em>ten times
-  out of ten</em> — and it was still <strong>refused</strong>, because the withheld check must pass on
-  every attempt before efficiency is considered at all. And no crown was awarded, because crowning
-  the best of a bad field would make an hourly reward that always pays out and therefore says
-  nothing.</p>
-
-  <h2>Why you can check it</h2>
-  <p>After a round settles the validator publishes a bundle, and anyone holding the revealed check
-  can confirm the round was graded against the check committed to <em>before</em> submissions
-  opened. The audit states its own limit too: it does not prove the episodes came from the pinned
-  model — that needs the evaluation inside a measured confidential VM, with the claim digest as the
-  attestation nonce.</p>
-  <p>Receipts are public and carry envelope facts only — an id, a miner, a digest, a queue status.
-  Nothing that hints at merit, because during an open round any correctness signal turns the
-  withheld verifier into a check-your-guess oracle.</p>
-
-  <h2>The model</h2>
-  <div class="wrap">
-    <table>
-      <tbody>
-        <tr><th>Base</th><td class="mono"><a href="https://huggingface.co/Qwen/Qwen3.8-27B">Qwen/Qwen3.8-27B</a> @ 1d4bf0f2</td></tr>
-        <tr><th>Wire format</th><td><code>qwen35</code> — this base writes Hermes’s own <code>&lt;tool_call&gt;</code> and <code>&lt;think&gt;</code> tags but a different payload inside them, so the repository implements its native format (<a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/docs/wire-dialects.md">why, and what it cost</a>)</td></tr>
-        <tr><th>Train &amp; score</th><td>bf16 on an RTX PRO 6000 Blackwell, 96 GB</td></tr>
-        <tr><th>Ship</th><td>GGUF, sized for a 32 GB card</td></tr>
-        <tr><th>Serving</th><td>SGLang — <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/docs/serving-qwen3.8.md">not yet brought up against this pin</a></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="dim">A bf16 score is not a claim about the quantized build. The promotion gate refuses to
-  compare runs whose serving precision differs, so a GGUF release has to be re-measured rather than
-  inheriting the number above.</p>
-
-  <h2>Mining</h2>
-  <pre>git clone https://github.com/gittensor-model-hub/Spark-Hermes
-python -m miner.cli init          # a surface: SOUL.md and skills/
-python -m miner.cli check         # the contract, before you spend a run
-python -m miner.cli evaluate      # your surface against the baseline
-
-# upload privately, then open a pull request carrying only the digest</pre>
-  <p>The bundle stays private, so your surface remains your edge. The digest is public, timestamped
-  and attributable, so the validator cannot evaluate a different bundle than the one you committed
-  to and you cannot revise after the fact. <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/docs/miner-guide.md">Full guide →</a></p>
-
-  <footer>
-    <p>Built by <a href="https://github.com/gittensor-model-hub">Gittensor</a> · MIT ·
-    <a href="https://github.com/gittensor-model-hub/Spark-Hermes">source</a> ·
-    <a href="board/">board</a> ·
-    <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/docs/serving-qwen3.8.md">serving notes</a></p>
-    <p class="dim">Kernel-level work — verified Triton corpora and the export primitives — lives in
-    <a href="https://github.com/gittensor-model-hub/SparkProof">SparkProof</a>, which this page used
-    to describe.</p>
-  </footer>
 </main>
+
+<footer class="foot">
+  <span><a href="https://github.com/gittensor-model-hub">Gittensor</a> · MIT</span>
+  <span>Training data: <a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">spark-hermes-rounds</a></span>
+</footer>
+
+<script>
+(async function () {
+  const $ = (id) => document.getElementById(id);
+  const LABEL = { publish_open: "publish", close: "score", announce: "crown", publish_close: "publish" };
+  try {
+    const r = await fetch("live/live.json?t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) return;
+    const live = await r.json(), p = live.progress || {};
+    const last = (live.history || []).slice(-1)[0];
+    $("l-round").textContent = live.round_id;
+    $("l-stage").textContent = LABEL[live.stage] || live.stage;
+    $("l-episodes").textContent = (p.done || 0) + " / " + (p.total || 0);
+    $("l-sealed").textContent = Object.keys(live.active || {}).length;
+    $("l-king").textContent = (live.scores && live.scores.king) || (last && last.king) || "—";
+    $("live").hidden = false;
+  } catch (e) { /* the strip stays hidden */ }
+})();
+</script>
+</body>
+</html>

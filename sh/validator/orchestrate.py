@@ -137,7 +137,7 @@ def log(rd: Path, stage: str, **fields) -> None:
     print(f"[{rd.name}] {stage} {json.dumps(fields)[:200]}", flush=True)
 
 
-def _commit(cfg: Config, message: str, paths: tuple[str, ...] = ("rounds", "docs/live")) -> None:
+def _commit(cfg: Config, message: str, paths: tuple[str, ...] = ("rounds", "docs/live", "docs/rounds")) -> None:
     sh(["git", "add", *paths], cwd=cfg.repo)
     if sh(["git", "status", "--porcelain", *paths], cwd=cfg.repo).strip():
         sh(["git", "commit", "-q", "-m", message], cwd=cfg.repo)
@@ -156,6 +156,10 @@ def live(cfg: Config, rd: Path, stage: str, *, progress: dict | None = None, pus
     # in the same shape the leaderboard and scorecards use — the same numbers, never a re-derivation.
     close_path = rd / "close" / "close.json"
     closed = json.loads(close_path.read_text()) if close_path.exists() else None
+    if progress is None:  # stages after evaluation carry the counts forward rather than blanking the board
+        prev_path = cfg.repo / LIVE
+        prev = json.loads(prev_path.read_text()) if prev_path.exists() else {}
+        progress = prev.get("progress") if prev.get("round_id") == rd.name else None
     scores = None
     if closed:
         weights = closed.get("weights", {})
@@ -573,25 +577,26 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, king: str 
     shutil.copytree(rd / "checks", dest / "checks", dirs_exist_ok=True)  # semantics of `custom` predicates
     shutil.copytree(rd / "scorecards", dest / "scorecards", dirs_exist_ok=True)
     shutil.copy(rd / "export" / "manifest.json", dest / "manifest.json")
-    (dest / "index.html").write_text(render_leaderboard(record))
+    entry = {
+        "round_id": round_id,
+        "closed_at": time.time(),
+        "episodes": record["episodes"],
+        "king": king,
+        "weights": record["weights"],
+        "commitments_ok": record["commitments_ok"],
+        "sft_rows": exported["manifest"]["sft_rows"],
+        "dpo_pairs": exported["manifest"]["dpo_pairs"],
+        "hf": exported["upload"].get("url"),
+    }
     index_path = cfg.repo / "rounds" / "index.json"
     index = (
         json.loads(index_path.read_text()) if index_path.exists() else {"schema": "sh-rounds-index-v2", "rounds": []}
     )
-    index["rounds"] = [r for r in index["rounds"] if r["round_id"] != round_id] + [
-        {
-            "round_id": round_id,
-            "closed_at": time.time(),
-            "episodes": record["episodes"],
-            "king": king,
-            "weights": record["weights"],
-            "commitments_ok": record["commitments_ok"],
-            "sft_rows": exported["manifest"]["sft_rows"],
-            "dpo_pairs": exported["manifest"]["dpo_pairs"],
-            "hf": exported["upload"].get("url"),
-        }
-    ]
+    index["rounds"] = [r for r in index["rounds"] if r["round_id"] != round_id] + [entry]
     index_path.write_text(json.dumps(index, indent=1))
+    page = cfg.repo / "docs" / "rounds" / round_id  # the round's page, where Pages serves it
+    page.mkdir(parents=True, exist_ok=True)
+    (page / "index.html").write_text(render_leaderboard(record, {**entry, "repo": REPO, "branch": BRANCH}))
     live(cfg, rd, "done", push=False)
     _commit(
         cfg,

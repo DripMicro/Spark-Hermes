@@ -156,8 +156,8 @@ def test_the_leaderboard_is_built_only_from_published_artefacts(tmp_path):
     eps = _episodes(tmp_path, [("null", False), ("5Fminer", True)])
     record = close(rd, eps, tmp_path / "out")
     page = render(record)
-    assert "5Fminer" in page and "all match" in page
-    assert "<title>" in page and "prefers-color-scheme" in page
+    assert "5Fminer" in page and "match" in page and "MISMATCH" not in page
+    assert "<title>" in page and "site.css" in page  # themed by the shared stylesheet, like every other page
     assert SALT not in page  # the salt is in reveal.json, not on the page
 
 
