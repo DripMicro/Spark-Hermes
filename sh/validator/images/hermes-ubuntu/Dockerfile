@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       python3 python3-pip python3-venv jq \
     && rm -rf /var/lib/apt/lists/*
 # Hermes needs Python >=3.11 and jammy ships 3.10: a uv-managed CPython 3.12 in a world-readable prefix
-# (under /root it is unreadable by uid 1000 at run time — the mistake hermes-base documents).
-# uv from PyPI, as hermes-base does: the standalone installer's 0.9.x cannot read the lock file Hermes ships.
+# (under /root it is unreadable by uid 1000 at run time).
+# uv from PyPI: the standalone installer's 0.9.x cannot read the lock file Hermes ships.
 RUN python3 -m pip install --no-cache-dir uv
 ENV UV_PYTHON_INSTALL_DIR=/opt/uvpython UV_PYTHON_PREFERENCE=only-managed
 RUN uv python install 3.12 && chmod -R a+rX /opt/uvpython

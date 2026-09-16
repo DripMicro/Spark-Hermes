@@ -2,7 +2,7 @@
 results out, because host-path bind mounts are unavailable on the validator host. The volume is the
 only writable path shared with the host; the rootfs is read-only; HERMES_HOME and /tmp are tmpfs.
 
-    python -m sh.validator.episode --task task.json --bundle DIR|none --image family-posix-report:pin \
+    python -m sh.validator.episode --task task.json --bundle DIR|none --image facet-task:<hash> \
         --inference http://127.0.0.1:8080/v1 --out results/ep-1 [--network host]
 """
 
