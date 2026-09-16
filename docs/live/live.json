@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789565733.052257,
+ "updated": 1789565922.7429185,
  "round_id": "r0003",
  "stage": "evaluate",
  "stages": [
@@ -211,11 +211,15 @@
  },
  "rejected": {},
  "progress": {
-  "done": 9,
+  "done": 10,
   "total": 72,
   "by_surface": {
+   "5FGoodOperator": {
+    "n": 0,
+    "verified": 0
+   },
    "canon": {
-    "n": 3,
+    "n": 4,
     "verified": 0
    },
    "null": {
