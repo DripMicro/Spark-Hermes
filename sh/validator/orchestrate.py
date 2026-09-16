@@ -409,7 +409,7 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
     # Launching a second one would double the load on the engine (which refuses at that point) and race the
     # first on the same episode directories. If it is not running, launching is always safe — `batch` resumes
     # on its own episode records and re-runs nothing that finished.
-    already = _worker(cfg, f"pgrep -f 'batch --round {remote}' | wc -l").strip() not in ("", "0")
+    already = _worker(cfg, f"pgrep -f '[b]atch --round {remote}' | wc -l").strip() not in ("", "0")
     if already:
         log(rd, "evaluate_resume", note="batch already running on the worker; polling")
     else:
@@ -424,7 +424,7 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
     last_push = 0.0
     while True:
         time.sleep(45)
-        running = _worker(cfg, f"pgrep -f 'batch --round {remote}' | wc -l").strip()
+        running = _worker(cfg, f"pgrep -f '[b]atch --round {remote}' | wc -l").strip()
         prog = _progress(cfg, remote, total)
         if running == "0" or time.time() - last_push > 150:
             live(cfg, rd, "evaluate", progress=prog)
