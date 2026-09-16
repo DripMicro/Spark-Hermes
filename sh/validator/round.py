@@ -68,9 +68,20 @@ def reference_stats(episodes: list[dict], families: set[str], window: list[str],
 
 
 def close(
-    round_dir: Path, episodes_dir: Path, out: Path, *, reveal_dir: Path | None = None, era: str = "e0", params=PARAMS_V2
+    round_dir: Path,
+    episodes_dir: Path,
+    out: Path,
+    *,
+    reveal_dir: Path | None = None,
+    era: str = "e0",
+    params=PARAMS_V2,
+    window: list[str] | None = None,
 ) -> dict:
-    """Score the round and publish everything needed to check it."""
+    """Score the round and publish everything needed to check it.
+
+    `window` is the list of round ids whose episodes are pooled — for the reference arms *and* the miners. The
+    two must see the same window: a miner scored over eight rounds against a baseline measured on one would be
+    compared to the wrong denominator. The reveal and the commitment check cover only this round's tasks."""
     out.mkdir(parents=True, exist_ok=True)
     tasks = {p.stem: json.loads(p.read_text()) for p in sorted((round_dir / "tasks").glob("*.json"))}
     if not tasks:
@@ -79,12 +90,13 @@ def close(
     eps = load_episodes(episodes_dir)
     families = {t.get("family") for t in tasks.values() if t.get("family")}
 
-    records, refs = reference_stats(eps, families, [round_id], era)
+    window = window or [round_id]
+    records, refs = reference_stats(eps, families, window, era)
 
     miners: dict[str, MinerWindow] = {}
     for e in eps:
         surface = e.get("surface")
-        if surface in RESERVED_SURFACES or e.get("void"):
+        if surface in RESERVED_SURFACES or e.get("void") or e.get("round_id") not in window:
             continue
         miners.setdefault(surface, MinerWindow(surface)).episodes.append(e)
     scores = {h: score(m, refs, params) for h, m in miners.items()}
