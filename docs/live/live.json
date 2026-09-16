@@ -1,0 +1,21 @@
+{
+ "schema": "sh-live-v2",
+ "updated": 1789540619.83592,
+ "round_id": "r0001",
+ "stage": "mint",
+ "started": 1789540619.835445,
+ "phases": [
+  {
+   "stage": "start",
+   "t": 1789540619.835445
+  }
+ ],
+ "tasks": 0,
+ "active": {},
+ "rejected": {},
+ "progress": {},
+ "history": [],
+ "repo": "gittensor-model-hub/Spark-Hermes",
+ "branch": "sh/v2-pipeline",
+ "hf_repo": "gittensor-model-hub/spark-hermes-rounds"
+}
