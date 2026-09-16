@@ -4,230 +4,175 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spark-Hermes Live</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<style>
-  :root {
-    --bg: #f7f5f0; --panel: #fffdf9; --ink: #1c1a17; --muted: #6c675d; --line: #e6e1d6;
-    --accent: #b8471b; --good: #1f6f4f; --warn: #9a6a14; --bad: #a8302f; --crown: #c99a1e;
-    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-    --bg: #141310; --panel: #1c1a16; --ink: #ebe6dc; --muted: #9c968a; --line: #2c2924;
-    --accent: #e8763f; --good: #5fc493; --warn: #d9a441; --bad: #e06b6a; --crown: #e6b942; } }
-  :root[data-theme="dark"] {
-    --bg: #141310; --panel: #1c1a16; --ink: #ebe6dc; --muted: #9c968a; --line: #2c2924;
-    --accent: #e8763f; --good: #5fc493; --warn: #d9a441; --bad: #e06b6a; --crown: #e6b942; }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans);
-         padding-block: 2rem; padding-left: 20px; padding-right: 20px; max-width: 64rem; margin-inline: auto; }
-  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem 1.2rem; margin-bottom: 1.4rem; }
-  h1 { font-size: 1.35rem; margin: 0; letter-spacing: -.01em; }
-  .meta { color: var(--muted); font-family: var(--mono); font-size: .8rem; }
-  .pulse { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; background: var(--good);
-           margin-right: .4rem; vertical-align: middle; animation: pulse 2s ease-in-out infinite; }
-  .stale .pulse { background: var(--warn); animation: none; }
-  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
-  @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
-  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1rem 1.1rem; }
-  .panel h2 { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
-              margin: 0 0 .7rem; font-weight: 600; }
-  .stages { display: flex; flex-wrap: wrap; gap: .35rem; }
-  .stage { font-family: var(--mono); font-size: .78rem; padding: .25rem .55rem; border-radius: 4px;
-           border: 1px solid var(--line); color: var(--muted); }
-  .stage.done { color: var(--ink); border-color: var(--good); }
-  .stage.now { color: var(--bg); background: var(--accent); border-color: var(--accent); font-weight: 500; }
-  .bar { height: .6rem; background: var(--line); border-radius: 999px; overflow: hidden; margin: .5rem 0 .3rem; }
-  .bar > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .6s ease; }
-  .big { font-family: var(--mono); font-size: 1.6rem; font-weight: 500; letter-spacing: -.02em; }
-  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-  th, td { text-align: right; padding: .45rem .5rem; border-bottom: 1px solid var(--line); font-size: .9rem; }
-  th:first-child, td:first-child { text-align: left; }
-  th { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; }
-  .hk { font-family: var(--mono); font-size: .85rem; }
-  .tag { font-size: .68rem; padding: .1rem .4rem; border-radius: 3px; border: 1px solid var(--line);
-         color: var(--muted); margin-left: .4rem; vertical-align: middle; }
-  .tag.inc { border-color: var(--good); color: var(--good); }
-  .king { color: var(--crown); font-weight: 600; }
-  .zero { color: var(--muted); }
-  .wrap { overflow-x: auto; }
-  a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
-  .note { color: var(--muted); font-size: .82rem; margin: .6rem 0 0; }
-  .empty { color: var(--muted); font-style: italic; }
-  footer { margin-top: 2rem; color: var(--muted); font-size: .8rem; line-height: 1.6; }
-</style>
+<meta name="description" content="The current round of the Spark-Hermes strategy competition, stage by stage, and every round that has closed.">
+<link rel="stylesheet" href="../site.css">
 </head>
 <body>
-<header>
-  <h1>Spark-Hermes <span id="round" class="meta">—</span></h1>
-  <span id="status" class="meta"><span class="pulse"></span>connecting…</span>
-</header>
+<nav class="nav">
+  <a class="brand" href="../">Spark-Hermes</a>
+  <a href="./" aria-current="page">Live</a>
+  <a href="#rounds">Rounds</a>
+  <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/submissions/README.md">Submit</a>
+  <a id="nav-hf" href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Dataset</a>
+  <a id="nav-repo" href="https://github.com/gittensor-model-hub/Spark-Hermes">GitHub</a>
+</nav>
 
-<div class="grid">
+<main>
+  <div class="head">
+    <h1>Round <span id="round">—</span></h1>
+    <span id="status" class="muted small"><span class="pulse"></span>connecting…</span>
+  </div>
+
+  <div class="strip">
+    <div class="stat"><b id="stage-now">—</b><span>stage</span></div>
+    <div class="stat"><b id="episodes">0 / 0</b><span>episodes graded</span></div>
+    <div class="stat"><b id="nactive">0</b><span>strategies sealed</span></div>
+    <div class="stat"><b id="ntasks">0</b><span>instances</span></div>
+    <div class="stat"><b id="started">—</b><span>opened</span></div>
+  </div>
+
   <section class="panel">
-    <h2>Round</h2>
     <div class="stages" id="stages"></div>
-    <p class="note" id="timing"></p>
+    <div class="bar" style="margin-top:.8rem"><i id="bar"></i></div>
   </section>
+
   <section class="panel">
-    <h2>Evaluation</h2>
-    <div class="big" id="episodes">0 / 0</div>
-    <div class="bar"><i id="bar"></i></div>
-    <p class="note" id="evalnote">episodes graded on the validator's GPU, inside the sealed sandbox</p>
+    <h2 id="board-title">Board <small id="board-sub"></small></h2>
+    <div class="wrap"><table>
+      <thead id="board-head"></thead>
+      <tbody id="board"><tr><td class="empty" colspan="8">waiting for the seal</td></tr></tbody>
+    </table></div>
   </section>
-  <section class="panel">
-    <h2>Sealed this round</h2>
-    <div class="big" id="nactive">0</div>
-    <p class="note">bundles, by PR head SHA and digest, fixed <em>before</em> evaluation</p>
+
+  <section class="panel" id="rounds">
+    <h2>Closed rounds</h2>
+    <div class="wrap"><table>
+      <thead><tr><th class="l">round</th><th class="l">king</th><th class="l">weights</th><th>episodes</th><th>SFT</th><th>DPO</th><th class="l">commitments</th><th>closed</th></tr></thead>
+      <tbody id="history"><tr><td class="empty" colspan="8">none yet</td></tr></tbody>
+    </table></div>
   </section>
-</div>
+</main>
 
-<section class="panel" style="margin-top:1rem">
-  <h2 id="standings-title">Standings</h2>
-  <div class="wrap"><table>
-    <thead id="standings-head"><tr><th>hotkey</th><th>verified</th><th>rate</th><th>vs baseline</th></tr></thead>
-    <tbody id="standings"><tr><td colspan="6" class="empty">no episodes yet</td></tr></tbody>
-  </table></div>
-  <p class="note" id="standings-note"></p>
-</section>
-
-<section class="panel" style="margin-top:1rem">
-  <h2>Surfaces</h2>
-  <div class="wrap"><table>
-    <thead><tr><th>surface</th><th>episodes</th><th>verified</th><th>rate</th><th>source</th></tr></thead>
-    <tbody id="surfaces"><tr><td colspan="5" class="empty">waiting for the seal</td></tr></tbody>
-  </table></div>
-  <p class="note"><code>null</code> is the pinned model with no strategy — the baseline every miner is measured against on the same instances. <code>canon</code> is the family's own published strategy, the yardstick.</p>
-</section>
-
-<section class="panel" style="margin-top:1rem">
-  <h2>Closed rounds</h2>
-  <div class="wrap"><table>
-    <thead><tr><th>round</th><th>king</th><th>weights</th><th>episodes</th><th>SFT</th><th>DPO</th><th>commitments</th><th>closed</th></tr></thead>
-    <tbody id="history"><tr><td colspan="8" class="empty">no round has closed yet</td></tr></tbody>
-  </table></div>
-</section>
-
-<footer>
-  Every number here is recomputable from published artefacts: each round's tasks and seal appear under
-  <code>rounds/&lt;id&gt;/</code> when it opens, and its <code>close.json</code>, <code>reveal.json</code>
-  (every withheld half and salt), scorecards and leaderboard when it closes. This page polls
-  <code>live.json</code>, which the validator rewrites at every stage. Strategies are pull requests against
-  <code>submissions/</code>; the crowned one is merged, the rest are closed with the round.
-  <span id="links"></span>
+<footer class="foot">
+  <span>Artefacts: <a id="link-rounds" href="https://github.com/gittensor-model-hub/Spark-Hermes/tree/sh/v2-pipeline/rounds">rounds/</a></span>
+  <span>Source: <a href="live.json">live.json</a>, rewritten by the validator at every stage</span>
 </footer>
 
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
   const STAGES = ["mint", "seal", "publish_open", "evaluate", "close", "announce", "export", "publish_close", "done"];
-  const LABELS = { mint: "mint", seal: "seal", publish_open: "publish", evaluate: "evaluate", close: "score",
-                   announce: "crown", export: "export", publish_close: "publish close", done: "done" };
-  const fmtT = (t) => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  const ago = (t) => { const s = Math.max(0, (Date.now() / 1000) - t);
-    return s < 90 ? Math.round(s) + "s ago" : s < 5400 ? Math.round(s / 60) + " min ago" : Math.round(s / 3600) + " h ago"; };
+  const LABEL = { mint: "mint", seal: "seal", publish_open: "publish", evaluate: "evaluate", close: "score",
+                  announce: "crown", export: "export", publish_close: "publish", done: "done" };
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const clock = (t) => new Date(t * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const ago = (t) => { const s = Math.max(0, Date.now() / 1000 - t);
+    return s < 90 ? Math.round(s) + " s ago" : s < 5400 ? Math.round(s / 60) + " min ago" : Math.round(s / 3600) + " h ago"; };
+  const pct = (x) => x == null ? "—" : Math.round(100 * x) + "%";
+  const signed = (x, d, unit) => x == null ? "—" : (x > 0 ? "+" : "") + x.toFixed(d) + (unit || "");
+  const cls = (x) => x == null || x === 0 ? "zero" : x > 0 ? "pos" : "neg";
+  const th = (label, title, left) => "<th" + (left ? ' class="l"' : "") + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + "</th>";
+  const pr = (live, n) => '<a href="https://github.com/' + esc(live.repo) + "/pull/" + n + '">#' + n + "</a>";
+
+  function surfaceCell(live, s) {
+    const info = (live.active || {})[s];
+    let tag = "";
+    if (s === "null") tag = '<span class="tag">baseline</span>';
+    else if (s === "canon") tag = '<span class="tag">canon</span>';
+    else if (info && info.incumbent) tag = '<span class="tag king">king</span>';
+    else if (info && info.pr) tag = '<span class="tag">' + pr(live, info.pr) + "</span>";
+    return '<td class="l"><span class="hk">' + esc(s) + "</span>" + tag + "</td>";
+  }
+
+  function board(live) {
+    const by = (live.progress || {}).by_surface || {};
+    const active = live.active || {};
+    const sc = live.scores;
+    const miners = Object.keys(active);
+    const nullR = by["null"] || { n: 0, verified: 0 };
+    const nullRate = nullR.n ? nullR.verified / nullR.n : null;
+    const rate = (s) => { const r = by[s]; return r && r.n ? r.verified / r.n : null; };
+
+    if (sc && sc.per_hotkey) {
+      const fs = Object.values(sc.family_stats || {})[0] || {};
+      $("board-title").firstChild.textContent = "Final scores ";
+      $("board-sub").textContent = "baseline " + pct(fs.null_p) + " · canon " + pct(fs.canon_p);
+      $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("episodes") + th("rate", "verified episodes over episodes run") +
+        th("Δ vs baseline", "mean of (miner pass − baseline pass) per instance") +
+        th("Δc", "one-sided 90% lower bound of Δ vs baseline — what is paid") + th("score") + th("weight") + "</tr>";
+      const refs = ["null", "canon"].map((s) => "<tr class='ref'>" + surfaceCell(live, s) + "<td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
+        pct(s === "null" ? fs.null_p : fs.canon_p) + "</td><td colspan='4'></td></tr>");
+      const ranked = miners.filter((h) => sc.per_hotkey[h]).sort((a, b) => (sc.weights[b] || 0) - (sc.weights[a] || 0) || (sc.per_hotkey[b].score || 0) - (sc.per_hotkey[a].score || 0));
+      const rows = ranked.map((h) => {
+        const s = sc.per_hotkey[h], w = sc.weights[h] || 0;
+        const crown = h === sc.king ? ' <span class="crown" title="crowned">👑</span>' : "";
+        const why = w === 0 && s.reason ? '<span class="why">' + esc(s.reason) + "</span>" : "";
+        return "<tr>" + surfaceCell(live, h).replace("</td>", crown + why + "</td>") + "<td>" + s.n + "</td><td>" + pct(rate(h)) + "</td>" +
+          "<td class='" + cls(s.mean_d) + "'>" + signed(s.mean_d, 3) + "</td><td>" + (s.delta_c || 0).toFixed(3) + "</td>" +
+          "<td>" + (s.score || 0).toFixed(4) + "</td><td class='" + (w ? "" : "zero") + "'>" + w.toFixed(3) + "</td></tr>";
+      });
+      $("board").innerHTML = refs.join("") + (rows.join("") || '<tr><td class="empty" colspan="7">no strategies were sealed</td></tr>');
+      return;
+    }
+
+    $("board-title").firstChild.textContent = "Board ";
+    $("board-sub").textContent = live.stage === "evaluate" ? "provisional — scored at close, over all instances" : "";
+    $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("episodes") + th("verified") + th("rate") +
+      th("vs baseline", "pass rate so far minus the baseline's pass rate so far") + "</tr>";
+    const order = ["null", "canon", ...miners.sort((a, b) => (rate(b) ?? -1) - (rate(a) ?? -1) || a.localeCompare(b))];
+    $("board").innerHTML = order.map((s) => {
+      const r = by[s] || { n: 0, verified: 0 }, p = rate(s);
+      const d = s === "null" || s === "canon" || p == null || nullRate == null ? null : p - nullRate;
+      return "<tr" + (s === "null" || s === "canon" ? " class='ref'" : "") + ">" + surfaceCell(live, s) + "<td>" + r.n + "</td><td>" + r.verified +
+        "</td><td>" + pct(p) + "</td><td class='" + cls(d) + "'>" + (s === "null" || s === "canon" ? "" : signed(d == null ? null : 100 * d, 0, " pts")) + "</td></tr>";
+    }).join("");
+  }
 
   function render(live) {
-    const stale = (Date.now() / 1000 - live.updated) > 900;
+    const stale = Date.now() / 1000 - live.updated > 900;
     document.body.classList.toggle("stale", stale);
-    $("round").textContent = live.round_id;
-    $("status").innerHTML = '<span class="pulse"></span>' + esc(live.stage) + " · updated " + ago(live.updated);
+    const king = live.scores && live.scores.king;
+    $("round").textContent = live.round_id + (king ? " · 👑 " + king : "");
+    $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale · " : "") + "updated " + ago(live.updated);
+    $("stage-now").textContent = LABEL[live.stage] || live.stage;
 
     const reached = new Set((live.phases || []).map((p) => p.stage));
     const nowIdx = STAGES.indexOf(live.stage);
-    $("stages").innerHTML = STAGES.map((s, i) => {
-      const cls = s === live.stage ? "now" : (reached.has(s) || i < nowIdx) ? "done" : "";
-      return '<span class="stage ' + cls + '">' + esc(LABELS[s]) + "</span>";
-    }).join("");
-    $("timing").textContent = "started " + fmtT(live.started) + " · " + live.tasks + " sealed instances";
+    $("stages").innerHTML = STAGES.map((s, i) =>
+      '<span class="stage ' + (s === live.stage ? "now" : reached.has(s) || i < nowIdx ? "done" : "") + '">' + LABEL[s] + "</span>").join("");
 
-    const p = live.progress || {}; const done = p.done || 0, total = p.total || 0;
+    const p = live.progress || {}, done = p.done || 0, total = p.total || 0;
     $("episodes").textContent = done + " / " + total;
     $("bar").style.width = (total ? Math.round(100 * done / total) : 0) + "%";
-    if (live.stage !== "evaluate" && total && done >= total) $("evalnote").textContent = "evaluation complete";
+    $("nactive").textContent = Object.keys(live.active || {}).length;
+    $("ntasks").textContent = live.tasks || 0;
+    $("started").textContent = clock(live.started);
 
-    const active = live.active || {};
-    $("nactive").textContent = Object.keys(active).length;
-    const by = p.by_surface || {};
-    const rows = ["null", "canon", ...Object.keys(active).sort()];
-    $("surfaces").innerHTML = rows.length ? rows.map((s) => {
-      const r = by[s] || { n: 0, verified: 0 };
-      const info = active[s];
-      const src = s === "null" ? "baseline" : s === "canon" ? "family canon"
-        : info && info.pr ? '<a href="https://github.com/' + esc(live.repo) + '/pull/' + info.pr + '">#' + info.pr + "</a>"
-        : "incumbent";
-      const tag = info ? (info.incumbent ? '<span class="tag inc">king</span>' : '<span class="tag">challenger</span>') : "";
-      const rate = r.n ? (100 * r.verified / r.n).toFixed(0) + "%" : "—";
-      return "<tr><td><span class='hk'>" + esc(s) + "</span>" + tag + "</td><td>" + r.n + "</td><td>" + r.verified +
-             "</td><td>" + rate + "</td><td>" + src + "</td></tr>";
-    }).join("") : '<tr><td colspan="5" class="empty">waiting for the seal</td></tr>';
-
-    // Standings: provisional pass rates against the baseline while the round runs; the real scores once it
-    // has closed. The two are deliberately different tables — a mid-round rate is not a score.
-    const miners = Object.keys(active).sort();
-    if (live.scores && live.scores.per_hotkey) {
-      const sc = live.scores;
-      $("standings-title").textContent = "Scores — final";
-      $("standings-head").innerHTML = "<tr><th>hotkey</th><th>episodes</th><th>mean d</th><th>Δc (paid)</th><th>score</th><th>weight</th></tr>";
-      const ranked = Object.entries(sc.per_hotkey).sort((a, b) => (sc.weights[b[0]] || 0) - (sc.weights[a[0]] || 0));
-      $("standings").innerHTML = ranked.map(([h, s]) => {
-        const w = sc.weights[h] || 0;
-        const crown = h === sc.king ? " <span class='king'>👑</span>" : "";
-        const why = s.reason ? "<div class='note' style='margin:0'>" + esc(s.reason) + "</div>" : "";
-        return "<tr><td><span class='hk'>" + esc(h) + "</span>" + crown + why + "</td><td>" + s.n + "</td>" +
-          "<td>" + (s.mean_d == null ? "—" : (s.mean_d >= 0 ? "+" : "") + s.mean_d.toFixed(3)) + "</td>" +
-          "<td>" + (s.delta_c || 0).toFixed(3) + "</td><td>" + (s.score || 0).toFixed(4) + "</td>" +
-          "<td class='" + (w ? "" : "zero") + "'>" + w.toFixed(3) + "</td></tr>";
-      }).join("") || '<tr><td colspan="6" class="empty">no miners were sealed</td></tr>';
-      const fs = Object.values(sc.family_stats || {})[0];
-      $("standings-note").textContent = "mean d is the miner's pass rate minus the baseline's on the same instances" +
-        (fs ? " (baseline " + (fs.null_p == null ? "—" : (100 * fs.null_p).toFixed(0) + "%") + ", canon " +
-              (fs.canon_p == null ? "—" : (100 * fs.canon_p).toFixed(0) + "%") + ")" : "") +
-        "; Δc is its one-sided 90 % lower bound and is what pays. A miner at the baseline earns nothing.";
-      if (sc.king) $("round").textContent = live.round_id + " · 👑 " + sc.king;
-    } else {
-      const nullR = by["null"] || { n: 0, verified: 0 };
-      const nullRate = nullR.n ? nullR.verified / nullR.n : null;
-      $("standings-title").textContent = "Standings — provisional";
-      $("standings-head").innerHTML = "<tr><th>hotkey</th><th>verified</th><th>rate</th><th>vs baseline</th></tr>";
-      $("standings").innerHTML = miners.length ? miners.map((h) => {
-        const r = by[h] || { n: 0, verified: 0 };
-        const rate = r.n ? r.verified / r.n : null;
-        const d = (rate != null && nullRate != null) ? rate - nullRate : null;
-        return "<tr><td><span class='hk'>" + esc(h) + "</span></td><td>" + r.verified + " / " + r.n + "</td>" +
-          "<td>" + (rate == null ? "—" : (100 * rate).toFixed(0) + "%") + "</td>" +
-          "<td class='" + (d == null ? "zero" : "") + "'>" + (d == null ? "—" : (d >= 0 ? "+" : "") + (100 * d).toFixed(0) + " pts") + "</td></tr>";
-      }).join("") : '<tr><td colspan="4" class="empty">no episodes yet</td></tr>';
-      $("standings-note").textContent = "Pass rates so far against the baseline's rate so far (" +
-        (nullRate == null ? "—" : (100 * nullRate).toFixed(0) + "%") + "). Not a score: instances land in " +
-        "different orders for different surfaces, and the score is computed once, at close, over all of them " +
-        "with its uncertainty.";
-    }
+    board(live);
 
     const hist = (live.history || []).slice().reverse();
     $("history").innerHTML = hist.length ? hist.map((h) => {
       const w = Object.entries(h.weights || {}).sort((a, b) => b[1] - a[1])
         .map(([k, v]) => "<span class='hk" + (v === 0 ? " zero" : "") + "'>" + esc(k) + " " + v.toFixed(2) + "</span>").join("<br>");
-      return "<tr><td><a href='../../rounds/" + esc(h.round_id) + "/index.html'>" + esc(h.round_id) + "</a></td>" +
-        "<td class='king'>" + (h.king ? "👑 " + esc(h.king) : "<span class='zero'>none</span>") + "</td>" +
-        "<td>" + (w || "—") + "</td><td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
-        "<td>" + (h.commitments_ok ? "<span style='color:var(--good)'>verified</span>" : "<span style='color:var(--bad)'>MISMATCH</span>") + "</td>" +
-        "<td>" + fmtT(h.closed_at) + "</td></tr>";
-    }).join("") : '<tr><td colspan="8" class="empty">no round has closed yet</td></tr>';
+      return "<tr><td class='l'><a href='../rounds/" + esc(h.round_id) + "/'>" + esc(h.round_id) + "</a></td>" +
+        "<td class='l'>" + (h.king ? "<span class='crown'>👑</span> <span class='hk'>" + esc(h.king) + "</span>" : "<span class='zero'>none</span>") + "</td>" +
+        "<td class='l'>" + (w || "—") + "</td><td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
+        "<td class='l'>" + (h.commitments_ok ? "<span class='pos'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td>" +
+        "<td>" + clock(h.closed_at) + "</td></tr>";
+    }).join("") : '<tr><td class="empty" colspan="8">none yet</td></tr>';
 
-    $("links").innerHTML = ' Repository: <a href="https://github.com/' + esc(live.repo) + '/tree/' + esc(live.branch) +
-      '/rounds">rounds/</a> · training data: <a href="https://huggingface.co/datasets/' + esc(live.hf_repo) + '">' + esc(live.hf_repo) + "</a>.";
+    if (live.repo) $("nav-repo").href = "https://github.com/" + live.repo;
+    if (live.hf_repo) $("nav-hf").href = "https://huggingface.co/datasets/" + live.hf_repo;
+    if (live.repo && live.branch) $("link-rounds").href = "https://github.com/" + live.repo + "/tree/" + live.branch + "/rounds";
   }
 
   async function tick() {
     try {
       const r = await fetch("live.json?t=" + Date.now(), { cache: "no-store" });
       if (r.ok) render(await r.json());
-      else $("status").innerHTML = '<span class="pulse"></span>live.json ' + r.status;
+      else $("status").innerHTML = '<span class="pulse bad"></span>live.json ' + r.status;
     } catch (e) {
-      $("status").innerHTML = '<span class="pulse"></span>unreachable';
+      $("status").innerHTML = '<span class="pulse bad"></span>unreachable';
     }
   }
   tick();
