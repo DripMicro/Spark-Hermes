@@ -266,11 +266,11 @@ def publish_round(cfg: Config, rd: Path) -> None:
         for name in ("Dockerfile", "TAG", "SOURCE.json"):
             if (ctx / name).exists():
                 shutil.copy(ctx / name, pub / name)
-    queue_index = _read(cfg.queue / "index.json", {"ready": []})
+    # The daemon rewrites its index only after its next mint, so drop the round just taken and anything not READY.
+    waiting = set(queue_ready(cfg)) - {round_id}
+    ready = [r for r in _read(cfg.queue / "index.json", {"ready": []}).get("ready", []) if r["round_id"] in waiting]
     (cfg.repo / "rounds" / "queue.json").write_text(
-        json.dumps(
-            {"schema": "sh-queue-v1", "published_at": time.time(), "ready": queue_index.get("ready", [])}, indent=1
-        )
+        json.dumps({"schema": "sh-queue-v1", "published_at": time.time(), "ready": ready}, indent=1)
     )
     live(cfg, rd, "window", progress={}, submissions=0, push=False)
     _commit(
