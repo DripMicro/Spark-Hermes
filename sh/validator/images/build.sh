@@ -4,6 +4,7 @@ set -eu
 COMMIT="${HERMES_COMMIT:?set HERMES_COMMIT}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 cp -r "$HERE/../runner" "$HERE/hermes-base/runner"
+cp -r "$HERE/../../predicates" "$HERE/hermes-base/runner/predicates"  # the runner imports the same predicates the validator grades with
 docker build --build-arg HERMES_COMMIT="$COMMIT" -t "hermes-base:${COMMIT}" -t hermes-base:pin "$HERE/hermes-base"
 rm -rf "$HERE/hermes-base/runner"
 docker image inspect hermes-base:pin --format 'hermes-base id={{.Id}}'

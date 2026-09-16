@@ -274,3 +274,109 @@ requires and is not evidence of anything. The earlier "prose costs calls" findin
 
 NULL moving 2/3 → 1/3 is n = 3 noise, not a finding. Neither round can score a miner: three window episodes is
 below the 8-episode minimum, and both closes correctly paid zero with the reason recorded.
+
+
+## Round r2 — the PR flow, end to end, with a crown (2026-09-16)
+
+The two bundles submitted in PRs #95 and #96, evaluated exactly as submitted (extracted from the PR branches,
+digests `4c490c10…` and `e26dcd4b…`), against all 12 sealed family-#2 instances at temperature 0.7. 48 episodes,
+3/3 commitments re-verified, 39 SFT rows, 5 DPO pairs, leak scan clean.
+
+| surface | verified | api_calls median |
+|---|---|---|
+| NULL | 7/12 | 8 |
+| CANON | 11/12 | 9 |
+| `5FGoodOperator` (PR #95) | **12/12** | 10 |
+| `5FHastyRunner` (PR #96) | 9/12 | 6 |
+
+| hotkey | mean d | se | Δc (paid) | gate | Δe api | score | weight |
+|---|---|---|---|---|---|---|---|
+| `5FGoodOperator` | +0.417 | 0.142 | **+0.234** | yes | −0.58 | **0.0645** | **1.0** |
+| `5FHastyRunner` | +0.167 | 0.193 | 0.000 | yes | −0.13 | 0 | 0 |
+
+**The scorer did what it is for.** Both miners beat the baseline on average; only one is *paid*, because only
+one clears the one-sided bound. `5FHastyRunner` at +0.167 with se 0.193 is indistinguishable from luck on 12
+episodes and earns nothing — the leaderboard says so and why. `5FGoodOperator` at +0.417 clears it comfortably.
+The crown (`sh:round:crown`) went to #95.
+
+**Two readings that matter beyond this round.**
+
+*The effect that failed to appear in the screen appeared here.* CANON 11/12 against NULL 7/12 is a 33-point gap
+on the same twelve instances, where the 48-per-arm screen measured 6 points. That is n = 12 against n = 48 and
+the same instances resampled, so it is most likely the screen's number that is right and this one that is a
+favourable draw — but it also says the family's per-round variance is large, which is its own problem for a
+3-hour cadence.
+
+*The efficiency penalty is again large and again on the winner.* `5FGoodOperator`'s Δe is −0.58: the strategy
+that took 12/12 spends ten calls where the baseline spends eight, and its score of 0.0645 would have been
+~0.19 on Δc alone. The efficiency term took two-thirds of its pay for being careful. Same finding, third
+measurement, still open.
+
+
+## Probe round 3 — horizon is not the axis either, as designed (2026-09-16)
+
+| shape | solved | calls | wall s |
+|---|---|---|---|
+| `cascade_8` | 3/3 | 4, 4, 4 | 40–44 |
+| `cascade_15` | 3/3 | 4, 4, 4 | 45–61 |
+| `cascade_25` | 3/3 | 4, 5, 4 | 53–61 |
+| `stateful_ops` | 3/3 | 4, 5, 5 | 42–45 |
+
+**Every shape, every run, in 4–5 calls — and the call count does not move with depth.** Twenty-five bugs cost the
+same four calls as eight. That is not a model sustaining a 25-iteration loop; it is a model reading `helpers.py`,
+seeing every bug at once, and rewriting the file. The runner reveals one failure at a time, but the *source*
+reveals all of them, and the source is right there.
+
+`stateful_ops` is the same story: `bin/ops` is readable Python. The agent reads it, derives the eleven-step
+sequence from the preconditions in the code, and runs it in one command. The "hidden" preconditions were hidden
+from someone who does not read source, and this model reads source.
+
+**So the long-horizon hypothesis was tested and did not hold — but as designed, both shapes let the model
+short-circuit the loop through readable source.** That is my authoring error, the same species as the
+over-specified predicate and the header-inviting prompt: the probe measured something other than what it was
+named for. The honest reading of sixteen shapes is now: *this model reads code well and plans from it well, and
+prose has no room to improve either.*
+
+One axis genuinely remains untested: tasks where the information **cannot** be read, only discovered by acting.
+`stateful_ops` re-run with `bin/ops` shipped as bytecode (`-OO`, docstrings stripped) is the cheap version — the
+refusal messages survive, the logic does not, so the only way to learn an operation's preconditions is to try
+it. If the model still solves that in five calls, it is reading error messages and adapting fast, which is a
+capability prose cannot add to, and the conclusion holds. If it struggles, that is family #3.
+
+
+## The opaque variant: headroom found (2026-09-16)
+
+Same tool, same eleven operations, same predicates. The only change: `bin/ops` shipped as bytecode instead of
+source, so the preconditions cannot be read — only discovered by trying an operation and reading its refusal.
+
+| variant | solved | calls | wall s |
+|---|---|---|---|
+| `stateful_ops` (readable source) | 3/3 | **4, 5, 5** | 42–45 |
+| `stateful_ops_opaque` (bytecode) | **4/4** *(3/4 before a predicate fix, see below)* | **14, 15, 19, 16** | 62–74 |
+
+**The agent did not decompile and did not run `strings` — it explored.** Every run opens with `status`, then
+probes for `help`, then walks the state machine one refusal at a time: `init`, `lint`, `test`, `build`,
+`deploy`… One run tried `deploy us-east` and was told the regions are `eu, us, ap`. That is the behaviour the
+shape was built to measure, and the readable version never elicited it because the source made it unnecessary.
+
+Three things this changes:
+
+  * **Calls went 4–5 → 13–19 for the same work.** That is 3–4× on the efficiency axis, on a shape the baseline
+    can still mostly solve. It is the first shape since `server_lifecycle` with real headroom, and cleaner:
+    no pid, no timing, no process semantics — a deterministic tool and a plan that has to be discovered.
+  * **The one "failure" was mine, not the model's.** Run 03 reached `live` — its history ends in `promote`,
+    its status says live — and was failed by `digest_is .ops/history`, because it had also run `test --all` on
+    the way, which the tool accepted and logged. An exact-transcript predicate measures the reference's path, not
+    the requirement: the `git_state` lesson a third time. Replaced with the *ordering* the tool enforces plus a
+    single `promote`. So on correctness the opaque variant is **4/4**; the headroom is efficiency, 3–4×.
+  * **The fix is sayable.** "When a tool refuses, do exactly what the refusal names, then retry the thing you
+    were doing. Keep the plan you are building. Do not guess arguments; ask the tool." That is a paragraph, it
+    is exactly what the failed run did not do, and it would plausibly halve the call count. A prose
+    discriminator wants precisely this: an agent-runtime discipline that the model lacks by default and that
+    instructions can supply.
+
+**The conclusion I drew after round 3 was too strong.** Sixteen readable shapes said "this model reads code and
+plans from it, and prose has no room." True — for readable shapes. The one variable that mattered was whether
+the solution was *in the workspace to be read* or had to be *discovered by acting*. Every family and probe so
+far put it in the workspace. That, not horizon and not difficulty, is the axis: **opacity**. Family #3 should
+be authored on it, and family #2 might be salvageable on the same principle.

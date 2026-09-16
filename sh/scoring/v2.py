@@ -202,20 +202,3 @@ def weights(scores: dict) -> dict:
     if total <= 0:
         return {h: 0.0 for h in scores}
     return {h: max(0.0, v) / total for h, v in scores.items()}
-
-
-def references_from_stats(family_stats: dict, requires_self_check: dict | None = None) -> dict:
-    """Build the scoring references from `FamilyStats` records, keyed by family."""
-    out = {}
-    for family, record in family_stats.items():
-        null = record["null"]
-        medians = {m: v["median"] for m, v in (null.get("efficiency") or {}).items()}
-        out[family] = FamilyReference(
-            family=family,
-            n=null["n"],
-            successes=null["successes"],
-            medians=medians,
-            samples=(record.get("null_samples") or {}),
-            requires_self_check=bool((requires_self_check or {}).get(family)),
-        )
-    return out

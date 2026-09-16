@@ -140,7 +140,9 @@ def log(rd: Path, stage: str, **fields) -> None:
 def _commit(cfg: Config, message: str, paths: tuple[str, ...] = ("rounds", "docs/live", "docs/rounds")) -> None:
     sh(["git", "add", *paths], cwd=cfg.repo)
     if sh(["git", "status", "--porcelain", *paths], cwd=cfg.repo).strip():
-        sh(["git", "commit", "-q", "-m", message, "--", *paths], cwd=cfg.repo)  # only these paths, whatever else is staged
+        sh(
+            ["git", "commit", "-q", "-m", message, "--", *paths], cwd=cfg.repo
+        )  # only these paths, whatever else is staged
         sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)
         sh(["git", "push", "-q", "origin", BRANCH], cwd=cfg.repo)
 
@@ -165,7 +167,7 @@ def live(cfg: Config, rd: Path, stage: str, *, progress: dict | None = None, pus
         weights = closed.get("weights", {})
         scores = {
             "weights": weights,
-            "king": max(weights, key=weights.get) if weights and max(weights.values()) > 0 else None,
+            "king": max(weights, key=lambda h: weights[h]) if weights and max(weights.values()) > 0 else None,
             "per_hotkey": {
                 h: {
                     k: s.get(k)
@@ -438,7 +440,7 @@ def outcome(sealed: dict, weights: dict) -> dict:
     """What happens to each PR the seal named: the top weight's PR is merged, every other challenger's is
     closed. Pure, so it is testable. Only PRs the seal named are ever touched — a maintenance PR is never in
     the seal, so it is never closed by the round."""
-    king = max(weights, key=weights.get) if weights and max(weights.values()) > 0 else None
+    king = max(weights, key=lambda h: weights[h]) if weights and max(weights.values()) > 0 else None
     king_pr = sealed["active"].get(king, {}).get("pr") if king else None
     close_prs = sorted(
         {info["pr"] for h, info in sealed["active"].items() if info.get("pr") and h != king}

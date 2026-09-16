@@ -19,7 +19,9 @@ import subprocess
 import sys
 import tarfile
 import time
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from sh.validator.proxy import Tokens
 
@@ -81,7 +83,7 @@ def run_episode(
     *,
     token: str = "none",
     network: str = "host",
-    extra_add_hosts: list[str] = (),
+    extra_add_hosts: Sequence[str] = (),
     timeout_s: int | None = None,
     mem_mb: int = 4096,
     cpus: float = 2.0,
@@ -208,7 +210,9 @@ def run_episode(
         (out / "net.json").write_text(json.dumps({"network": network, "ip": ip or None, "dropped_packets": drops}))
         if usage_dir and (usage_dir / f"{ep}.jsonl").exists():  # the proxy's per-call usage, independent of the agent
             shutil.move(usage_dir / f"{ep}.jsonl", out / "proxy_usage.jsonl")
-    finish = json.loads((out / "finish.json").read_text()) if (out / "finish.json").exists() else {"stage": "no_finish"}
+    finish: dict[str, Any] = (
+        json.loads((out / "finish.json").read_text()) if (out / "finish.json").exists() else {"stage": "no_finish"}
+    )
     finish["timed_out"] = timed_out
     finish["host_wall_s"] = round(time.time() - t0, 1)
     finish["episode"] = ep

@@ -92,7 +92,7 @@ def make_handler(upstream: str, tokens: Tokens, usage_dir: Path, sampling: dict)
     class H(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
 
-        def log_message(self, *a):  # quiet
+        def log_message(self, format: str, *args: object) -> None:  # quiet
             pass
 
         def _deny(self, code: int, msg: str):

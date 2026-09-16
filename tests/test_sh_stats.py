@@ -88,16 +88,30 @@ def test_stats_recompute_identically_from_the_archive(tmp_path):
     assert live == archived
 
 
-def test_the_wilson_interval_agrees_with_the_one_it_replaces():
-    """`sh/` is standalone — this keeps the inlined copy honest against the implementation it came from."""
-    from hermesbench.repeats import wilson as legacy
+def test_the_wilson_interval_matches_its_golden_values():
+    """Frozen from the implementation `sh/` inlined when it became standalone, which had been checked against the
+    original; a drift here changes every label and admission verdict, so it must be deliberate."""
     from sh.validator.stats import wilson
 
-    for n in (1, 8, 16, 100):
-        for k in (0, 1, n // 2, n):
-            low, high = wilson(k, n)
-            ref = legacy(k, n)
-            assert abs(low - max(0.0, ref.low)) < 1e-9 and abs(high - min(1.0, ref.high)) < 1e-9, (k, n)
+    golden = {
+        (0, 1): (0.0, 0.793451),
+        (1, 1): (0.206549, 1.0),
+        (0, 8): (0.0, 0.324408),
+        (1, 8): (0.022417, 0.470888),
+        (4, 8): (0.215216, 0.784784),
+        (8, 8): (0.675592, 1.0),
+        (0, 16): (0.0, 0.193608),
+        (1, 16): (0.011119, 0.283287),
+        (8, 16): (0.279996, 0.720004),
+        (16, 16): (0.806392, 1.0),
+        (0, 100): (0.0, 0.036993),
+        (1, 100): (0.001767, 0.054486),
+        (50, 100): (0.403832, 0.596168),
+        (100, 100): (0.963007, 1.0),
+    }
+    for (k, n), (low, high) in golden.items():
+        got = wilson(k, n)
+        assert abs(got[0] - low) < 1e-6 and abs(got[1] - high) < 1e-6, (k, n, got)
 
 
 def _paired(null_calls: dict[str, int], canon_calls: dict[str, int]) -> list[dict]:

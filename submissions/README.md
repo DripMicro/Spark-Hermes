@@ -29,6 +29,6 @@ over. One submission directory per pull request.
 2. **Evaluation** happens on the validator, not here. Your bundle runs as a *surface* against the round's sealed
    instances, through the same runner, sandbox and grader as the NULL and CANON reference arms.
 3. **Scoring** compares you to the baseline on the same instances — passing a task is not the achievement,
-   beating the pinned model without your prose is. See `docs/` for the scoring definition.
+   beating the pinned model without your prose is. The definition is `sh/scoring/v2.py`; what it runs against is `docs/pins.md`.
 4. **The scorecard** is posted back to your PR when the round closes, together with the revealed withheld half
    so you can check the grading yourself.

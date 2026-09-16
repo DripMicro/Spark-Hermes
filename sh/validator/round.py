@@ -96,7 +96,12 @@ def close(
     miners: dict[str, MinerWindow] = {}
     for e in eps:
         surface = e.get("surface")
-        if surface in RESERVED_SURFACES or e.get("void") or e.get("round_id") not in window:
+        if (
+            not isinstance(surface, str)
+            or surface in RESERVED_SURFACES
+            or e.get("void")
+            or e.get("round_id") not in window
+        ):
             continue
         miners.setdefault(surface, MinerWindow(surface)).episodes.append(e)
     scores = {h: score(m, refs, params) for h, m in miners.items()}

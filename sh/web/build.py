@@ -42,7 +42,9 @@ def render(close: dict, meta: dict | None = None) -> str:
     rid = str(close.get("round_id", ""))
     repo, branch = meta.get("repo", DEFAULT_REPO), meta.get("branch", DEFAULT_BRANCH)
     weights = close.get("weights", {})
-    king = meta.get("king") or (max(weights, key=weights.get) if weights and max(weights.values()) > 0 else None)
+    king = meta.get("king") or (
+        max(weights, key=lambda h: weights[h]) if weights and max(weights.values()) > 0 else None
+    )
     tree = f"https://github.com/{repo}/tree/{branch}/rounds/{rid}"
     blob = f"https://github.com/{repo}/blob/{branch}/rounds/{rid}"
 

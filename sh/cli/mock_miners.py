@@ -20,6 +20,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Collection
 from pathlib import Path
 
 from sh.cli.lint import check
@@ -65,7 +66,7 @@ def _open_hotkeys(repo: str, base: str) -> dict[str, int]:
     return out
 
 
-def open_prs(miners: Path, repo: str, base: str, checkout: Path, *, skip: set[str] = frozenset()) -> dict:
+def open_prs(miners: Path, repo: str, base: str, checkout: Path, *, skip: Collection[str] = ()) -> dict:
     """One PR per miner directory that does not already have an open one. Returns {hotkey: pr_number}."""
     existing = _open_hotkeys(repo, base)
     _run(["git", "fetch", "-q", "origin", base], cwd=checkout)

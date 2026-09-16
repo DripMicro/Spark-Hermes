@@ -111,11 +111,12 @@ def _one(
     if op == "file_absent":
         raw = workspace / a[0]
         return not raw.exists() and not raw.is_symlink()
-    data = None
+    data = b""
     if OPS[op][0][0] == "path":
-        data = _bytes(workspace, a[0])
-        if data is None:
+        loaded = _bytes(workspace, a[0])
+        if loaded is None:
             return False
+        data = loaded
     if op == "digest_is":
         return hashlib.sha256(data).hexdigest() == a[1]
     if op == "line_count_is":
