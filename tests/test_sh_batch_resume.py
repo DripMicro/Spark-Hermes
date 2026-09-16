@@ -77,3 +77,69 @@ def test_a_void_episode_is_not_cached_so_a_resume_re_runs_it(tmp_path, monkeypat
     assert not (out / "null" / "t-1" / "episode.json").exists()
     batch.one(TASK, None, "null", None, "img", "url", out)
     assert len(runs) == 2  # re-run, not replayed
+
+
+def test_a_void_episode_that_finished_is_moved_aside_and_run_again(tmp_path, monkeypatch):
+    """A real run writes finish.json with stage "done" even when the provider refused every call. Left in place,
+    a resume would only re-grade that trajectory — void again, forever; round r0003 lost a third of its episodes."""
+    out = tmp_path / "out"
+    runs = []
+
+    def fake_run(task, bundle, image, inference, ep, **k):
+        runs.append(ep)
+        Path(ep).mkdir(parents=True, exist_ok=True)
+        (Path(ep) / "finish.json").write_text(json.dumps({"stage": "done"}))
+
+    grades = iter([{"verified_success": False, "void": True, "void_reason": "overloaded"}, {"verified_success": True}])
+    monkeypatch.setattr(batch, "run_episode", fake_run)
+    monkeypatch.setattr(batch, "grade", lambda *a, **k: next(grades))
+    assert batch.one(TASK, None, "null", None, "img", "url", out)["void"]
+    assert (out / "null" / "t-1.void-1" / "finish.json").exists() and not (out / "null" / "t-1").exists()
+    assert batch.one(TASK, None, "null", None, "img", "url", out)["verified_success"]
+    assert len(runs) == 2 and (out / "null" / "t-1" / "episode.json").exists()
+
+
+def test_the_batch_re_runs_void_episodes_in_later_passes(tmp_path, monkeypatch):
+    rd = _round(tmp_path)
+    out = tmp_path / "out"
+    outcomes = {"null": iter([True, False]), "canon": iter([False])}  # null is void once, then graded
+
+    def fake_one(task, withheld, surface, bundle, *a, **k):
+        void = next(outcomes[surface])
+        rec = {
+            "surface": surface,
+            "task_id": task["task_id"],
+            "void": void,
+            "void_reason": "overloaded" if void else None,
+        }
+        return rec | {
+            "verified_success": not void,
+            "overfit": False,
+            "disqualified": False,
+            "api_calls": 1,
+            "wall_s": 1.0,
+            "partial": False,
+            "timed_out": False,
+            "self_checked": False,
+        }
+
+    monkeypatch.setattr(batch, "one", fake_one)
+    monkeypatch.setattr(batch.time, "sleep", lambda s: None)
+    rc = batch.main(
+        [
+            "--round",
+            str(rd),
+            "--surfaces",
+            "null,canon=" + str(tmp_path),
+            "--image",
+            "i",
+            "--inference",
+            "u",
+            "--out",
+            str(out),
+            "--void-retries",
+            "2",
+        ]
+    )
+    summary = json.loads((out / "summary.json").read_text())
+    assert rc == 0 and summary["episodes"] == 2 and summary["per_surface"]["null"]["n"] == 1

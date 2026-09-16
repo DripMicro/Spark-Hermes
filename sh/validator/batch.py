@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import statistics
 import sys
 import time
@@ -49,7 +50,13 @@ def one(
         round_id=task.get("round_id", ""),
         checks_py=checks_py,
     )
-    if rec.get("void"):  # the provider failed, not the miner: leave nothing cached so a resume re-runs it
+    if rec.get("void"):
+        # The provider failed, not the miner. Move the attempt aside — its finish.json says "done", and left in
+        # place a resume would only re-grade the same failed trajectory, void again, forever.
+        n = 1
+        while (aside := ep.with_name(f"{ep.name}.void-{n}")).exists():
+            n += 1
+        shutil.move(str(ep), str(aside))
         return rec
     (ep / "episode.json").write_text(json.dumps(rec, indent=1))
     return rec
@@ -66,8 +73,10 @@ def main(argv=None) -> int:
     ap.add_argument("--network", default="host")
     ap.add_argument("--tokens", default=None)
     ap.add_argument("--usage-dir", default=None)
+    ap.add_argument("--void-retries", type=int, default=4, help="passes that re-run episodes the provider voided")
     a = ap.parse_args(argv)
     rd, out = Path(a.round), Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
     tasks = [json.loads(p.read_text()) for p in sorted((rd / "tasks").glob("*.json"))]
     withheld = {p.stem: json.loads(p.read_text()) for p in (rd / "withheld").glob("*.json")}
     # One family per round directory in practice; `checks/<family>.py` keeps it explicit and mirrors what
@@ -79,37 +88,51 @@ def main(argv=None) -> int:
         surfaces[name] = Path(d) if d else None
     jobs = [(t, withheld.get(t["task_id"]), name, b) for name, b in surfaces.items() for t in tasks]
     t0 = time.time()
-    recs = []
-    with ThreadPoolExecutor(max_workers=a.concurrency) as pool:
-        futs = {
-            pool.submit(
-                one,
-                t,
-                w,
-                name,
-                b,
-                a.image,
-                a.inference,
-                out,
-                a.network,
-                Path(a.tokens) if a.tokens else None,
-                Path(a.usage_dir) if a.usage_dir else None,
-                checks_for.get(t.get("family", "")),
-            ): (name, t["task_id"])
-            for t, w, name, b in jobs
-        }
-        for f in as_completed(futs):
-            name, tid = futs[f]
-            try:
-                r = f.result()
-                recs.append(r)
-                print(
-                    f"{name:>10} {tid}: verified={r['verified_success']} overfit={r['overfit']} dq={r['disqualified']} "
-                    f"calls={r['api_calls']} wall={r['wall_s']}",
-                    flush=True,
-                )
-            except Exception as e:
-                print(f"{name:>10} {tid}: ERROR {e!r}"[:300], flush=True)
+    recs: list[dict] = []
+    for attempt in range(1 + a.void_retries):
+        voided: list[tuple] = []
+        with ThreadPoolExecutor(max_workers=a.concurrency) as pool:
+            futs = {
+                pool.submit(
+                    one,
+                    t,
+                    w,
+                    name,
+                    b,
+                    a.image,
+                    a.inference,
+                    out,
+                    a.network,
+                    Path(a.tokens) if a.tokens else None,
+                    Path(a.usage_dir) if a.usage_dir else None,
+                    checks_for.get(t.get("family", "")),
+                ): (t, w, name, b)
+                for t, w, name, b in jobs
+            }
+            for f in as_completed(futs):
+                t, w, name, b = futs[f]
+                try:
+                    r = f.result()
+                    if r.get("void"):
+                        voided.append((t, w, name, b))
+                        print(f"{name:>10} {t['task_id']}: void ({str(r.get('void_reason'))[:80]})", flush=True)
+                        continue
+                    recs.append(r)
+                    print(
+                        f"{name:>10} {t['task_id']}: verified={r['verified_success']} overfit={r['overfit']} "
+                        f"dq={r['disqualified']} calls={r['api_calls']} wall={r['wall_s']}",
+                        flush=True,
+                    )
+                except Exception as e:
+                    print(f"{name:>10} {t['task_id']}: ERROR {e!r}"[:300], flush=True)
+        if not voided or attempt == a.void_retries:
+            if voided:
+                print(f"{len(voided)} episode(s) still void after {attempt + 1} passes", flush=True)
+            break
+        wait = 60 * (attempt + 1)  # the provider was out of capacity: give it room before the next pass
+        print(f"{len(voided)} void episode(s); re-running them in {wait}s (pass {attempt + 2})", flush=True)
+        time.sleep(wait)
+        jobs = voided
     total = time.time() - t0
     (out / "episodes.jsonl").write_text("\n".join(json.dumps(r) for r in recs) + "\n")
     summary = {"episodes": len(recs), "total_wall_s": round(total, 1), "concurrency": a.concurrency, "per_surface": {}}

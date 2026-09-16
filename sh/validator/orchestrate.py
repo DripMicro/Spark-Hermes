@@ -572,30 +572,40 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
         log(rd, "images", built=len(list((rd / "images").iterdir())))
     surfaces = ["null", f"canon={remote}/canon"] + [f"{h}={remote}/bundles/{h}" for h in sealed["active"]]
     total = len(surfaces) * len(list((rd / "tasks").glob("*.json")))
+    launch = (
+        f"cd {cfg.worker_root}/pkg && PYTHONPATH={cfg.worker_root}/pkg setsid nohup python3 -m sh.validator.batch "
+        f"--round {remote} --surfaces {','.join(surfaces)} --image {cfg.image} --inference unused "
+        f"--out {remote}/episodes --concurrency {cfg.concurrency} --network sh-ep "
+        f"--tokens {cfg.worker_root}/state/tokens --usage-dir {cfg.worker_root}/state/usage "
+        f">> {remote}/batch.log 2>&1 < /dev/null & echo started"
+    )
+    running = lambda: _worker(cfg, f"pgrep -f '[b]atch --round {remote}' | wc -l").strip() not in ("", "0")  # noqa: E731
     # Resume-safe: a restarted control plane finds the batch still running and polls it rather than launching a
-    # second one; if it is not running, launching is safe — `batch` resumes on its own episode records.
-    already = _worker(cfg, f"pgrep -f '[b]atch --round {remote}' | wc -l").strip() not in ("", "0")
-    if already:
+    # second one; if it is not running, launching is safe — `batch` resumes on its own episode records. A batch
+    # that ends short (episodes the provider voided past its own retries) is launched again, a bounded number of
+    # times, so a busy engine costs time rather than evidence.
+    launches = 0
+    if running():
         log(rd, "evaluate_resume", note="batch already running on the worker; polling")
     else:
-        _worker_launch(
-            cfg,
-            f"cd {cfg.worker_root}/pkg && PYTHONPATH={cfg.worker_root}/pkg setsid nohup python3 -m sh.validator.batch "
-            f"--round {remote} --surfaces {','.join(surfaces)} --image {cfg.image} --inference unused "
-            f"--out {remote}/episodes --concurrency {cfg.concurrency} --network sh-ep "
-            f"--tokens {cfg.worker_root}/state/tokens --usage-dir {cfg.worker_root}/state/usage "
-            f"> {remote}/batch.log 2>&1 < /dev/null & echo started",
-        )
+        _worker_launch(cfg, launch)
+        launches = 1
     last_push = 0.0
     while True:
         time.sleep(45)
-        running = _worker(cfg, f"pgrep -f '[b]atch --round {remote}' | wc -l").strip()
+        alive = running()
         prog = _progress(cfg, remote, total)
-        if running == "0" or time.time() - last_push > 150:
+        if not alive or time.time() - last_push > 150:
             live(cfg, rd, "evaluate", progress=prog)
             last_push = time.time()
-        if running == "0":
-            break
+        if alive:
+            continue
+        if prog["done"] < total and launches < 3:
+            log(rd, "evaluate_relaunch", done=prog["done"], total=total)
+            _worker_launch(cfg, launch)
+            launches += 1
+            continue
+        break
     _rsync(f"{cfg.worker}:{remote}/episodes/", f"{rd / 'episodes'}/", cfg)
     if tags := _image_tags(rd):
         _worker(
