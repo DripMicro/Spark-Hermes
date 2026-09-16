@@ -99,6 +99,25 @@ def _worker(cfg: Config, cmd: str) -> str:
     )
 
 
+def _worker_launch(cfg: Config, cmd: str) -> None:
+    """Start a long-running command on the worker and come back at once.
+
+    A plain `ssh host 'cmd &'` does not return until sshd sees every pipe close, and in round r0001 it held the
+    control plane for the entire evaluation — the progress loop never ran and the dashboard sat on "publish".
+    `-f` backgrounds ssh after authentication and `-n` detaches stdin, so this returns as soon as the remote
+    shell accepts the command; the polling loop, not this call, is the source of truth for whether the job is
+    running. A timeout guards the remaining case where even the handshake hangs."""
+    try:
+        subprocess.run(
+            ["ssh", "-f", "-n", "-o", "BatchMode=yes", "-p", str(cfg.worker_port), cfg.worker, cmd],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+    except subprocess.TimeoutExpired:
+        pass
+
+
 def _rsync(src: str, dst: str, cfg: Config) -> None:
     sh(["rsync", "-az", "--delete", "-e", f"ssh -o BatchMode=yes -p {cfg.worker_port}", src, dst])
 
@@ -321,7 +340,7 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
             _rsync(f"{rd / sub}/", f"{cfg.worker}:{remote}/{sub}/", cfg)
     surfaces = ["null", f"canon={remote}/canon"] + [f"{h}={remote}/bundles/{h}" for h in sealed["active"]]
     total = len(surfaces) * len(list((rd / "tasks").glob("*.json")))
-    _worker(
+    _worker_launch(
         cfg,
         f"cd {cfg.worker_root}/pkg && PYTHONPATH={cfg.worker_root}/pkg setsid nohup python3 -m sh.validator.batch "
         f"--round {remote} --surfaces {','.join(surfaces)} --image {cfg.image} --inference unused "
