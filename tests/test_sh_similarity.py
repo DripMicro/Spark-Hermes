@@ -58,3 +58,30 @@ def test_a_round_without_private_answers_checks_nothing(tmp_path):
     rd = tmp_path / "r0001"
     (rd / "tasks").mkdir(parents=True)
     assert not S.load(rd) and S.load(rd).refuse("anything at all") is None
+
+
+def test_a_bug_fix_round_is_checked_against_the_fixed_code_not_the_repository_or_its_tests(tmp_path):
+    """swe_fix: the reference is a diff whose context is the repository's own code, and the grader's assets are the
+    repository's tests. Quoting either is not reproducing an answer; pasting the lines the bug replaced is."""
+    fixed = "\n".join(
+        f"        self._tokens_{i} = token_types[{i}] if token_types else default_token_{i}" for i in range(10)
+    )
+    context = "\n".join(f"    def validate_request_number_{i}(self, request, scopes=None):" for i in range(10))
+    rd = tmp_path / "r0008"
+    for sub in ("private", "withheld", "tasks"):
+        (rd / sub).mkdir(parents=True)
+    (rd / "private" / "t.json").write_text(
+        json.dumps({"solutions": {"reference": "git apply -R <<EOF\n" + context + "\nEOF", "answer": fixed}})
+    )
+    (rd / "withheld" / "t.json").write_text(
+        json.dumps(
+            {
+                "assets": {"swe/files/tests/test_x.py": base64.b64encode(TESTS.encode()).decode()},
+                "assets_are_answers": False,
+            }
+        )
+    )
+    (rd / "tasks" / "t.json").write_text(json.dumps({"prompt": "Fix the bug."}))
+    refs = S.load(rd)
+    assert refs.refuse("Read the code around the failure:\n" + context + "\n" + TESTS) is None
+    assert refs.refuse("Apply this:\n" + fixed) is not None

@@ -201,3 +201,29 @@ def test_a_half_that_is_not_a_test_suite_is_all_or_nothing():
     half = [["file_exists", "out.txt"], ["digest_is", "out.txt", "a" * 64]]
     assert fraction(half, True, {"irrelevant": False}) == 1.0 and fraction(half, False, None) == 0.0
     assert fraction([["custom", "facet_test", "t.py::a"]], True, None) == 1.0  # outcomes unknown: the verdict stands
+
+
+def test_swe_test_predicates_count_each_test_and_an_empty_half_measures_nothing():
+    from sh.validator.grade import fraction
+
+    half = [["custom", "swe_test", "tests/test_a.py::T::a"], ["custom", "swe_test", "tests/test_a.py::T::b"]]
+    assert fraction(half, False, {"tests/test_a.py::T::a": True, "tests/test_a.py::T::b": False}) == 0.5
+    assert fraction([], True, {"x": True}) is None
+
+
+def test_a_task_with_every_fact_withheld_is_credited_by_its_tests_and_never_overfit(monkeypatch, tmp_path):
+    """swe_fix publishes no half. A partial fix is partial credit, not a published-half pass that failed to hold."""
+    import sh.validator.grade as g
+
+    (tmp_path / "result.json").write_text(json.dumps({"messages": []}))
+    (tmp_path / "finish.json").write_text(json.dumps({"api_calls": 9, "wall_s": 120.0}))
+    tests = {"t.py::a": True, "t.py::b": True, "t.py::c": False}
+    monkeypatch.setattr(
+        g,
+        "grade_in_container",
+        lambda *a, **k: {"published_pass": True, "withheld_pass": False, "protected_modified": [], "tests": tests},
+    )
+    withheld = {"withheld": {"predicates": [["custom", "swe_test", t] for t in tests]}, "salt": "00"}
+    rec = g.grade(tmp_path, {"task_id": "swe-fix-r0005-00", "published": {"predicates": []}}, withheld, "img")
+    assert rec["published_fraction"] is None and rec["overfit"] is False
+    assert abs(rec["credit"] - 2 / 3) < 1e-6 and rec["verified_success"] is False

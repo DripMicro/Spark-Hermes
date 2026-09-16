@@ -281,13 +281,19 @@ def open_round(cfg: Config) -> Path:
     return rd
 
 
+def shown(rd: Path) -> Path:
+    """What miners get when the window opens: the round's tasks, or — for a family that evaluates on hidden bugs
+    (swe_fix) — their previews, sibling bugs from the same repositories. The evaluated tasks follow at close."""
+    return rd / "preview" if (rd / "preview").is_dir() else rd / "tasks"
+
+
 def publish_round(cfg: Config, rd: Path) -> None:
     """The tasks, the window, the queue digests, and each task image's tag and attribution, committed where miners
     can read them. Not the Dockerfile or the fixture tree: both can fingerprint the upstream task."""
     round_id = rd.name
     dest = cfg.repo / "rounds" / round_id
     dest.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(rd / "tasks", dest / "tasks", dirs_exist_ok=True)
+    shutil.copytree(shown(rd), dest / "tasks", dirs_exist_ok=True)
     shutil.copy(rd / "window.json", dest / "window.json")
     for ctx in sorted((rd / "images").glob("*/")) if (rd / "images").exists() else []:
         pub = dest / "images" / ctx.name
@@ -896,6 +902,8 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: d
     dest.mkdir(parents=True, exist_ok=True)
     for name in ("close.json", "reveal.json", "crown.json"):
         shutil.copy(rd / "close" / name, dest / name)
+    if shown(rd) != rd / "tasks":  # the miners saw previews: the tasks the round was scored on are public now
+        shutil.copytree(rd / "tasks", dest / "evaluated", dirs_exist_ok=True)
     if (rd / "checks").exists():
         shutil.copytree(rd / "checks", dest / "checks", dirs_exist_ok=True)  # semantics of `custom` predicates
     shutil.copytree(rd / "scorecards", dest / "scorecards", dirs_exist_ok=True)

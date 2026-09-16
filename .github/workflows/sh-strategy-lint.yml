@@ -41,19 +41,23 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
-          # Diff against the base commit the PR actually forked from, which checkout has already fetched.
-          changed=$(git diff --name-only "$BASE_SHA"...HEAD -- submissions/ | cut -d/ -f1-2 | sort -u)
+          # Diff against the base commit the PR actually forked from, which checkout has already fetched. Only
+          # files inside a submissions/<hotkey>/ directory are a bundle; submissions/README.md is documentation.
+          changed=$(git diff --name-only "$BASE_SHA"...HEAD -- 'submissions/*/*' | cut -d/ -f1-2 | sort -u)
           echo "$changed"
+          if [ -z "$changed" ]; then echo "no submission directory changed; nothing to lint"; exit 0; fi
           test "$(echo "$changed" | grep -c .)" -eq 1 || {
             echo "::error::a pull request may add or change exactly one submissions/<hotkey>/ directory"; exit 1; }
           echo "BUNDLE=$changed" >> "$GITHUB_ENV"
 
       - name: Lint the bundle and print its canonical digest
+        if: env.BUNDLE != ''
         # Structure, digest and the attestation's binding to the directory are checked here; the signature
         # itself is verified by the seal, which has the signing library and knows the round.
         run: python -m sh.cli.lint "$BUNDLE" --require-attestation --hotkey "$(basename "$BUNDLE")"
 
       - name: Digest for the commitment
+        if: env.BUNDLE != ''
         run: |
           python -m sh.cli.lint "$BUNDLE" --json > lint.json
           echo "### Strategy lint" >> "$GITHUB_STEP_SUMMARY"

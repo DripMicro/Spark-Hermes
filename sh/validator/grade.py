@@ -118,6 +118,7 @@ def grade_in_container(
         g = json.loads(data)
         # A family whose checks run a test suite leaves every test's outcome beside the grade (checks.py writes
         # it): the grader itself stops at the first failing predicate, and a fraction needs all of them.
+        # `facet_tests.json` is the name terminal_task's checks used; rounds minted with it are still graded.
         tests = _run(
             [
                 "docker",
@@ -128,7 +129,7 @@ def grade_in_container(
                 "alpine",
                 "sh",
                 "-c",
-                "cat /ep/out/facet_tests.json 2>/dev/null",
+                "cat /ep/out/tests.json 2>/dev/null || cat /ep/out/facet_tests.json 2>/dev/null",
             ]
         ).stdout
         try:
@@ -237,10 +238,16 @@ def trajectory_rules(
     return signals, self_checked, failed_tool
 
 
-def fraction(predicates: list, passed: bool, tests: dict | None) -> float:
-    """The share of a half's predicates that hold. When the half is a set of test cases (`custom facet_test <id>`)
-    and the test outcomes are known, each counts; otherwise the half is one unit — all or nothing. Pure."""
-    if predicates and tests is not None and all(p[:2] == ["custom", "facet_test"] and len(p) > 2 for p in predicates):
+TEST_CHECKS = frozenset({"facet_test", "swe_test"})  # `custom <check> <test id>`: one predicate per test case
+
+
+def fraction(predicates: list, passed: bool, tests: dict | None) -> float | None:
+    """The share of a half's predicates that hold. When the half is a set of test cases (`custom facet_test <id>`,
+    `custom swe_test <id>`) and the test outcomes are known, each counts; otherwise the half is one unit — all or
+    nothing. An empty half measures nothing: None. Pure."""
+    if not predicates:
+        return None
+    if tests is not None and all(p[0] == "custom" and len(p) > 2 and p[1] in TEST_CHECKS for p in predicates):
         return sum(1 for p in predicates if tests.get(p[2])) / len(predicates)
     return 1.0 if passed else 0.0
 
@@ -292,10 +299,14 @@ def grade(
     # Credit: the share of the withheld half that holds (of the published half, for a probe). It is what scoring
     # compares against the baseline; `verified_success` — every check holds — still gates training data.
     tests = g.get("tests")
+    # A task whose every fact is withheld (swe_fix) publishes no half: nothing to overfit to, nothing to compare.
     published_fraction = fraction(task["published"]["predicates"], bool(g["published_pass"]), tests)
     w_preds = (withheld or {}).get("withheld", withheld or {}).get("predicates", []) if withheld else []
     withheld_fraction = fraction(w_preds, withheld_pass, tests) if graded_withheld else None
-    credit = 0.0 if disqualified or void else (withheld_fraction if graded_withheld else published_fraction)
+    measured = withheld_fraction if graded_withheld else published_fraction
+    if measured is None:  # no predicate on the side that counts (a probe): the verdict is the credit
+        measured = 1.0 if verified else 0.0
+    credit = 0.0 if disqualified or void else measured
     return {
         "schema": "sh-episode-v3",
         "episode_id": f"{round_id}/{task['task_id']}/{surface}",
@@ -308,10 +319,14 @@ def grade(
         "published_pass": published_pass,
         "withheld_pass": withheld_pass if graded_withheld else None,
         "verified_success": verified,
-        "published_fraction": round(published_fraction, 6),
+        "published_fraction": None if published_fraction is None else round(published_fraction, 6),
         "withheld_fraction": None if withheld_fraction is None else round(withheld_fraction, 6),
         "credit": round(float(credit or 0.0), 6),
-        "overfit": bool(graded_withheld and published_fraction - (withheld_fraction or 0.0) >= OVERFIT_GAP),
+        "overfit": bool(
+            graded_withheld
+            and published_fraction is not None
+            and published_fraction - (withheld_fraction or 0.0) >= OVERFIT_GAP
+        ),
         "disqualified": disqualified,
         "void": void,
         "void_reason": reason if void else None,

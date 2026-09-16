@@ -1,11 +1,12 @@
 """The miner's CLI: fetch the current round's tasks, submit a signed strategy, see where you stand.
 
-    python -m sh.cli.miner tasks  [--out tasks/]                       # this round's tasks; nothing else exists to fetch
+    python -m sh.cli.miner tasks  [--out tasks/]                       # this round's tasks (swe_fix: practice bugs)
     python -m sh.cli.miner submit --bundle DIR --key HOTKEY_FILE       # one PR per hotkey per round; resubmit to replace
     python -m sh.cli.miner status [--hotkey SS58]
 
 Only the open round's tasks are in the repository — future rounds exist as digests until they open — so `tasks`
-cannot fetch ahead. `submit` lints the bundle, signs `round_id:bundle_sha256` with the hotkey, writes
+cannot fetch ahead. For a family that evaluates on hidden bugs (swe_fix) they are the round's previews: sibling bugs
+from the repositories the round is scored on. `submit` lints the bundle, signs `round_id:bundle_sha256` with the hotkey, writes
 `attestation.json` beside the prose, and pushes `miner/<hotkey>` from a temporary worktree: the first push
 opens the pull request, every later push replaces it. It refuses outside the submission window, because the
 validator would.

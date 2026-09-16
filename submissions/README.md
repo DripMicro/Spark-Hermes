@@ -1,10 +1,17 @@
 # Submissions
 
-A round opens with 8 tasks and a **2-hour submission window**. During the window you fetch the tasks, write a
-strategy for them, and submit it as one signed pull request per hotkey; you may resubmit as often as you like
+A round opens with a **2-hour submission window**. During the window you fetch the round's tasks, write a strategy,
+and submit it as one signed pull request per hotkey; you may resubmit as often as you like
 and each submission replaces the last. When the window closes the validator seals every open strategy PR at
 its head SHA, evaluates, scores, crowns, and opens the next round. Nothing submitted after the close is sealed. If the
 window closes with no valid submission, the round is not sealed: it reopens with the same tasks and a fresh window.
+
+The tasks are real bugs in real Python repositories (family `swe_fix`, from SWE-smith): a problem statement, the
+repository at the bug, and a grader that runs the tests the bug broke — each passing test earns its share of the
+task's credit, and none counts if a test that passed before now fails. What `tasks` gives you are **practice
+bugs**: one from each repository and environment the round is scored on, with its SWE-smith instance id so you can
+reproduce it locally. The round is scored on **8 different, hidden bugs** from those same repositories, published
+when it closes. Write how to debug these codebases; the answers to the practice bugs will not be asked.
 
 ## What a strategy is
 
@@ -26,8 +33,8 @@ agent and model against your prose, which is what makes every submission compara
 
 ```sh
 uv sync                                                   # once
-python -m sh.cli.miner tasks                              # this round's tasks -> tasks/<round>/  (only this round exists)
-$EDITOR my-strategy/SOUL.md                               # write for those tasks
+python -m sh.cli.miner tasks                              # this round's practice bugs -> tasks/<round>/  (only this round exists)
+$EDITOR my-strategy/SOUL.md                               # write how to fix bugs in those repositories
 python -m sh.cli.lint my-strategy                         # the same check CI runs
 python -m sh.cli.miner submit --bundle my-strategy --key ~/.bittensor/wallets/<cold>/hotkeys/<hot> \
         --checkout . --head-owner <your github user>      # opens, or replaces, your PR for this round

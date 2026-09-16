@@ -18,7 +18,14 @@ Terminal-Bench 2.1, SWE-bench Pro, NL2Repo-Bench, DeepSWE 1.1, QwenSWEBench).
 | **InterCode-Bash / NL2Bash-EABench** | 1,000 / 150 | NL instruction → bash, file-system grounded, executable check | small, cheap, shell-only; good for a light family | MIT / see repo | thin verifiers (one command) |
 | **Harbor-Mix** (`harborframework/harbor-mix`) | 100 | curated meta-set across 34 benchmarks | broad signal, cheap | CC BY 4.0 | 27 tasks LLM-judged — not usable as withheld checks |
 
-## Recommendation
+## Status (2026-09-17)
+
+`terminal_task` over FACET-6k ran first and is retired: the pinned model earned ~0 credit on most of its tasks.
+`swe_fix` over SWE-smith is live — a 20-bug pilot put the strategy-less baseline at 0.34 mean credit. The
+recommendation below is kept as written; `docs/pins.md` records what was actually built (notably: no cheats — every
+fact is withheld, and miners see sibling bugs rather than the evaluated ones).
+
+## Recommendation (as written before either family was built)
 
 1. **First hybrid family: `terminal_task` over FACET-6k.** Each row already carries instruction, environment,
    reference solution and verifier; the family's job is only (a) to snapshot the container state into a fixture
