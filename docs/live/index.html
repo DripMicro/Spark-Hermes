@@ -4,8 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spark-Hermes Live</title>
-<meta name="description" content="The current round of the Spark-Hermes strategy competition, stage by stage, and every round that has closed.">
+<meta name="description" content="The current round of the Spark-Hermes strategy competition: its submission window, evaluation, crown and scores, and every round that has closed.">
 <link rel="stylesheet" href="../site.css">
+<style>
+  .countdown { font-family: var(--mono); font-size: 1.6rem; font-weight: 500; letter-spacing: -.02em; }
+  .phase { display: inline-block; padding: .15rem .55rem; border-radius: 4px; font-size: .78rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+  .phase.window { background: var(--good); color: var(--bg); }
+  .phase.evaluate { background: var(--accent); color: var(--bg); }
+  .phase.closed { background: var(--soft); color: var(--muted); }
+  .queue { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .queue span { font-family: var(--mono); font-size: .78rem; border: 1px dashed var(--line); border-radius: 4px; padding: .15rem .5rem; color: var(--muted); }
+</style>
 </head>
 <body>
 <nav class="nav">
@@ -20,29 +29,36 @@
 <main>
   <div class="head">
     <h1>Round <span id="round">—</span></h1>
+    <span id="phase" class="phase closed">—</span>
     <span id="status" class="muted small"><span class="pulse"></span>connecting…</span>
   </div>
 
   <div class="strip">
-    <div class="stat"><b id="stage-now">—</b><span>stage</span></div>
+    <div class="stat"><b id="countdown" class="countdown">—</b><span id="countdown-label">submission window</span></div>
+    <div class="stat"><b id="submissions">—</b><span>submissions</span></div>
     <div class="stat"><b id="episodes">0 / 0</b><span>episodes graded</span></div>
-    <div class="stat"><b id="nactive">0</b><span>strategies sealed</span></div>
-    <div class="stat"><b id="ntasks">0</b><span>instances</span></div>
-    <div class="stat"><b id="started">—</b><span>opened</span></div>
+    <div class="stat"><b id="ntasks">0</b><span id="tasks-label">tasks</span></div>
+    <div class="stat"><b id="king-now">—</b><span>king</span></div>
   </div>
 
   <section class="panel">
     <div class="stages" id="stages"></div>
     <div class="bar" style="margin-top:.8rem"><i id="bar"></i></div>
+    <p class="small muted" id="window-line" style="margin-top:.6rem"></p>
   </section>
 
   <section class="panel">
     <h2 id="board-title">Board <small id="board-sub"></small></h2>
     <div class="wrap"><table>
       <thead id="board-head"></thead>
-      <tbody id="board"><tr><td class="empty" colspan="8">waiting for the seal</td></tr></tbody>
+      <tbody id="board"><tr><td class="empty" colspan="9">waiting for the seal</td></tr></tbody>
     </table></div>
     <p class="small muted" id="rejected" hidden style="margin-top:.6rem"></p>
+  </section>
+
+  <section class="panel">
+    <h2>Queue <small>rounds minted ahead — published as digests, unread until they open</small></h2>
+    <div class="queue" id="queue"><span>—</span></div>
   </section>
 
   <section class="panel" id="rounds">
@@ -62,33 +78,39 @@
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
-  const STAGES = ["mint", "seal", "publish_open", "evaluate", "close", "announce", "export", "publish_close", "done"];
-  const LABEL = { mint: "mint", seal: "seal", publish_open: "publish", evaluate: "evaluate", close: "score",
-                  announce: "crown", export: "export", publish_close: "publish", done: "done" };
+  const LABEL = { open: "open", window: "window", seal: "seal", evaluate: "evaluate", close: "score", crown: "crown",
+                  announce: "verdict", export: "export", publish_close: "publish", done: "done" };
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const clock = (t) => new Date(t * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const hhmm = (t) => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const ago = (t) => { const s = Math.max(0, Date.now() / 1000 - t);
     return s < 90 ? Math.round(s) + " s ago" : s < 5400 ? Math.round(s / 60) + " min ago" : Math.round(s / 3600) + " h ago"; };
+  const span = (s) => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+    return h ? h + "h " + String(m).padStart(2, "0") + "m" : m ? m + "m " + String(x).padStart(2, "0") + "s" : x + "s"; };
   const pct = (x) => x == null ? "—" : Math.round(100 * x) + "%";
   const signed = (x, d, unit) => x == null ? "—" : (x > 0 ? "+" : "") + x.toFixed(d) + (unit || "");
   const cls = (x) => x == null || x === 0 ? "zero" : x > 0 ? "pos" : "neg";
+  const short = (h) => h.length <= 16 ? h : h.slice(0, 6) + "…" + h.slice(-4);
+  const hk = (h) => '<span class="hk" title="' + esc(h) + '">' + esc(short(h)) + "</span>";
   const th = (label, title, left) => "<th" + (left ? ' class="l"' : "") + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + "</th>";
   const pr = (live, n) => '<a href="https://github.com/' + esc(live.repo) + "/pull/" + n + '">#' + n + "</a>";
+  let current = null;
 
   function surfaceCell(live, s) {
     const info = (live.active || {})[s];
     let tag = "";
     if (s === "null") tag = '<span class="tag">baseline</span>';
     else if (s === "canon") tag = '<span class="tag">canon</span>';
-    else if (info && info.incumbent) tag = '<span class="tag king">king</span>';
+    else if (info && info.incumbent) tag = '<span class="tag king">incumbent</span>';
     else if (info && info.pr) tag = '<span class="tag">' + pr(live, info.pr) + "</span>";
-    return '<td class="l"><span class="hk">' + esc(s) + "</span>" + tag + "</td>";
+    else tag = '<span class="tag" title="scored on its episodes from earlier rounds in the window; not sealed this round">window</span>';
+    return '<td class="l">' + (s === "null" || s === "canon" ? '<span class="hk">' + s + "</span>" : hk(s)) + tag + "</td>";
   }
 
   function board(live) {
     const by = (live.progress || {}).by_surface || {};
     const active = live.active || {};
-    const sc = live.scores;
+    const sc = live.scores, cr = live.crown;
     const miners = Object.keys(active);
     const nullR = by["null"] || { n: 0, verified: 0 };
     const nullRate = nullR.n ? nullR.verified / nullR.n : null;
@@ -96,75 +118,102 @@
 
     if (sc && sc.per_hotkey) {
       const fs = Object.values(sc.family_stats || {})[0] || {};
-      $("board-title").firstChild.textContent = "Final scores ";
-      $("board-sub").textContent = "baseline " + pct(fs.null_p) + " · canon " + pct(fs.canon_p);
-      $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("episodes") + th("rate", "verified episodes over episodes run") +
-        th("Δ vs baseline", "mean of (miner pass − baseline pass) per instance") +
-        th("Δc", "one-sided 90% lower bound of Δ vs baseline — what is paid") + th("score") + th("weight") + "</tr>";
-      const refs = ["null", "canon"].map((s) => "<tr class='ref'>" + surfaceCell(live, s) + "<td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
-        pct(s === "null" ? fs.null_p : fs.canon_p) + "</td><td colspan='4'></td></tr>");
+      const st = (cr && cr.standings) || {};
+      $("board-title").firstChild.textContent = "Final ";
+      $("board-sub").textContent = "baseline " + pct(fs.null_p) + " · canon " + pct(fs.canon_p) + " · crown on this round, payment on the pooled window";
+      $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("rank", "this round: by Δ vs baseline on these instances") +
+        th("Δ this round", "mean of (pass − baseline pass) per instance, this round only") + th("verified") +
+        th("episodes", "pooled window") + th("Δ window", "mean paired delta over the pooled window") +
+        th("Δc", "one-sided 90% lower bound of Δ window — what is paid") + th("score") + th("weight") + "</tr>";
+      const refs = ["null", "canon"].map((s) => "<tr class='ref'>" + surfaceCell(live, s) + "<td></td><td></td><td>" + (by[s] ? by[s].verified : "—") + "</td><td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
+        pct(s === "null" ? fs.null_p : fs.canon_p) + "</td><td colspan='3'></td></tr>");
       const all = [...new Set([...miners, ...Object.keys(sc.per_hotkey)])];
-      const ranked = all.sort((a, b) => (sc.weights[b] || 0) - (sc.weights[a] || 0) ||
-        ((sc.per_hotkey[b] || {}).score || 0) - ((sc.per_hotkey[a] || {}).score || 0) || a.localeCompare(b));
+      const ranked = all.sort((a, b) => ((st[a] || {}).rank || 1e6) - ((st[b] || {}).rank || 1e6) || (sc.weights[b] || 0) - (sc.weights[a] || 0) || a.localeCompare(b));
       const rows = ranked.map((h) => {
-        const s = sc.per_hotkey[h], w = sc.weights[h] || 0;
-        const crown = h === sc.king ? ' <span class="crown" title="crowned">👑</span>' : "";
-        const tag = active[h] ? "" : '<span class="tag" title="scored on its episodes from earlier rounds in the window; not sealed this round, so it cannot be crowned">window</span>';
+        const s = sc.per_hotkey[h], w = sc.weights[h] || 0, t = st[h] || {};
+        const crown = h === (cr && cr.king) ? ' <span class="crown" title="crowned">👑</span>' : "";
         const why = s && w === 0 && s.reason ? '<span class="why">' + esc(s.reason) + "</span>" : "";
-        const cell = surfaceCell(live, h).replace("</td>", tag + crown + why + "</td>");
-        if (!s) return "<tr>" + cell + "<td>0</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='zero'>0.000</td></tr>";
-        return "<tr>" + cell + "<td>" + s.n + "</td><td>" + pct(rate(h)) + "</td>" +
-          "<td class='" + cls(s.mean_d) + "'>" + signed(s.mean_d, 3) + "</td><td>" + (s.delta_c || 0).toFixed(3) + "</td>" +
-          "<td>" + (s.score || 0).toFixed(4) + "</td><td class='" + (w ? "" : "zero") + "'>" + w.toFixed(3) + "</td></tr>";
+        const cell = surfaceCell(live, h).replace("</td>", crown + why + "</td>");
+        return "<tr>" + cell + "<td>" + (t.rank || "—") + "</td><td class='" + cls(t.delta) + "'>" + signed(t.delta, 3) + "</td><td>" + (t.verified ?? "—") + "</td>" +
+          "<td>" + (s ? s.n : 0) + "</td><td class='" + cls(s && s.mean_d) + "'>" + signed(s && s.mean_d, 3) + "</td><td>" + (s ? (s.delta_c || 0).toFixed(3) : "—") + "</td>" +
+          "<td>" + (s ? (s.score || 0).toFixed(4) : "—") + "</td><td class='" + (w ? "" : "zero") + "'>" + w.toFixed(3) + "</td></tr>";
       });
-      $("board").innerHTML = refs.join("") + (rows.join("") || '<tr><td class="empty" colspan="7">no strategies were sealed</td></tr>');
+      $("board").innerHTML = refs.join("") + (rows.join("") || '<tr><td class="empty" colspan="9">no strategies were sealed</td></tr>');
       return;
     }
 
-    $("board-title").firstChild.textContent = "Board ";
-    $("board-sub").textContent = live.stage === "evaluate" ? "provisional — scored at close, over all instances" : "";
+    const evaluating = live.stage === "evaluate";
+    $("board-title").firstChild.textContent = evaluating ? "Evaluating " : "Sealed ";
+    $("board-sub").textContent = evaluating ? "provisional — the crown and the scores are computed at close" : miners.length ? "strategies in this round, by PR head SHA" : "";
     $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("episodes") + th("verified") + th("rate") +
       th("vs baseline", "pass rate so far minus the baseline's pass rate so far") + "</tr>";
     const order = ["null", "canon", ...miners.sort((a, b) => (rate(b) ?? -1) - (rate(a) ?? -1) || a.localeCompare(b))];
-    $("board").innerHTML = order.map((s) => {
+    $("board").innerHTML = miners.length || evaluating ? order.map((s) => {
       const r = by[s] || { n: 0, verified: 0 }, p = rate(s);
       const d = s === "null" || s === "canon" || p == null || nullRate == null ? null : p - nullRate;
       return "<tr" + (s === "null" || s === "canon" ? " class='ref'" : "") + ">" + surfaceCell(live, s) + "<td>" + r.n + "</td><td>" + r.verified +
         "</td><td>" + pct(p) + "</td><td class='" + cls(d) + "'>" + (s === "null" || s === "canon" ? "" : signed(d == null ? null : 100 * d, 0, " pts")) + "</td></tr>";
-    }).join("");
+    }).join("") : '<tr><td class="empty" colspan="5">' + (live.stage === "window" ? "submissions are open — the seal happens when the window closes" : "waiting for the seal") + "</td></tr>";
+  }
+
+  function tickClock() {
+    if (!current) return;
+    const w = current.window, stage = current.stage;
+    if (stage === "window" && w) {
+      const left = w.closes_at - Date.now() / 1000;
+      $("countdown").textContent = left > 0 ? span(left) : "closing…";
+      $("countdown-label").textContent = "until the window closes";
+    } else if (w) {
+      $("countdown").textContent = "closed";
+      $("countdown-label").textContent = "window closed " + hhmm(w.closes_at);
+    } else {
+      $("countdown").textContent = "—";
+      $("countdown-label").textContent = "submission window";
+    }
   }
 
   function render(live) {
+    current = live;
     const stale = Date.now() / 1000 - live.updated > 900;
     document.body.classList.toggle("stale", stale);
-    const king = live.scores && live.scores.king;
-    $("round").textContent = live.round_id + (king ? " · 👑 " + king : "");
+    const king = live.crown && live.crown.king;
+    $("round").textContent = live.round_id;
     $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale · " : "") + "updated " + ago(live.updated);
-    $("stage-now").textContent = LABEL[live.stage] || live.stage;
+    const ph = live.stage === "window" ? ["window", "submissions open"] : live.stage === "done" ? ["closed", "closed"] : ["evaluate", LABEL[live.stage] || live.stage];
+    $("phase").className = "phase " + ph[0];
+    $("phase").textContent = ph[1];
 
+    const stages = live.stages || Object.keys(LABEL);
     const reached = new Set((live.phases || []).map((p) => p.stage));
-    const nowIdx = STAGES.indexOf(live.stage);
-    $("stages").innerHTML = STAGES.map((s, i) =>
-      '<span class="stage ' + (s === live.stage ? "now" : reached.has(s) || i < nowIdx ? "done" : "") + '">' + LABEL[s] + "</span>").join("");
+    const nowIdx = stages.indexOf(live.stage);
+    $("stages").innerHTML = stages.map((s, i) =>
+      '<span class="stage ' + (s === live.stage ? "now" : reached.has(s) || i < nowIdx ? "done" : "") + '">' + (LABEL[s] || s) + "</span>").join("");
+    const w = live.window;
+    $("window-line").textContent = w ? "Window " + clock(w.opens_at) + " → " + clock(w.closes_at) + " (" + Math.round(w.seconds / 60) + " min). Submissions after the close are not sealed." : "";
 
     const p = live.progress || {}, done = p.done || 0, total = p.total || 0;
     $("episodes").textContent = done + " / " + total;
     $("bar").style.width = (total ? Math.round(100 * done / total) : 0) + "%";
-    $("nactive").textContent = Object.keys(live.active || {}).length;
+    $("submissions").textContent = live.submissions == null ? Object.keys(live.active || {}).filter((h) => live.active[h].pr).length || "—" : live.submissions;
     $("ntasks").textContent = live.tasks || 0;
-    $("started").textContent = clock(live.started);
-
+    $("tasks-label").innerHTML = live.tasks ? '<a href="https://github.com/' + esc(live.repo) + "/tree/" + esc(live.branch) + "/rounds/" + esc(live.round_id) + '/tasks">tasks</a>' : "tasks";
+    $("king-now").innerHTML = king ? "👑 " + hk(king) : (live.history || []).slice(-1)[0] && (live.history || []).slice(-1)[0].king ? '<span class="muted small">last:</span> ' + hk((live.history || []).slice(-1)[0].king) : "—";
+    tickClock();
     board(live);
+
     const rej = Object.entries(live.rejected || {});
     $("rejected").hidden = !rej.length;
     $("rejected").innerHTML = rej.length ? "Rejected at seal: " + rej.map(([n, why]) => pr(live, n) + " — " + esc(why)).join(" · ") : "";
 
+    const q = live.queue || [];
+    $("queue").innerHTML = q.length ? q.map((r) => "<span title='tasks digest " + esc(r.tasks_sha256) + "'>" + esc(r.round_id) + " · " + r.tasks + " tasks · " + esc(String(r.tasks_sha256).slice(0, 10)) + "…</span>").join("") : "<span>empty — the daemon is minting</span>";
+
     const hist = (live.history || []).slice().reverse();
     $("history").innerHTML = hist.length ? hist.map((h) => {
       const w = Object.entries(h.weights || {}).sort((a, b) => b[1] - a[1])
-        .map(([k, v]) => "<span class='hk" + (v === 0 ? " zero" : "") + "'>" + esc(k) + " " + v.toFixed(2) + "</span>").join("<br>");
+        .map(([k, v]) => "<span class='" + (v === 0 ? "zero" : "") + "'>" + hk(k) + " " + v.toFixed(2) + "</span>").join("<br>");
       return "<tr><td class='l'><a href='../rounds/" + esc(h.round_id) + "/'>" + esc(h.round_id) + "</a></td>" +
-        "<td class='l'>" + (h.king ? "<span class='crown'>👑</span> <span class='hk'>" + esc(h.king) + "</span>" : "<span class='zero'>none</span>") + "</td>" +
+        "<td class='l'>" + (h.king ? "<span class='crown'>👑</span> " + hk(h.king) : "<span class='zero'>none</span>") + "</td>" +
         "<td class='l'>" + (w || "—") + "</td><td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
         "<td class='l'>" + (h.commitments_ok ? "<span class='pos'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td>" +
         "<td>" + clock(h.closed_at) + "</td></tr>";
@@ -186,6 +235,7 @@
   }
   tick();
   setInterval(tick, 15000);
+  setInterval(tickClock, 1000);
 })();
 </script>
 </body>
