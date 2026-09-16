@@ -523,6 +523,8 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
             "docker image rm -f " + " ".join(tags) + " >/dev/null 2>&1; docker image prune -f >/dev/null 2>&1; "
             "docker builder prune -f --filter until=48h >/dev/null 2>&1; true",
         )
+    # Rounds older than the previous one leave the worker: their episodes are archived here.
+    _worker(cfg, f"ls -d {cfg.worker_root}/rounds/r* 2>/dev/null | sort | head -n -2 | xargs -r rm -rf")
     n = len(list((rd / "episodes").rglob("episode.json")))
     if not n:
         raise RuntimeError("the worker returned no episodes")
