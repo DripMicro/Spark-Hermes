@@ -1,23 +1,29 @@
 """The round loop (spec §9.1) — every stage, unattended, forever.
 
-    mint -> publish -> seal -> evaluate -> close -> scorecards + crown -> export -> upload -> publish close -> next
+    mint -> seal -> publish open -> evaluate -> close -> scorecards + crown -> export -> upload -> publish close -> next
 
 Runs wherever the validator's credentials live; the GPU worker is reached over ssh and holds none. GitHub is
-the miners' surface: a strategy is a pull request against `submissions/`,
-the round's tasks appear under `rounds/<id>/tasks/` when the round opens, and everything the round produced —
-the revealed withheld halves and their salts, the scores, the leaderboard, every scorecard — is committed under
-`rounds/<id>/` when it closes. Nothing a miner is judged by is kept where a miner cannot see it afterwards.
+the miners' surface: a strategy is a pull request against `submissions/`, the round's tasks appear under
+`rounds/<id>/tasks/` when the round opens, and everything the round produced — the revealed withheld halves and
+their salts, the scores, the leaderboard, every scorecard — is committed under `rounds/<id>/` when it closes.
+`docs/live/live.json` is rewritten at every stage change and every few minutes during evaluation, and the
+dashboard at `docs/live/` polls it. Nothing a miner is judged by is kept where a miner cannot see it.
+
+The round's verdict is enforced on the PRs themselves: the crowned strategy's PR is **merged** into
+`submissions/` and defends the crown as an incumbent in every later round; every other competition PR the
+seal named is **closed** with the reason, and a miner who wants another go opens a new one. PRs the seal never
+named — maintenance, dependencies — are never touched.
 
 Transparency rules the loop enforces, each because its absence would let a validator cheat quietly:
 
   * a bundle is sealed into a round by its PR head SHA and digest *before* any evaluation, and the seal is
     published with the tasks — a validator cannot pick which submission "counted" after seeing results;
   * the withheld half is committed to in the published task and revealed at close with its salt;
-  * a PR that appears after the seal is recorded as "late for r, active from r+1" on the PR itself;
+  * a PR that appears after the seal is told, on the PR, that it is active from the next round;
   * the crown is the top weight of the *published* close.json, recomputable by anyone.
 
-    SH_STATE=/root/sh/state python -m sh.validator.orchestrate --once      # one round
-    SH_STATE=/root/sh/state python -m sh.validator.orchestrate             # forever
+    python -m sh.validator.orchestrate --once                       # one round
+    python -m sh.validator.orchestrate --mock-miners DIR            # forever, with mock challengers resubmitting
 """
 
 from __future__ import annotations
@@ -43,7 +49,7 @@ REPO = "gittensor-model-hub/Spark-Hermes"
 BRANCH = "sh/v2-pipeline"
 LABEL_STRATEGY, LABEL_SCORED, LABEL_CROWN = "sh:strategy", "sh:round:scored", "sh:round:crown"
 HF_REPO = "gittensor-model-hub/spark-hermes-rounds"
-RESERVED = ("null", "canon")
+LIVE = "docs/live/live.json"  # what the dashboard polls; committed on every stage change
 
 
 @dataclass
@@ -78,12 +84,23 @@ def sh(cmd: list[str], *, cwd: Path | None = None, env: dict | None = None, chec
     return r.stdout
 
 
-def gh(*args: str, cwd: Path | None = None) -> str:
-    return sh(["gh", *args], cwd=cwd)
+def gh(*args: str) -> str:
+    return sh(["gh", *args])
 
 
 def _secret(cfg: Config, name: str) -> str:
     return (cfg.state / name).read_text().strip()
+
+
+def _worker(cfg: Config, cmd: str) -> str:
+    return sh(
+        ["ssh", "-o", "BatchMode=yes", "-o", "ServerAliveInterval=30", "-p", str(cfg.worker_port), cfg.worker, cmd],
+        check=False,
+    )
+
+
+def _rsync(src: str, dst: str, cfg: Config) -> None:
+    sh(["rsync", "-az", "--delete", "-e", f"ssh -o BatchMode=yes -p {cfg.worker_port}", src, dst])
 
 
 # ─── round bookkeeping ─────────────────────────────────────────────────────────────────────────────
@@ -99,6 +116,44 @@ def log(rd: Path, stage: str, **fields) -> None:
     with (rd / "phases.jsonl").open("a") as f:
         f.write(json.dumps(rec) + "\n")
     print(f"[{rd.name}] {stage} {json.dumps(fields)[:200]}", flush=True)
+
+
+def _commit(cfg: Config, message: str, paths: tuple[str, ...] = ("rounds", "docs/live")) -> None:
+    sh(["git", "add", *paths], cwd=cfg.repo)
+    if sh(["git", "status", "--porcelain", *paths], cwd=cfg.repo).strip():
+        sh(["git", "commit", "-q", "-m", message], cwd=cfg.repo)
+        sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)
+        sh(["git", "push", "-q", "origin", BRANCH], cwd=cfg.repo)
+
+
+def live(cfg: Config, rd: Path, stage: str, *, progress: dict | None = None, push: bool = True) -> None:
+    """The dashboard's single source: the current round's stage and progress, and the closed-round history."""
+    phases_path = rd / "phases.jsonl"
+    phases = [json.loads(line) for line in phases_path.read_text().splitlines()] if phases_path.exists() else []
+    seal_path, index_path = rd / "seal.json", cfg.repo / "rounds" / "index.json"
+    sealed = json.loads(seal_path.read_text()) if seal_path.exists() else {}
+    history = json.loads(index_path.read_text())["rounds"] if index_path.exists() else []
+    state = {
+        "schema": "sh-live-v2",
+        "updated": time.time(),
+        "round_id": rd.name,
+        "stage": stage,
+        "started": phases[0]["t"] if phases else time.time(),
+        "phases": [{"stage": p["stage"], "t": p["t"]} for p in phases],
+        "tasks": len(list((rd / "tasks").glob("*.json"))) if (rd / "tasks").exists() else 0,
+        "active": sealed.get("active", {}),
+        "rejected": sealed.get("rejected", {}),
+        "progress": progress or {},
+        "history": history[-20:],
+        "repo": REPO,
+        "branch": BRANCH,
+        "hf_repo": HF_REPO,
+    }
+    out = cfg.repo / LIVE
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(state, indent=1))
+    if push:
+        _commit(cfg, f"{rd.name}: live — {stage}", paths=("docs/live",))
 
 
 # ─── stages ────────────────────────────────────────────────────────────────────────────────────────
@@ -129,10 +184,50 @@ def mint(cfg: Config, round_id: str, rd: Path) -> None:
     log(rd, "mint", tasks=n)
 
 
+def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path) -> dict | None:
+    """Materialise `submissions/<hotkey>/` as of `ref` into `dest`; None if there is nothing there."""
+    listing = sh(["git", "ls-tree", "-r", "--name-only", ref, f"submissions/{hotkey}/"], cwd=cfg.repo, check=False)
+    prefix = f"submissions/{hotkey}/"
+    rels = [r for r in listing.split() if r.startswith(prefix)]
+    if not rels:
+        return None
+    shutil.rmtree(dest, ignore_errors=True)
+    dest.mkdir(parents=True)
+    for rel in rels:
+        out = dest / rel[len(prefix) :]
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(sh(["git", "show", f"{ref}:{rel}"], cwd=cfg.repo).encode())
+    files, problems = collect(dest)
+    problems += lint(files)
+    return {"files": files, "problems": problems, "digest": bundle_digest(files)}
+
+
+def _changed_submissions(cfg: Config, base: str, head: str) -> list[str]:
+    names = sh(["git", "diff", "--name-only", base, head, "--", "submissions/"], cwd=cfg.repo, check=False)
+    return sorted({p.split("/")[1] for p in names.split() if p.count("/") >= 2 and p.split("/")[1] != "README.md"})
+
+
 def seal(cfg: Config, round_id: str, rd: Path) -> dict:
-    """Which bundles are in this round: every open `sh:strategy` PR whose lint passed, by head SHA and digest.
-    Decided before evaluation and published with the tasks, so it cannot be revised after results."""
-    sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)  # the sealed head SHAs must be readable locally
+    """Which bundles are in this round, decided before any evaluation and published with the tasks.
+
+    Two sources. **Incumbents**: strategies already merged into `submissions/` on the branch — a crowned king
+    defends the crown every round without resubmitting. **Challengers**: every open `sh:strategy` PR whose lint
+    passes, taken at its head SHA so a later push cannot change what was sealed, and carrying exactly one new
+    or changed submission. A challenger for a hotkey supersedes that hotkey's incumbent."""
+    sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
+    bundles = rd / "bundles"
+    bundles.mkdir(exist_ok=True)
+    tip = f"origin/{BRANCH}"
+    active: dict[str, dict] = {}
+    rejected: dict[str, str] = {}
+    listing = sh(["git", "ls-tree", "--name-only", tip, "submissions/"], cwd=cfg.repo, check=False)
+    for entry in listing.split():
+        hotkey = entry.split("/")[-1]
+        if not hotkey or hotkey == "README.md":
+            continue
+        b = _bundle_from_tree(cfg, tip, hotkey, bundles / hotkey)
+        if b and not b["problems"]:
+            active[hotkey] = {"pr": None, "head": tip, "bundle_sha256": b["digest"], "incumbent": True}
     prs = json.loads(
         gh(
             "pr",
@@ -151,33 +246,19 @@ def seal(cfg: Config, round_id: str, rd: Path) -> dict:
             "100",
         )
     )
-    active, rejected = {}, {}
     for pr in prs:
         head = pr["headRefOid"]
-        bundles = rd / "bundles"
-        bundles.mkdir(exist_ok=True)
-        # The bundle as of the sealed head SHA — not the branch tip, which the miner may move later.
-        listing = sh(["git", "ls-tree", "-r", "--name-only", head, "submissions/"], cwd=cfg.repo, check=False)
-        hotkeys = sorted({p.split("/")[1] for p in listing.split() if p.count("/") >= 2})
-        if len(hotkeys) != 1:
-            rejected[pr["number"]] = f"{len(hotkeys)} submission directories"
+        changed = _changed_submissions(cfg, tip, head)
+        if len(changed) != 1:
+            rejected[str(pr["number"])] = f"{len(changed)} changed submission directories (need exactly 1)"
             continue
-        hotkey = hotkeys[0]
-        dest = bundles / hotkey
-        shutil.rmtree(dest, ignore_errors=True)
-        dest.mkdir(parents=True)
-        for rel in listing.split():
-            if rel.startswith(f"submissions/{hotkey}/"):
-                out = dest / rel[len(f"submissions/{hotkey}/") :]
-                out.parent.mkdir(parents=True, exist_ok=True)
-                out.write_bytes(sh(["git", "show", f"{head}:{rel}"], cwd=cfg.repo).encode())
-        files, problems = collect(dest)
-        problems += lint(files)
-        if problems:
-            rejected[pr["number"]] = problems[0]
-            shutil.rmtree(dest, ignore_errors=True)
+        hotkey = changed[0]
+        b = _bundle_from_tree(cfg, head, hotkey, bundles / hotkey)
+        if b is None or b["problems"]:
+            rejected[str(pr["number"])] = (b or {}).get("problems", ["empty submission"])[0]
+            shutil.rmtree(bundles / hotkey, ignore_errors=True)
             continue
-        active[hotkey] = {"pr": pr["number"], "head": head, "bundle_sha256": bundle_digest(files)}
+        active[hotkey] = {"pr": pr["number"], "head": head, "bundle_sha256": b["digest"], "incumbent": False}
     record = {
         "schema": "sh-seal-v2",
         "round_id": round_id,
@@ -186,7 +267,13 @@ def seal(cfg: Config, round_id: str, rd: Path) -> dict:
         "rejected": rejected,
     }
     (rd / "seal.json").write_text(json.dumps(record, indent=1))
-    log(rd, "seal", active=len(active), rejected=len(rejected))
+    log(
+        rd,
+        "seal",
+        active=len(active),
+        incumbents=sum(1 for a in active.values() if a["incumbent"]),
+        rejected=len(rejected),
+    )
     return record
 
 
@@ -196,36 +283,62 @@ def publish_open(cfg: Config, round_id: str, rd: Path) -> None:
     dest.mkdir(parents=True, exist_ok=True)
     shutil.copytree(rd / "tasks", dest / "tasks", dirs_exist_ok=True)
     shutil.copy(rd / "seal.json", dest / "seal.json")
+    sealed = json.loads((rd / "seal.json").read_text())
+    live(cfg, rd, "evaluate", progress={"done": 0, "total": 0, "by_surface": {}}, push=False)
     _commit(
         cfg,
         f"{round_id}: open — {len(list((rd / 'tasks').glob('*.json')))} sealed instances, "
-        f"{len(json.loads((rd / 'seal.json').read_text())['active'])} active bundles",
+        f"{len(sealed['active'])} active bundles",
     )
     log(rd, "publish_open")
 
 
-def _rsync(src: str, dst: str, cfg: Config) -> None:
-    sh(["rsync", "-az", "--delete", "-e", f"ssh -o BatchMode=yes -p {cfg.worker_port}", src, dst])
+def _progress(cfg: Config, remote: str, total: int) -> dict:
+    """Per-surface counts from the worker's episode records so far — what the dashboard shows mid-round."""
+    raw = _worker(
+        cfg,
+        f"cd {remote}/episodes 2>/dev/null && for s in *; do "
+        f"n=$(ls $s/*/episode.json 2>/dev/null | wc -l); "
+        f"v=$(grep -l '\"verified_success\": true' $s/*/episode.json 2>/dev/null | wc -l); "
+        f'echo "$s $n $v"; done',
+    )
+    by = {}
+    for line in raw.split("\n"):
+        parts = line.split()
+        if len(parts) == 3 and parts[1].isdigit():
+            by[parts[0]] = {"n": int(parts[1]), "verified": int(parts[2])}
+    return {"done": sum(v["n"] for v in by.values()), "total": total, "by_surface": by}
 
 
 def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
-    """Runs on the GPU worker. The worker gets exactly what an episode needs — tasks, the withheld halves for
-    the grader, the checks, the canon and the sealed bundles — and returns the episodes. No credential is ever
-    on it; nothing it does needs one."""
+    """Runs on the GPU worker in the background while this side publishes progress every few minutes. The
+    worker gets exactly what an episode needs — tasks, withheld halves for the grader, checks, canon, the sealed
+    bundles — and hands the episodes back. No credential is ever on it."""
     remote = f"{cfg.worker_root}/rounds/{rd.name}"
-    sh(["ssh", "-o", "BatchMode=yes", "-p", str(cfg.worker_port), cfg.worker, f"mkdir -p {remote}"])
+    _worker(cfg, f"mkdir -p {remote}")
     for sub in ("tasks", "withheld", "checks", "canon", "bundles"):
         if (rd / sub).exists():
             _rsync(f"{rd / sub}/", f"{cfg.worker}:{remote}/{sub}/", cfg)
     surfaces = ["null", f"canon={remote}/canon"] + [f"{h}={remote}/bundles/{h}" for h in sealed["active"]]
-    cmd = (
-        f"cd {cfg.worker_root}/pkg && PYTHONPATH={cfg.worker_root}/pkg python3 -m sh.validator.batch "
+    total = len(surfaces) * len(list((rd / "tasks").glob("*.json")))
+    _worker(
+        cfg,
+        f"cd {cfg.worker_root}/pkg && PYTHONPATH={cfg.worker_root}/pkg setsid nohup python3 -m sh.validator.batch "
         f"--round {remote} --surfaces {','.join(surfaces)} --image {cfg.image} --inference unused "
         f"--out {remote}/episodes --concurrency {cfg.concurrency} --network sh-ep "
         f"--tokens {cfg.worker_root}/state/tokens --usage-dir {cfg.worker_root}/state/usage "
-        f"> {remote}/batch.log 2>&1; tail -3 {remote}/batch.log"
+        f"> {remote}/batch.log 2>&1 < /dev/null & echo started",
     )
-    sh(["ssh", "-o", "BatchMode=yes", "-o", "ServerAliveInterval=30", "-p", str(cfg.worker_port), cfg.worker, cmd])
+    last_push = 0.0
+    while True:
+        time.sleep(45)
+        running = _worker(cfg, f"pgrep -f 'batch --round {remote}' | wc -l").strip()
+        prog = _progress(cfg, remote, total)
+        if running == "0" or time.time() - last_push > 150:
+            live(cfg, rd, "evaluate", progress=prog)
+            last_push = time.time()
+        if running == "0":
+            break
     _rsync(f"{cfg.worker}:{remote}/episodes/", f"{rd / 'episodes'}/", cfg)
     n = len(list((rd / "episodes").rglob("episode.json")))
     if not n:
@@ -266,36 +379,87 @@ def close(cfg: Config, round_id: str, rd: Path) -> dict:
     return record
 
 
+def outcome(sealed: dict, weights: dict) -> dict:
+    """What happens to each PR the seal named: the top weight's PR is merged, every other challenger's is
+    closed. Pure, so it is testable. Only PRs the seal named are ever touched — a maintenance PR is never in
+    the seal, so it is never closed by the round."""
+    king = max(weights, key=weights.get) if weights and max(weights.values()) > 0 else None
+    king_pr = sealed["active"].get(king, {}).get("pr") if king else None
+    close_prs = sorted(
+        {info["pr"] for h, info in sealed["active"].items() if info.get("pr") and h != king}
+        | {int(n) for n in sealed.get("rejected", {})}
+    )
+    return {"king": king, "merge": king_pr, "close": close_prs}
+
+
 def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict) -> str | None:
-    """Scorecards on every PR, `scored` on every PR, the crown moved to the top weight. Returns the king."""
+    """Scorecards on every PR; `scored` on every PR; the crown moved to the king; the king's PR merged; every
+    other competition PR closed with the reason. Returns the king."""
     reveal = json.loads((rd / "close" / "reveal.json").read_text())
     (rd / "scorecards").mkdir(exist_ok=True)
-    weights = record["weights"]
-    king = max(weights, key=weights.get) if weights and max(weights.values()) > 0 else None
+    plan = outcome(sealed, record["weights"])
+    king = plan["king"]
     for hotkey, info in sealed["active"].items():
         card = render_scorecard(record, hotkey, reveal)
         (rd / "scorecards" / f"{hotkey}.md").write_text(card)
+        if not info.get("pr"):
+            continue  # an incumbent has no PR to write to; its card is published with the round
         body = f"### Round `{round_id}`\n\n" + card
         if hotkey == king:
-            body = "👑 **Crowned: top weight this round.**\n\n" + body
+            body = "👑 **Crowned: top weight this round. Merging.**\n\n" + body
+        else:
+            body += (
+                f"\n\n---\nNot crowned in `{round_id}`; this PR is closed with the round. "
+                "Resubmit to compete in the next one."
+            )
         gh("pr", "comment", str(info["pr"]), "--repo", REPO, "--body", body)
         gh("api", "-X", "POST", f"repos/{REPO}/issues/{info['pr']}/labels", "-f", f"labels[]={LABEL_SCORED}")
-    # One crown. Remove it wherever it was; place it on the king.
-    for pr in json.loads(
+    # One crown. Remove it wherever it was; place it on the king's PR.
+    crowned = json.loads(
         gh("pr", "list", "--repo", REPO, "--label", LABEL_CROWN, "--state", "all", "--json", "number", "--limit", "100")
-    ):
+    )
+    for pr in crowned:
         sh(["gh", "api", "-X", "DELETE", f"repos/{REPO}/issues/{pr['number']}/labels/{LABEL_CROWN}"], check=False)
-    if king:
-        gh(
-            "api",
-            "-X",
-            "POST",
-            f"repos/{REPO}/issues/{sealed['active'][king]['pr']}/labels",
-            "-f",
-            f"labels[]={LABEL_CROWN}",
+    if plan["merge"]:
+        gh("api", "-X", "POST", f"repos/{REPO}/issues/{plan['merge']}/labels", "-f", f"labels[]={LABEL_CROWN}")
+        merged = subprocess.run(
+            [
+                "gh",
+                "pr",
+                "merge",
+                str(plan["merge"]),
+                "--repo",
+                REPO,
+                "--squash",
+                "--subject",
+                f"crown {round_id}: {king}",
+            ],
+            capture_output=True,
+            text=True,
         )
-    # Late arrivals: PRs labelled after the seal are told when they start counting.
-    for pr in json.loads(
+        log(rd, "merge", pr=plan["merge"], ok=merged.returncode == 0, err=merged.stderr[-200:])
+    elif king:
+        log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown")
+    for number in plan["close"]:
+        reason = sealed.get("rejected", {}).get(str(number))
+        why = f"rejected at seal: {reason}" if reason else f"not crowned in `{round_id}`"
+        sh(
+            [
+                "gh",
+                "pr",
+                "close",
+                str(number),
+                "--repo",
+                REPO,
+                "--comment",
+                f"Closed with round `{round_id}` — {why}. Resubmit to compete in the next round.",
+            ],
+            check=False,
+        )
+    sealed_prs = {i["pr"] for i in sealed["active"].values() if i.get("pr")} | {
+        int(n) for n in sealed.get("rejected", {})
+    }
+    open_now = json.loads(
         gh(
             "pr",
             "list",
@@ -312,8 +476,9 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict) -
             "--limit",
             "100",
         )
-    ):
-        if pr["number"] not in {i["pr"] for i in sealed["active"].values()} and pr["number"] not in sealed["rejected"]:
+    )
+    for pr in open_now:
+        if pr["number"] not in sealed_prs:
             gh(
                 "pr",
                 "comment",
@@ -323,7 +488,7 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict) -
                 "--body",
                 f"Arrived after round `{round_id}` was sealed; active from the next round.",
             )
-    log(rd, "announce", king=king, scorecards=len(sealed["active"]))
+    log(rd, "announce", king=king, merged=plan["merge"], closed=plan["close"])
     return king
 
 
@@ -349,7 +514,9 @@ def export_and_upload(cfg: Config, round_id: str, rd: Path) -> dict:
 
 def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, king: str | None, exported: dict) -> None:
     """Everything a miner needs to check the round, in the repository, under the round."""
+    sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)  # the merge just landed
     dest = cfg.repo / "rounds" / round_id
+    dest.mkdir(parents=True, exist_ok=True)
     for name in ("close.json", "reveal.json"):
         shutil.copy(rd / "close" / name, dest / name)
     shutil.copytree(rd / "checks", dest / "checks", dirs_exist_ok=True)  # semantics of `custom` predicates
@@ -368,10 +535,13 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, king: str 
             "king": king,
             "weights": record["weights"],
             "commitments_ok": record["commitments_ok"],
+            "sft_rows": exported["manifest"]["sft_rows"],
+            "dpo_pairs": exported["manifest"]["dpo_pairs"],
             "hf": exported["upload"].get("url"),
         }
     ]
     index_path.write_text(json.dumps(index, indent=1))
+    live(cfg, rd, "done", push=False)
     _commit(
         cfg,
         f"{round_id}: close — king {king or 'none'}, {record['episodes']} episodes, "
@@ -380,30 +550,30 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, king: str 
     log(rd, "publish_close", king=king)
 
 
-def _commit(cfg: Config, message: str) -> None:
-    sh(["git", "add", "rounds"], cwd=cfg.repo)
-    if sh(["git", "status", "--porcelain", "rounds"], cwd=cfg.repo).strip():
-        sh(["git", "commit", "-q", "-m", message], cwd=cfg.repo)
-        sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)
-        sh(["git", "push", "-q", "origin", BRANCH], cwd=cfg.repo)
-
-
 # ─── the round, and the loop ───────────────────────────────────────────────────────────────────────
-def run_round(cfg: Config) -> dict:
+def run_round(cfg: Config, mock_miners: Path | None = None) -> dict:
     round_id = next_round_id(cfg)
     rd = cfg.rounds / round_id
     rd.mkdir(parents=True)
     log(rd, "start")
+    live(cfg, rd, "mint")
     mint(cfg, round_id, rd)
     sealed = seal(cfg, round_id, rd)
     publish_open(cfg, round_id, rd)
     evaluate(cfg, rd, sealed)
+    live(cfg, rd, "close")
     record = close(cfg, round_id, rd)
     king = announce(cfg, round_id, rd, record, sealed)
+    live(cfg, rd, "export", push=False)
     exported = export_and_upload(cfg, round_id, rd)
     publish_close(cfg, round_id, rd, record, king, exported)
     (rd / "DONE").write_text(json.dumps({"king": king, "weights": record["weights"]}))
     log(rd, "done", king=king)
+    if mock_miners:
+        from sh.cli.mock_miners import open_prs
+
+        opened = open_prs(mock_miners, REPO, BRANCH, cfg.repo, skip={king} if king else set())
+        log(rd, "mock_resubmit", opened=opened)
     return {"round_id": round_id, "king": king, "weights": record["weights"]}
 
 
@@ -418,6 +588,7 @@ def main(argv=None) -> int:
     ap.add_argument("--window", type=int, default=8)
     ap.add_argument("--once", action="store_true")
     ap.add_argument("--pause", type=int, default=60, help="seconds between rounds")
+    ap.add_argument("--mock-miners", help="directory of mock miner bundles to resubmit after each round (test only)")
     a = ap.parse_args(argv)
     cfg = Config(
         state=Path(a.state),
@@ -430,7 +601,7 @@ def main(argv=None) -> int:
     )
     while True:
         try:
-            result = run_round(cfg)
+            result = run_round(cfg, Path(a.mock_miners) if a.mock_miners else None)
             print(json.dumps(result), flush=True)
         except Exception as e:  # a failed round is logged and the loop goes on
             print(f"round failed: {e!r}", flush=True)

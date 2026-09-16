@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spark-Hermes Live</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #f7f5f0; --panel: #fffdf9; --ink: #1c1a17; --muted: #6c675d; --line: #e6e1d6;
+    --accent: #b8471b; --good: #1f6f4f; --warn: #9a6a14; --bad: #a8302f; --crown: #c99a1e;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #141310; --panel: #1c1a16; --ink: #ebe6dc; --muted: #9c968a; --line: #2c2924;
+    --accent: #e8763f; --good: #5fc493; --warn: #d9a441; --bad: #e06b6a; --crown: #e6b942; } }
+  :root[data-theme="dark"] {
+    --bg: #141310; --panel: #1c1a16; --ink: #ebe6dc; --muted: #9c968a; --line: #2c2924;
+    --accent: #e8763f; --good: #5fc493; --warn: #d9a441; --bad: #e06b6a; --crown: #e6b942; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans);
+         padding-block: 2rem; padding-left: 20px; padding-right: 20px; max-width: 64rem; margin-inline: auto; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem 1.2rem; margin-bottom: 1.4rem; }
+  h1 { font-size: 1.35rem; margin: 0; letter-spacing: -.01em; }
+  .meta { color: var(--muted); font-family: var(--mono); font-size: .8rem; }
+  .pulse { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; background: var(--good);
+           margin-right: .4rem; vertical-align: middle; animation: pulse 2s ease-in-out infinite; }
+  .stale .pulse { background: var(--warn); animation: none; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+  @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+  .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1rem 1.1rem; }
+  .panel h2 { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+              margin: 0 0 .7rem; font-weight: 600; }
+  .stages { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .stage { font-family: var(--mono); font-size: .78rem; padding: .25rem .55rem; border-radius: 4px;
+           border: 1px solid var(--line); color: var(--muted); }
+  .stage.done { color: var(--ink); border-color: var(--good); }
+  .stage.now { color: var(--bg); background: var(--accent); border-color: var(--accent); font-weight: 500; }
+  .bar { height: .6rem; background: var(--line); border-radius: 999px; overflow: hidden; margin: .5rem 0 .3rem; }
+  .bar > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .6s ease; }
+  .big { font-family: var(--mono); font-size: 1.6rem; font-weight: 500; letter-spacing: -.02em; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: .45rem .5rem; border-bottom: 1px solid var(--line); font-size: .9rem; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; }
+  .hk { font-family: var(--mono); font-size: .85rem; }
+  .tag { font-size: .68rem; padding: .1rem .4rem; border-radius: 3px; border: 1px solid var(--line);
+         color: var(--muted); margin-left: .4rem; vertical-align: middle; }
+  .tag.inc { border-color: var(--good); color: var(--good); }
+  .king { color: var(--crown); font-weight: 600; }
+  .zero { color: var(--muted); }
+  .wrap { overflow-x: auto; }
+  a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+  .note { color: var(--muted); font-size: .82rem; margin: .6rem 0 0; }
+  .empty { color: var(--muted); font-style: italic; }
+  footer { margin-top: 2rem; color: var(--muted); font-size: .8rem; line-height: 1.6; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Spark-Hermes <span id="round" class="meta">—</span></h1>
+  <span id="status" class="meta"><span class="pulse"></span>connecting…</span>
+</header>
+
+<div class="grid">
+  <section class="panel">
+    <h2>Round</h2>
+    <div class="stages" id="stages"></div>
+    <p class="note" id="timing"></p>
+  </section>
+  <section class="panel">
+    <h2>Evaluation</h2>
+    <div class="big" id="episodes">0 / 0</div>
+    <div class="bar"><i id="bar"></i></div>
+    <p class="note" id="evalnote">episodes graded on the validator's GPU, inside the sealed sandbox</p>
+  </section>
+  <section class="panel">
+    <h2>Sealed this round</h2>
+    <div class="big" id="nactive">0</div>
+    <p class="note">bundles, by PR head SHA and digest, fixed <em>before</em> evaluation</p>
+  </section>
+</div>
+
+<section class="panel" style="margin-top:1rem">
+  <h2>Surfaces</h2>
+  <div class="wrap"><table>
+    <thead><tr><th>surface</th><th>episodes</th><th>verified</th><th>rate</th><th>source</th></tr></thead>
+    <tbody id="surfaces"><tr><td colspan="5" class="empty">waiting for the seal</td></tr></tbody>
+  </table></div>
+  <p class="note"><code>null</code> is the pinned model with no strategy — the baseline every miner is measured against on the same instances. <code>canon</code> is the family's own published strategy, the yardstick.</p>
+</section>
+
+<section class="panel" style="margin-top:1rem">
+  <h2>Closed rounds</h2>
+  <div class="wrap"><table>
+    <thead><tr><th>round</th><th>king</th><th>weights</th><th>episodes</th><th>SFT</th><th>DPO</th><th>commitments</th><th>closed</th></tr></thead>
+    <tbody id="history"><tr><td colspan="8" class="empty">no round has closed yet</td></tr></tbody>
+  </table></div>
+</section>
+
+<footer>
+  Every number here is recomputable from published artefacts: each round's tasks and seal appear under
+  <code>rounds/&lt;id&gt;/</code> when it opens, and its <code>close.json</code>, <code>reveal.json</code>
+  (every withheld half and salt), scorecards and leaderboard when it closes. This page polls
+  <code>live.json</code>, which the validator rewrites at every stage. Strategies are pull requests against
+  <code>submissions/</code>; the crowned one is merged, the rest are closed with the round.
+  <span id="links"></span>
+</footer>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const STAGES = ["mint", "seal", "publish_open", "evaluate", "close", "announce", "export", "publish_close", "done"];
+  const LABELS = { mint: "mint", seal: "seal", publish_open: "publish", evaluate: "evaluate", close: "score",
+                   announce: "crown", export: "export", publish_close: "publish close", done: "done" };
+  const fmtT = (t) => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const ago = (t) => { const s = Math.max(0, (Date.now() / 1000) - t);
+    return s < 90 ? Math.round(s) + "s ago" : s < 5400 ? Math.round(s / 60) + " min ago" : Math.round(s / 3600) + " h ago"; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function render(live) {
+    const stale = (Date.now() / 1000 - live.updated) > 900;
+    document.body.classList.toggle("stale", stale);
+    $("round").textContent = live.round_id;
+    $("status").innerHTML = '<span class="pulse"></span>' + esc(live.stage) + " · updated " + ago(live.updated);
+
+    const reached = new Set((live.phases || []).map((p) => p.stage));
+    const nowIdx = STAGES.indexOf(live.stage);
+    $("stages").innerHTML = STAGES.map((s, i) => {
+      const cls = s === live.stage ? "now" : (reached.has(s) || i < nowIdx) ? "done" : "";
+      return '<span class="stage ' + cls + '">' + esc(LABELS[s]) + "</span>";
+    }).join("");
+    $("timing").textContent = "started " + fmtT(live.started) + " · " + live.tasks + " sealed instances";
+
+    const p = live.progress || {}; const done = p.done || 0, total = p.total || 0;
+    $("episodes").textContent = done + " / " + total;
+    $("bar").style.width = (total ? Math.round(100 * done / total) : 0) + "%";
+    if (live.stage !== "evaluate" && total && done >= total) $("evalnote").textContent = "evaluation complete";
+
+    const active = live.active || {};
+    $("nactive").textContent = Object.keys(active).length;
+    const by = p.by_surface || {};
+    const rows = ["null", "canon", ...Object.keys(active).sort()];
+    $("surfaces").innerHTML = rows.length ? rows.map((s) => {
+      const r = by[s] || { n: 0, verified: 0 };
+      const info = active[s];
+      const src = s === "null" ? "baseline" : s === "canon" ? "family canon"
+        : info && info.pr ? '<a href="https://github.com/' + esc(live.repo) + '/pull/' + info.pr + '">#' + info.pr + "</a>"
+        : "incumbent";
+      const tag = info ? (info.incumbent ? '<span class="tag inc">king</span>' : '<span class="tag">challenger</span>') : "";
+      const rate = r.n ? (100 * r.verified / r.n).toFixed(0) + "%" : "—";
+      return "<tr><td><span class='hk'>" + esc(s) + "</span>" + tag + "</td><td>" + r.n + "</td><td>" + r.verified +
+             "</td><td>" + rate + "</td><td>" + src + "</td></tr>";
+    }).join("") : '<tr><td colspan="5" class="empty">waiting for the seal</td></tr>';
+
+    const hist = (live.history || []).slice().reverse();
+    $("history").innerHTML = hist.length ? hist.map((h) => {
+      const w = Object.entries(h.weights || {}).sort((a, b) => b[1] - a[1])
+        .map(([k, v]) => "<span class='hk" + (v === 0 ? " zero" : "") + "'>" + esc(k) + " " + v.toFixed(2) + "</span>").join("<br>");
+      return "<tr><td><a href='../../rounds/" + esc(h.round_id) + "/index.html'>" + esc(h.round_id) + "</a></td>" +
+        "<td class='king'>" + (h.king ? "👑 " + esc(h.king) : "<span class='zero'>none</span>") + "</td>" +
+        "<td>" + (w || "—") + "</td><td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
+        "<td>" + (h.commitments_ok ? "<span style='color:var(--good)'>verified</span>" : "<span style='color:var(--bad)'>MISMATCH</span>") + "</td>" +
+        "<td>" + fmtT(h.closed_at) + "</td></tr>";
+    }).join("") : '<tr><td colspan="8" class="empty">no round has closed yet</td></tr>';
+
+    $("links").innerHTML = ' Repository: <a href="https://github.com/' + esc(live.repo) + '/tree/' + esc(live.branch) +
+      '/rounds">rounds/</a> · training data: <a href="https://huggingface.co/datasets/' + esc(live.hf_repo) + '">' + esc(live.hf_repo) + "</a>.";
+  }
+
+  async function tick() {
+    try {
+      const r = await fetch("live.json?t=" + Date.now(), { cache: "no-store" });
+      if (r.ok) render(await r.json());
+      else $("status").innerHTML = '<span class="pulse"></span>live.json ' + r.status;
+    } catch (e) {
+      $("status").innerHTML = '<span class="pulse"></span>unreachable';
+    }
+  }
+  tick();
+  setInterval(tick, 15000);
+})();
+</script>
+</body>
+</html>
