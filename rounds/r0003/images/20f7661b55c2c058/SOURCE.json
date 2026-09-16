@@ -1,8 +1,5 @@
 {
  "dataset": "hamishivi/agent-task-facet-terminal-6k",
  "license": "Apache-2.0",
- "task_id": "facet_terminal__FACET-Terminal-Tasks__task_007019",
- "source_path": "FACET-Terminal-Tasks/task_007019",
- "source_environment_hash": "20f7661b55c2c05894d87963c58b0cf34d910114cb45c2a06046b786540404bb",
  "base_image": "hermes-ubuntu:pin"
 }

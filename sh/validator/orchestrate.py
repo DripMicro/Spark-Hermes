@@ -274,8 +274,8 @@ def open_round(cfg: Config) -> Path:
 
 
 def publish_round(cfg: Config, rd: Path) -> None:
-    """The tasks, the window, the queue digests, and each task image's Dockerfile and provenance (never the
-    fixture tree — that is in the image the agent sees, and upstream), committed where miners can read them."""
+    """The tasks, the window, the queue digests, and each task image's tag and attribution, committed where miners
+    can read them. Not the Dockerfile or the fixture tree: both can fingerprint the upstream task."""
     round_id = rd.name
     dest = cfg.repo / "rounds" / round_id
     dest.mkdir(parents=True, exist_ok=True)
@@ -284,7 +284,7 @@ def publish_round(cfg: Config, rd: Path) -> None:
     for ctx in sorted((rd / "images").glob("*/")) if (rd / "images").exists() else []:
         pub = dest / "images" / ctx.name
         pub.mkdir(parents=True, exist_ok=True)
-        for name in ("Dockerfile", "TAG", "SOURCE.json"):
+        for name in ("TAG", "SOURCE.json"):  # not the Dockerfile: its build steps can fingerprint the upstream task
             if (ctx / name).exists():
                 shutil.copy(ctx / name, pub / name)
     # The daemon rewrites its index only after its next mint, so drop the round just taken and anything not READY.
@@ -464,15 +464,6 @@ def one_per_hotkey(prs: list[dict], *, now: float | None = None) -> tuple[dict[s
     return keep, superseded
 
 
-def _signed_at(cfg: Config, head: str, hotkey: str) -> int | None:
-    raw = sh(["git", "show", f"{head}:submissions/{hotkey}/attestation.json"], cwd=cfg.repo, check=False)
-    try:
-        at = json.loads(raw).get("signed_at")
-    except (ValueError, AttributeError):
-        return None
-    return at if isinstance(at, int) and not isinstance(at, bool) else None
-
-
 def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dict], dict[str, str]]:
     """What a seal taken now would contain: `(active, rejected)`, with every bundle materialised under `bundles`.
 
@@ -497,28 +488,38 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
     for pr in prs:
         if pr_role(pr["changed"]) == "malformed":
             rejected[str(pr["number"])] = f"{len(pr['changed'])} changed submission directories (need exactly 1)"
-    strategies = [
-        {**p, "signed_at": _signed_at(cfg, p["headRefOid"], p["changed"][0])}
-        for p in prs
-        if pr_role(p["changed"]) == "strategy"
-    ]
-    keep, superseded = one_per_hotkey(strategies)
-    rejected.update({str(n): why for n, why in superseded.items()})
+    # Every strategy PR is checked in full *before* choosing one per hotkey. Choosing first let a PR carrying a
+    # victim's bundle with a forged, later signed_at win the choice, fail its signature, and take the victim's
+    # real submission out of the round with it.
     answers = similarity.load(cfg.rounds / round_id)
-    for hotkey, pr in keep.items():
-        head = pr["headRefOid"]
-        b = _bundle_from_tree(cfg, head, hotkey, bundles / hotkey, round_id=round_id)
+    valid: list[dict] = []
+    for pr in (p for p in prs if pr_role(p["changed"]) == "strategy"):
+        hotkey, staged = pr["changed"][0], bundles / f".pr{pr['number']}"
+        b = _bundle_from_tree(cfg, pr["headRefOid"], hotkey, staged, round_id=round_id)
         if b is not None and not b["problems"] and answers:
-            files, _ = collect(bundles / hotkey)
+            files, _ = collect(staged)
             if copied := answers.refuse(similarity.bundle_text(files)):
                 b["problems"] = [copied]
         if b is None or b["problems"]:
             rejected[str(pr["number"])] = (b or {}).get("problems", ["empty submission"])[0]
-            shutil.rmtree(bundles / hotkey, ignore_errors=True)
-            if hotkey in active and active[hotkey]["incumbent"]:
-                _bundle_from_tree(cfg, tip, hotkey, bundles / hotkey, round_id=None)  # the incumbent stands
+            shutil.rmtree(staged, ignore_errors=True)
             continue
-        active[hotkey] = {"pr": pr["number"], "head": head, "bundle_sha256": b["digest"], "incumbent": False}
+        valid.append(
+            {**pr, "signed_at": _read(staged / "attestation.json", {}).get("signed_at"), "digest": b["digest"]}
+        )
+    keep, superseded = one_per_hotkey(valid)
+    rejected.update({str(n): why for n, why in superseded.items()})
+    for hotkey, pr in keep.items():
+        shutil.rmtree(bundles / hotkey, ignore_errors=True)  # a challenger supersedes the hotkey's incumbent
+        (bundles / f".pr{pr['number']}").rename(bundles / hotkey)
+        active[hotkey] = {
+            "pr": pr["number"],
+            "head": pr["headRefOid"],
+            "bundle_sha256": pr["digest"],
+            "incumbent": False,
+        }
+    for staged in bundles.glob(".pr*"):
+        shutil.rmtree(staged, ignore_errors=True)
     return active, rejected
 
 

@@ -241,3 +241,37 @@ def test_an_empty_window_reopens_the_round_instead_of_sealing_it(tmp_path, monke
     assert calls == ["wait", "reopen", "wait", "reopen", "wait"]
     logged = [json.loads(line) for line in (rd / "phases.jsonl").read_text().splitlines()]
     assert logged[-1]["stage"] == "window" and logged[-1]["submissions"] == 3
+
+
+def test_a_forged_later_resubmission_cannot_take_a_miners_real_submission_out_of_the_round(tmp_path, monkeypatch):
+    """#12 reopens A's bundle with signed_at moved later: the signature breaks. Choosing before verifying would have
+    picked #12, rejected it, and dropped #7 — A's real submission — with it."""
+    import sh.validator.orchestrate as o
+
+    cfg = _cfg(tmp_path)
+    (cfg.rounds / "r0009" / "tasks").mkdir(parents=True)
+    prs = [
+        {"number": 7, "headRefOid": "h7", "changed": ["A"]},
+        {"number": 12, "headRefOid": "h12", "changed": ["A"]},
+        {"number": 9, "headRefOid": "h9", "changed": ["B"]},
+    ]
+    signed = {
+        "h7": (2000, []),
+        "h12": (9000, ["L10 attestation.json: signature is not the hotkey's over this round and digest"]),
+        "h9": (1500, []),
+    }
+
+    def fake_bundle(cfg, ref, hotkey, dest, *, round_id):
+        at, problems = signed[ref]
+        dest.mkdir(parents=True, exist_ok=True)
+        (dest / "SOUL.md").write_text("Be careful.\n")
+        (dest / "attestation.json").write_text(json.dumps({"signed_at": at}))
+        return {"problems": problems, "digest": "d-" + ref, "attestation": None}
+
+    monkeypatch.setattr(o, "sh", lambda *a, **k: "")
+    monkeypatch.setattr(o, "_strategy_prs", lambda cfg, tip: prs)
+    monkeypatch.setattr(o, "_bundle_from_tree", fake_bundle)
+    active, rejected = o.candidates(cfg, "r0009", tmp_path / "bundles")
+    assert active["A"]["pr"] == 7 and active["B"]["pr"] == 9
+    assert rejected == {"12": "L10 attestation.json: signature is not the hotkey's over this round and digest"}
+    assert sorted(p.name for p in (tmp_path / "bundles").iterdir()) == ["A", "B"]  # staging directories cleaned up
