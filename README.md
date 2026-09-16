@@ -17,34 +17,38 @@ crowned strategy is merged as the incumbent; every verified trajectory is export
 | Path | What |
 |---|---|
 | `sh/validator/` | the round loop (`orchestrate.py`), episode runner and sealed sandbox, grader, inference proxy, batch runner |
-| `sh/scoring/` | scoring v2: paired delta against the baseline, one-sided lower bound, gated efficiency |
+| `sh/scoring/` | `v2.py` — payment: paired delta against the baseline over the pooled window, one-sided lower bound; `crown.py` — the crown, on this round alone |
 | `sh/predicates/` | the closed predicate vocabulary tasks are graded with; copied into the runner image at build |
-| `sh/exports/` | SFT rows and DPO pairs from a closed round, leak scan, Hugging Face upload |
-| `sh/cli/` | `lint` (the submission contract, the same check CI runs), `scorecard`, `mock_miners` |
+| `sh/exports/` | the king's SFT rows and DPO pairs from a closed round, leak scan, Hugging Face upload |
+| `sh/cli/` | `miner` (tasks / submit / status), `lint` (the contract CI runs), `attest` (the hotkey's signature), `scorecard`, `mock_miners` |
 | `sh/web/` | the static page for a closed round |
 | `submissions/` | one directory per hotkey, prose only — merged when crowned |
-| `rounds/` | every round's tasks, seal, `close.json`, `reveal.json`, checks, scorecards, `index.json` |
+| `rounds/` | every round's tasks, window, seal, `close.json`, `crown.json`, `reveal.json`, checks, scorecards; `queue.json` — digests of rounds minted ahead |
 | `docs/` | the site served by Pages: landing, live dashboard, round pages; pins and findings |
 
 Task families and their withheld halves live in a private repository; only what a round publishes is here.
 
 ## Compete
 
+A round opens with 8 tasks and a 2-hour submission window; the board shows the countdown.
+
 ```sh
-mkdir -p submissions/<hotkey> && $EDITOR submissions/<hotkey>/SOUL.md
-python -m sh.cli.lint submissions/<hotkey>        # ok, plus your bundle_sha256
-git checkout -b miner/<hotkey> && git add submissions/<hotkey> && git commit -m "miner: <hotkey>"
-gh pr create --base sh/v2-pipeline
+python -m sh.cli.miner tasks                                   # this round's tasks; nothing else exists to fetch
+$EDITOR my-strategy/SOUL.md                                    # prose for those tasks
+python -m sh.cli.miner submit --bundle my-strategy --key ~/.bittensor/wallets/<cold>/hotkeys/<hot> \
+        --checkout . --head-owner <your github user>           # one signed PR per hotkey; resubmit to replace
 ```
 
-The next round labels every open PR that touches `submissions/` `sh:strategy`, seals it by head SHA, evaluates it, and posts the scorecard on the PR. The
-crowned PR is merged; the others are closed with the round — resubmit to compete again.
+When the window closes the validator seals every strategy PR at its head SHA, evaluates, and posts the scorecard
+on the PR. The best Δ vs baseline on this round's instances is crowned and merged; the rest are closed; the next
+round opens at once. Payment pools the last 8 rounds. Details: [`submissions/README.md`](submissions/README.md).
 
 ## Run the validator
 
 ```sh
 uv sync --extra dev
-HF_TOKEN=... uv run python -m sh.validator.orchestrate --tasks 8 --difficulty 3 --window 8      # forever; --once for one round
+SH_SALT_SECRET=... python -m supply.queue --queue queue --plan process_lifecycle:8:3 --ahead 3   # in the private repo: mints rounds ahead
+HF_TOKEN=... uv run python -m sh.validator.orchestrate --queue ../Spark-Hermes-Withheld/queue       # forever; --once for one round
 uv run python -m sh.validator.orchestrate --help
 ```
 

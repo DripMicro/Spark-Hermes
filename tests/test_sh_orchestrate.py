@@ -7,19 +7,36 @@ import json
 from pathlib import Path
 
 import sh.exports.upload as up
-from sh.validator.orchestrate import Config, next_round_id, window_archive
+from sh.validator.orchestrate import Config, window_archive
 
 
 def _cfg(tmp_path: Path, window: int = 8) -> Config:
-    return Config(state=tmp_path / "state", repo=tmp_path / "repo", supply=tmp_path, pkg=tmp_path, window=window)
+    return Config(
+        state=tmp_path / "state", repo=tmp_path / "repo", queue=tmp_path / "queue", pkg=tmp_path, window=window
+    )
 
 
-def test_rounds_are_numbered_from_what_is_on_disk(tmp_path):
+def test_only_ready_rounds_are_taken_from_the_queue_in_order(tmp_path):
+    """A half-minted round has no READY marker and must never open."""
+    from sh.validator.orchestrate import queue_ready
+
     cfg = _cfg(tmp_path)
-    assert next_round_id(cfg) == "r0001"
-    (cfg.rounds / "r0001").mkdir(parents=True)
-    (cfg.rounds / "r0007").mkdir()
-    assert next_round_id(cfg) == "r0008"  # gaps do not matter; the latest does
+    for rid, ready in (("r0004", True), ("r0003", True), ("r0005", False)):
+        (cfg.queue / rid).mkdir(parents=True)
+        if ready:
+            (cfg.queue / rid / "READY").write_text("{}")
+    assert queue_ready(cfg) == ["r0003", "r0004"]
+
+
+def test_the_window_closes_on_the_clock(tmp_path):
+    from sh.validator.orchestrate import window_state
+
+    rd = tmp_path / "r0003"
+    rd.mkdir()
+    assert window_state(rd) == {"open": False, "remaining": 0}  # a legacy round has no window: nothing to wait for
+    (rd / "window.json").write_text(json.dumps({"opens_at": 1000.0, "closes_at": 8200.0, "seconds": 7200}))
+    assert window_state(rd, now=5000.0) == {"open": True, "remaining": 3200.0, "closes_at": 8200.0}
+    assert window_state(rd, now=9000.0)["open"] is False
 
 
 def _round_with_episode(cfg: Config, round_id: str) -> None:

@@ -21,6 +21,8 @@ import re
 import sys
 from pathlib import Path
 
+from sh.cli import attest
+
 MAX_SKILL = 15 * 1024
 MAX_FILE = 64 * 1024
 MAX_BUNDLE = 512 * 1024
@@ -123,17 +125,56 @@ def lint(files: dict) -> list[str]:
     return problems
 
 
-def check(root: Path) -> dict:
-    files, problems = collect(root)
-    problems += lint(files)
+def check_files(
+    files: dict,
+    problems: list[str],
+    *,
+    hotkey: str | None = None,
+    round_id: str | None = None,
+    require_attestation: bool = False,
+) -> dict:
+    """Lint already-collected files. `attestation.json` is the one non-prose file a bundle may carry: it is
+    lifted out before the digest and the prose rules, then checked against the digest, and against the hotkey
+    and round the caller expects (the seal passes both; a miner's local lint passes neither)."""
+    files = dict(files)
+    raw = files.pop(attest.FILE, None)
+    att = None
+    if raw is not None:
+        try:
+            att = json.loads(raw.decode("utf-8"))
+            if not isinstance(att, dict):
+                raise ValueError
+        except (UnicodeDecodeError, ValueError):
+            problems = problems + [f"L10 {attest.FILE}: not a JSON object"]
+            att = {}
+    digest = bundle_digest(files)
+    problems = problems + lint(files)
+    if att is not None or require_attestation:
+        problems += attest.problems(att, digest=digest, hotkey=hotkey, round_id=round_id)
     return {
         "schema": "sh-lint-v2",
-        "bundle": str(root),
         "files": sorted(files),
         "bytes": sum(len(b) for b in files.values()),
-        "bundle_sha256": bundle_digest(files),
+        "bundle_sha256": digest,
+        "attestation": None
+        if not att
+        else {
+            "hotkey": att.get("hotkey"),
+            "round_id": att.get("round_id"),
+            "verified": attest.verify(att) if attest.available() and not problems else None,
+        },
         "ok": not problems,
         "problems": problems,
+    }
+
+
+def check(
+    root: Path, *, hotkey: str | None = None, round_id: str | None = None, require_attestation: bool = False
+) -> dict:
+    files, problems = collect(root)
+    return {
+        "bundle": str(root),
+        **check_files(files, problems, hotkey=hotkey, round_id=round_id, require_attestation=require_attestation),
     }
 
 
@@ -141,18 +182,25 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="lint a strategy bundle and print its canonical digest")
     ap.add_argument("bundle")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--hotkey", help="the hotkey the attestation must name (the seal passes the directory name)")
+    ap.add_argument("--round", help="the round the attestation must be signed for")
+    ap.add_argument("--require-attestation", action="store_true", help="a missing attestation.json is a problem")
     a = ap.parse_args(argv)
     root = Path(a.bundle)
     if not root.is_dir():
         print(f"{root} is not a directory", file=sys.stderr)
         return 2
-    result = check(root)
+    result = check(root, hotkey=a.hotkey, round_id=a.round, require_attestation=a.require_attestation)
     if a.json:
         print(json.dumps(result, indent=1))
     else:
         print(f"bundle   {root}")
         print(f"files    {len(result['files'])} ({result['bytes']} bytes)")
         print(f"digest   {result['bundle_sha256']}")
+        if result["attestation"]:
+            att = result["attestation"]
+            state = {True: "verified", False: "INVALID", None: "unverified here"}[att["verified"]]
+            print(f"signed   {att['hotkey']} for {att['round_id']} — {state}")
         if result["ok"]:
             print("lint     ok")
         else:

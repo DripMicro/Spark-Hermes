@@ -31,6 +31,10 @@ def _signed(x, digits: int = 3) -> str:
     return "—" if x is None else f"{x:+.{digits}f}"
 
 
+def _short(h: str) -> str:
+    return h if len(h) <= 16 else f"{h[:6]}…{h[-4:]}"
+
+
 def _cls(x) -> str:
     return "zero" if not x else ("pos" if x > 0 else "neg")
 
@@ -55,7 +59,7 @@ def render(close: dict, meta: dict | None = None) -> str:
         crown = ' <span class="crown" title="crowned">👑</span>' if h == king else ""
         why = f'<span class="why">{_e(s["reason"])}</span>' if w == 0 and s.get("reason") else ""
         body.append(
-            f'<tr><td class="l"><span class="hk">{_e(h)}</span>{crown}{why}</td><td>{rank}</td><td>{s["n"]}</td>'
+            f'<tr><td class="l"><span class="hk" title="{_e(h)}">{_e(_short(h))}</span>{crown}{why}</td><td>{rank}</td><td>{s["n"]}</td>'
             f'<td class="{_cls(s.get("mean_d"))}">{_signed(s.get("mean_d"))}</td><td>{s.get("delta_c", 0):.3f}</td>'
             f"<td>{'yes' if s.get('gate') else 'no'}</td><td>{s.get('overfit_rate', 0):.2f}</td><td>{s.get('dq', 0)}</td>"
             f'<td>{s.get("score", 0):.4f}</td><td class="{"" if w else "zero"}">{w:.3f}</td></tr>'
@@ -66,6 +70,17 @@ def render(close: dict, meta: dict | None = None) -> str:
         for f, r in close.get("family_stats", {}).items()
     )
 
+    crowned = meta.get("crown") or {}
+    this_round = []
+    st_all = crowned.get("standings", {})
+    for h in sorted(st_all, key=lambda h: (st_all[h].get("rank") or 10**6, -(st_all[h].get("delta") or -9), h)):
+        st = st_all[h]
+        crown_mark = ' <span class="crown" title="crowned">👑</span>' if h == crowned.get("king") else ""
+        this_round.append(
+            f'<tr><td class="l"><span class="hk" title="{_e(h)}">{_e(_short(h))}</span>{crown_mark}</td>'
+            f"<td>{st.get('rank') or '—'}</td><td>{st.get('n', 0)}</td><td>{st.get('verified', 0)}</td>"
+            f'<td class="{_cls(st.get("delta"))}">{_signed(st.get("delta"))}</td></tr>'
+        )
     verified = close.get("commitments_verified", {})
     checked = sum(1 for v in verified.values() if v is not None)
     ok = close.get("commitments_ok")
@@ -75,7 +90,12 @@ def render(close: dict, meta: dict | None = None) -> str:
     stats = [
         (str(close.get("episodes", 0)), "episodes"),
         (str(len(close.get("tasks", []))), "instances"),
-        (f'<span class="crown">👑</span> {_e(king)}' if king else '<span class="zero">none</span>', "king"),
+        (
+            f'<span class="crown">👑</span> <span title="{_e(king)}">{_e(_short(king))}</span>'
+            if king
+            else '<span class="zero">none</span>',
+            "king",
+        ),
         ("—" if meta.get("sft_rows") is None else str(meta["sft_rows"]), "SFT rows"),
         ("—" if meta.get("dpo_pairs") is None else str(meta["dpo_pairs"]), "DPO pairs"),
         (
@@ -85,6 +105,7 @@ def render(close: dict, meta: dict | None = None) -> str:
     ]
     strip = "".join(f"<div class='stat'><b>{v}</b><span>{k}</span></div>" for v, k in stats)
     links = [
+        (f"{blob}/crown.json", "crown.json"),
         (f"{blob}/close.json", "close.json"),
         (f"{blob}/reveal.json", "reveal.json"),
         (f"{tree}/scorecards", "scorecards"),
@@ -118,7 +139,14 @@ def render(close: dict, meta: dict | None = None) -> str:
   <div class="head"><h1>Round {_e(rid)}</h1><span class="muted small">closed {_e(when) if when else "—"} · era {_e(close.get("era", ""))} · {_e(close.get("schema", ""))}</span></div>
   <div class="strip">{strip}</div>
   <section class="panel">
-    <h2>Scores <small>Δc, the one-sided 90% lower bound of Δ vs baseline, is what pays</small></h2>
+    <h2>This round <small>{_e(crowned.get("rule", "the crown is decided on this round's instances alone"))}</small></h2>
+    <div class="wrap"><table>
+      <thead><tr><th class="l">strategy</th><th>rank</th><th title="instances shared with the baseline this round">paired</th><th>verified</th><th title="mean of (pass − baseline pass) per instance, this round">Δ vs baseline</th></tr></thead>
+      <tbody>{"".join(this_round) or '<tr><td class="empty" colspan="5">no crown standings for this round</td></tr>'}</tbody>
+    </table></div>
+  </section>
+  <section class="panel">
+    <h2>Payment <small>pooled over the window — Δc, the one-sided 90% lower bound of Δ vs baseline, is what pays</small></h2>
     <div class="wrap"><table>
       <thead><tr><th class="l">strategy</th><th>#</th><th>episodes</th><th title="mean of (miner pass − baseline pass) per instance">Δ vs baseline</th><th title="one-sided 90% lower bound of Δ vs baseline">Δc</th><th title="efficiency term admitted">gate</th><th title="passed the published check while failing the withheld one">overfit</th><th title="disqualified episodes">dq</th><th>score</th><th>weight</th></tr></thead>
       <tbody>{"".join(body) or '<tr><td class="empty" colspan="10">no strategies were sealed</td></tr>'}</tbody>

@@ -1,29 +1,28 @@
 """The round loop (spec §9.1) — every stage, unattended, forever.
 
-    mint -> seal -> publish open -> evaluate -> close -> scorecards + crown -> export -> upload -> publish close -> next
+    open -> window (2 h) -> seal -> evaluate -> close -> crown -> announce -> export -> publish -> next, at once
 
-Runs wherever the validator's credentials live; the GPU worker is reached over ssh and holds none. GitHub is
-the miners' surface: a strategy is a pull request against `submissions/`, the round's tasks appear under
-`rounds/<id>/tasks/` when the round opens, and everything the round produced — the revealed withheld halves and
-their salts, the scores, the leaderboard, every scorecard — is committed under `rounds/<id>/` when it closes.
-`docs/live/live.json` is rewritten at every stage change and every few minutes during evaluation, and the
-dashboard at `docs/live/` polls it. Nothing a miner is judged by is kept where a miner cannot see it.
+Tasks are minted ahead by the private queue daemon (`supply.queue`), so a round opens the instant the previous
+one closes. Opening publishes the round's tasks and its **submission window**; miners fetch the tasks with the
+CLI and submit one signed pull request per hotkey, replacing it as often as they like until the window closes.
+The seal takes every strategy PR at its head SHA at that instant, verifies the hotkey's signature over this
+round and this digest, evaluates, and pays on the pooled window while crowning on this round alone: the
+crowned PR is merged as the incumbent, every other competition PR is closed with the reason, and a PR that
+arrives after the seal is closed as outside the window.
 
-The round's verdict is enforced on the PRs themselves: the crowned strategy's PR is **merged** into
-`submissions/` and defends the crown as an incumbent in every later round; every other competition PR the
-seal named is **closed** with the reason, and a miner who wants another go opens a new one. PRs the seal never
-named — maintenance, dependencies — are never touched.
+Runs wherever the validator's credentials live; the GPU worker is reached over ssh and holds none. Everything
+a miner is judged by is published under `rounds/<id>/` and mirrored into `docs/live/live.json` for the board.
 
 Transparency rules the loop enforces, each because its absence would let a validator cheat quietly:
 
-  * a bundle is sealed into a round by its PR head SHA and digest *before* any evaluation, and the seal is
-    published with the tasks — a validator cannot pick which submission "counted" after seeing results;
+  * the window's open and close times are published with the tasks, before any submission exists;
+  * a bundle is sealed by PR head SHA and digest before any evaluation, and the seal is published;
   * the withheld half is committed to in the published task and revealed at close with its salt;
-  * a PR that appears after the seal is told, on the PR, that it is active from the next round;
-  * the crown is the top weight of the *published* close.json, recomputable by anyone.
+  * future rounds exist only as digests (`rounds/queue.json`) until they open — verifiable, unreadable;
+  * the crown is recomputable from the published episodes; the weights from the published close.json.
 
-    python -m sh.validator.orchestrate --once                       # one round
-    python -m sh.validator.orchestrate --mock-miners DIR            # forever, with mock challengers resubmitting
+    python -m sh.validator.orchestrate --queue ../Spark-Hermes-Withheld/queue
+    python -m sh.validator.orchestrate --queue ... --mock-miners DIR --mock-keys DIR   # test challengers
 """
 
 from __future__ import annotations
@@ -37,12 +36,15 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
-from sh.cli.lint import bundle_digest, collect, lint
+from sh.cli.lint import check_files, collect
 from sh.cli.scorecard import render as render_scorecard
 from sh.exports.build import build as build_exports
 from sh.exports.upload import upload as upload_exports
+from sh.scoring.crown import crown as crown_rule
 from sh.validator.round import close as close_round
+from sh.validator.stats import load_episodes
 from sh.web.build import render as render_leaderboard
 
 REPO = "gittensor-model-hub/Spark-Hermes"
@@ -50,6 +52,7 @@ BRANCH = "sh/v2-pipeline"
 LABEL_STRATEGY, LABEL_SCORED, LABEL_CROWN = "sh:strategy", "sh:round:scored", "sh:round:crown"
 HF_REPO = "gittensor-model-hub/spark-hermes-rounds"
 LIVE = "docs/live/live.json"  # what the dashboard polls; committed on every stage change
+STAGES = ("open", "window", "seal", "evaluate", "close", "crown", "announce", "export", "publish_close", "done")
 
 
 @dataclass
@@ -59,16 +62,15 @@ class Config:
 
     state: Path  # durable validator state: rounds/, archive/, salt secret
     repo: Path  # a checkout of BRANCH the loop commits to
-    supply: Path  # the private supply package's parent
+    queue: Path  # the private queue daemon's directory of minted rounds
     pkg: Path  # the public package's parent
     worker: str = "root@91.224.44.223"
     worker_port: int = 50199
     worker_root: str = "/root/sh"  # holds pkg/ (the public package), state/tokens, state/usage
     image: str = "family-process-lifecycle:pin"
-    family: str = "process_lifecycle"
-    difficulty: int = 3
-    tasks_per_round: int = 8
-    window: int = 8
+    window: int = 8  # rounds pooled for payment
+    window_s: int = 2 * 3600  # the submission window
+    min_paired: int = 4  # instances a strategy must share with the baseline to be crowned
     concurrency: int = 2
     era: str = "e0"
 
@@ -88,8 +90,10 @@ def gh(*args: str) -> str:
     return sh(["gh", *args])
 
 
-def _secret(cfg: Config, name: str) -> str:
-    return (cfg.state / name).read_text().strip()
+def _label(number: int, name: str) -> None:
+    """Add a label to a PR, creating the label if the repository has never seen it; idempotent."""
+    sh(["gh", "label", "create", name, "--repo", REPO, "--color", "5319e7", "--force"], check=False)
+    sh(["gh", "api", "-X", "POST", f"repos/{REPO}/issues/{number}/labels", "-f", f"labels[]={name}"], check=False)
 
 
 def _worker(cfg: Config, cmd: str) -> str:
@@ -100,13 +104,8 @@ def _worker(cfg: Config, cmd: str) -> str:
 
 
 def _worker_launch(cfg: Config, cmd: str) -> None:
-    """Start a long-running command on the worker and come back at once.
-
-    A plain `ssh host 'cmd &'` does not return until sshd sees every pipe close, and in round r0001 it held the
-    control plane for the entire evaluation — the progress loop never ran and the dashboard sat on "publish".
-    `-f` backgrounds ssh after authentication and `-n` detaches stdin, so this returns as soon as the remote
-    shell accepts the command; the polling loop, not this call, is the source of truth for whether the job is
-    running. A timeout guards the remaining case where even the handshake hangs."""
+    """Start a long-running command on the worker and come back at once. `-f` backgrounds ssh after
+    authentication and `-n` detaches stdin; the polling loop, not this call, decides whether the job runs."""
     try:
         subprocess.run(
             ["ssh", "-f", "-n", "-o", "BatchMode=yes", "-p", str(cfg.worker_port), cfg.worker, cmd],
@@ -123,13 +122,6 @@ def _rsync(src: str, dst: str, cfg: Config) -> None:
 
 
 # ─── round bookkeeping ─────────────────────────────────────────────────────────────────────────────
-def next_round_id(cfg: Config) -> str:
-    cfg.rounds.mkdir(parents=True, exist_ok=True)
-    done = sorted(p.name for p in cfg.rounds.iterdir() if p.is_dir() and p.name.startswith("r"))
-    n = int(done[-1][1:]) + 1 if done else 1
-    return f"r{n:04d}"
-
-
 def log(rd: Path, stage: str, **fields) -> None:
     rec = {"t": time.time(), "stage": stage, **fields}
     with (rd / "phases.jsonl").open("a") as f:
@@ -143,34 +135,47 @@ def _commit(cfg: Config, message: str, paths: tuple[str, ...] = ("rounds", "docs
         return
     sh(["git", "add", *paths], cwd=cfg.repo)
     if sh(["git", "status", "--porcelain", *paths], cwd=cfg.repo).strip():
-        sh(
-            ["git", "commit", "-q", "-m", message, "--", *paths], cwd=cfg.repo
-        )  # only these paths, whatever else is staged
+        sh(["git", "commit", "-q", "-m", message, "--", *paths], cwd=cfg.repo)  # only these paths
         sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)
         sh(["git", "push", "-q", "origin", BRANCH], cwd=cfg.repo)
 
 
-def live(cfg: Config, rd: Path, stage: str, *, progress: dict | None = None, push: bool = True) -> None:
-    """The dashboard's single source: the current round's stage and progress, and the closed-round history."""
-    phases_path = rd / "phases.jsonl"
-    phases = [json.loads(line) for line in phases_path.read_text().splitlines()] if phases_path.exists() else []
-    seal_path, index_path = rd / "seal.json", cfg.repo / "rounds" / "index.json"
-    sealed = json.loads(seal_path.read_text()) if seal_path.exists() else {}
-    history = json.loads(index_path.read_text())["rounds"] if index_path.exists() else []
-    # Once the round has closed, its scores travel with the live state so the dashboard can show them at once,
-    # in the same shape the leaderboard and scorecards use — the same numbers, never a re-derivation.
-    close_path = rd / "close" / "close.json"
-    closed = json.loads(close_path.read_text()) if close_path.exists() else None
+def _read(path: Path, default: Any = None) -> Any:
+    return json.loads(path.read_text()) if path.exists() else default
+
+
+def live(
+    cfg: Config,
+    rd: Path,
+    stage: str,
+    *,
+    progress: dict | None = None,
+    submissions: int | None = None,
+    push: bool = True,
+) -> None:
+    """The dashboard's single source: the round, its window, its stage and progress, the crown and scores once
+    it closes, the queue of rounds waiting unread, and the history of closed rounds."""
+    phases = (
+        [json.loads(line) for line in (rd / "phases.jsonl").read_text().splitlines()]
+        if (rd / "phases.jsonl").exists()
+        else []
+    )
+    sealed = _read(rd / "seal.json", {})
+    history = _read(cfg.repo / "rounds" / "index.json", {"rounds": []})["rounds"]
+    closed = _read(rd / "close" / "close.json")
+    crowned = _read(rd / "close" / "crown.json")
+    prev = _read(cfg.repo / LIVE, {})
+    same = prev.get("round_id") == rd.name
     if progress is None:  # stages after evaluation carry the counts forward rather than blanking the board
-        prev_path = cfg.repo / LIVE
-        prev = json.loads(prev_path.read_text()) if prev_path.exists() else {}
-        progress = prev.get("progress") if prev.get("round_id") == rd.name else None
+        progress = prev.get("progress") if same else None
+    if submissions is None and same:
+        submissions = prev.get("submissions")
     scores = None
     if closed:
         weights = closed.get("weights", {})
         scores = {
             "weights": weights,
-            "king": outcome(sealed, weights)["king"] if sealed.get("active") is not None else None,
+            "king": crowned.get("king") if crowned else None,
             "per_hotkey": {
                 h: {
                     k: s.get(k)
@@ -185,17 +190,22 @@ def live(cfg: Config, rd: Path, stage: str, *, progress: dict | None = None, pus
             "commitments_ok": closed.get("commitments_ok"),
         }
     state = {
-        "schema": "sh-live-v2",
+        "schema": "sh-live-v3",
         "updated": time.time(),
         "round_id": rd.name,
         "stage": stage,
+        "stages": list(STAGES),
         "started": phases[0]["t"] if phases else time.time(),
         "phases": [{"stage": p["stage"], "t": p["t"]} for p in phases],
+        "window": _read(rd / "window.json"),
+        "submissions": submissions,
         "tasks": len(list((rd / "tasks").glob("*.json"))) if (rd / "tasks").exists() else 0,
         "active": sealed.get("active", {}),
         "rejected": sealed.get("rejected", {}),
         "progress": progress or {},
+        "crown": crowned,
         "scores": scores,
+        "queue": _read(cfg.repo / "rounds" / "queue.json", {}).get("ready", []),
         "history": history[-20:],
         "repo": REPO,
         "branch": BRANCH,
@@ -209,35 +219,78 @@ def live(cfg: Config, rd: Path, stage: str, *, progress: dict | None = None, pus
 
 
 # ─── stages ────────────────────────────────────────────────────────────────────────────────────────
-def mint(cfg: Config, round_id: str, rd: Path) -> None:
-    """mint -> derive -> gate -> seal, with the validator's real salt secret."""
-    sh(
-        [
-            sys.executable,
-            "-m",
-            "supply.mint",
-            "--round",
-            round_id,
-            "--plan",
-            f"{cfg.family}:{cfg.tasks_per_round}:{cfg.difficulty}",
-            "--out",
-            str(rd),
-        ],
-        cwd=cfg.supply,
-        env={"PYTHONPATH": f"{cfg.pkg}:{cfg.supply}", "SH_SALT_SECRET": _secret(cfg, "salt_secret")},
+def queue_ready(cfg: Config) -> list[str]:
+    if not cfg.queue.exists():
+        return []
+    return sorted(p.name for p in cfg.queue.iterdir() if p.is_dir() and (p / "READY").exists())
+
+
+def open_round(cfg: Config) -> Path:
+    """Take the lowest ready round from the queue, give it a window, and publish tasks + window + queue digests.
+    Waits — visibly, on the board — while the queue is empty."""
+    while not queue_ready(cfg):
+        print("[loop] queue empty; waiting for the daemon", flush=True)
+        time.sleep(60)
+    round_id = queue_ready(cfg)[0]
+    rd = cfg.rounds / round_id
+    cfg.rounds.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(cfg.queue / round_id), str(rd))  # consumed: the daemon refills
+    (rd / "READY").unlink(missing_ok=True)
+    now = time.time()
+    (rd / "window.json").write_text(
+        json.dumps({"opens_at": now, "closes_at": now + cfg.window_s, "seconds": cfg.window_s})
     )
-    fam = cfg.supply / "supply" / "families" / cfg.family
-    shutil.copytree(fam / "canon", rd / "canon", dirs_exist_ok=True)
-    (rd / "checks").mkdir(exist_ok=True)
-    shutil.copy(fam / "checks.py", rd / "checks" / f"{cfg.family}.py")
-    n = len(list((rd / "tasks").glob("*.json")))
-    if not n:
-        raise RuntimeError("minted no tasks")
-    log(rd, "mint", tasks=n)
+    log(rd, "start")
+    dest = cfg.repo / "rounds" / round_id
+    dest.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(rd / "tasks", dest / "tasks", dirs_exist_ok=True)
+    shutil.copy(rd / "window.json", dest / "window.json")
+    queue_index = _read(cfg.queue / "index.json", {"ready": []})
+    (cfg.repo / "rounds" / "queue.json").write_text(
+        json.dumps({"schema": "sh-queue-v1", "published_at": now, "ready": queue_index.get("ready", [])}, indent=1)
+    )
+    live(cfg, rd, "window", progress={}, submissions=0, push=False)
+    _commit(
+        cfg, f"{round_id}: open — {len(list((rd / 'tasks').glob('*.json')))} tasks, window {cfg.window_s // 60} min"
+    )
+    log(rd, "open", tasks=len(list((rd / "tasks").glob("*.json"))), closes_at=now + cfg.window_s)
+    return rd
 
 
-def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path) -> dict | None:
-    """Materialise `submissions/<hotkey>/` as of `ref` into `dest`; None if there is nothing there."""
+def window_state(rd: Path, now: float | None = None) -> dict:
+    """Where the round is in its window: seconds left, and whether submissions are open."""
+    w = _read(rd / "window.json")
+    now = now if now is not None else time.time()
+    if not w:
+        return {"open": False, "remaining": 0}
+    return {"open": now < w["closes_at"], "remaining": max(0.0, w["closes_at"] - now), "closes_at": w["closes_at"]}
+
+
+def wait_window(cfg: Config, rd: Path, mock: tuple[Path, Path] | None = None) -> None:
+    """Hold the round open until the window closes, showing the count of submissions on the board. Mock
+    challengers submit at the start of the window, signed for this round, like any miner would."""
+    if mock and "mock_submit" not in done_stages(rd):
+        from sh.cli.mock_miners import open_prs
+
+        opened = open_prs(mock[0], mock[1], REPO, BRANCH, cfg.repo, rd.name)
+        log(rd, "mock_submit", opened=opened)
+    last_push = 0.0
+    while True:
+        st = window_state(rd)
+        if not st["open"]:
+            break
+        if time.time() - last_push > 300:
+            n = len(_strategy_prs(cfg, f"origin/{BRANCH}"))
+            live(cfg, rd, "window", submissions=n)
+            last_push = time.time()
+        time.sleep(min(60.0, max(1.0, st["remaining"])))
+    log(rd, "window", closed_at=time.time())
+
+
+def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_id: str | None) -> dict | None:
+    """Materialise `submissions/<hotkey>/` as of `ref` into `dest` and lint it; None if there is nothing there.
+    With `round_id`, the bundle must carry a valid attestation for that round (a challenger); without, it is an
+    incumbent whose attestation was checked when it was sealed."""
     listing = sh(["git", "ls-tree", "-r", "--name-only", ref, f"submissions/{hotkey}/"], cwd=cfg.repo, check=False)
     prefix = f"submissions/{hotkey}/"
     rels = [r for r in listing.split() if r.startswith(prefix)]
@@ -250,8 +303,8 @@ def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path) -> dict | 
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_bytes(sh(["git", "show", f"{ref}:{rel}"], cwd=cfg.repo).encode())
     files, problems = collect(dest)
-    problems += lint(files)
-    return {"files": files, "problems": problems, "digest": bundle_digest(files)}
+    result = check_files(files, problems, hotkey=hotkey, round_id=round_id, require_attestation=round_id is not None)
+    return {"problems": result["problems"], "digest": result["bundle_sha256"], "attestation": result["attestation"]}
 
 
 def _changed_submissions(cfg: Config, base: str, head: str) -> list[str]:
@@ -283,7 +336,7 @@ def _strategy_prs(cfg: Config, tip: str) -> list[dict]:
             "--state",
             "open",
             "--json",
-            "number,headRefOid,headRefName,title,labels",
+            "number,headRefOid,headRefName,title,labels,createdAt",
             "--limit",
             "100",
         )
@@ -294,63 +347,74 @@ def _strategy_prs(cfg: Config, tip: str) -> list[dict]:
         if not changed:
             continue
         if LABEL_STRATEGY not in {lb["name"] for lb in pr.get("labels", [])}:
-            sh(
-                [
-                    "gh",
-                    "api",
-                    "-X",
-                    "POST",
-                    f"repos/{REPO}/issues/{pr['number']}/labels",
-                    "-f",
-                    f"labels[]={LABEL_STRATEGY}",
-                ],
-                check=False,
-            )
+            _label(pr["number"], LABEL_STRATEGY)
         out.append({**pr, "changed": changed})
     return out
 
 
-def seal(cfg: Config, round_id: str, rd: Path) -> dict:
-    """Which bundles are in this round, decided before any evaluation and published with the tasks.
+def one_per_hotkey(prs: list[dict]) -> tuple[dict[str, dict], dict[int, str]]:
+    """Of several open PRs for one hotkey, the newest counts; the others are rejected as superseded. Pure."""
+    keep: dict[str, dict] = {}
+    superseded: dict[int, str] = {}
+    for pr in sorted(prs, key=lambda p: p["number"]):
+        hotkey = pr["changed"][0]
+        if hotkey in keep:
+            superseded[keep[hotkey]["number"]] = f"superseded by #{pr['number']} (one PR per hotkey per round)"
+        keep[hotkey] = pr
+    return keep, superseded
 
-    Two sources. **Incumbents**: strategies already merged into `submissions/` on the branch — a crowned king
-    defends the crown every round without resubmitting. **Challengers**: every open PR touching `submissions/` whose lint
-    passes, taken at its head SHA so a later push cannot change what was sealed, and carrying exactly one new
-    or changed submission. A challenger for a hotkey supersedes that hotkey's incumbent."""
+
+def seal(cfg: Config, round_id: str, rd: Path) -> dict:
+    """Which bundles are in this round, decided the instant the window closes and published before evaluation.
+
+    **Incumbents**: strategies already merged into `submissions/` — a crowned king defends the crown every round
+    without resubmitting. **Challengers**: every open PR touching exactly one `submissions/<hotkey>/`, taken at
+    its head SHA, whose bundle lints and carries the hotkey's signature over *this* round and *this* digest. One
+    PR per hotkey: the newest wins. A challenger for a hotkey supersedes that hotkey's incumbent."""
     sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
     bundles = rd / "bundles"
     bundles.mkdir(exist_ok=True)
     tip = f"origin/{BRANCH}"
     active: dict[str, dict] = {}
     rejected: dict[str, str] = {}
-    listing = sh(["git", "ls-tree", "--name-only", tip, "submissions/"], cwd=cfg.repo, check=False)
-    for entry in listing.split():
+    for entry in sh(["git", "ls-tree", "--name-only", tip, "submissions/"], cwd=cfg.repo, check=False).split():
         hotkey = entry.split("/")[-1]
         if not hotkey or hotkey == "README.md":
             continue
-        b = _bundle_from_tree(cfg, tip, hotkey, bundles / hotkey)
+        b = _bundle_from_tree(cfg, tip, hotkey, bundles / hotkey, round_id=None)
         if b and not b["problems"]:
             active[hotkey] = {"pr": None, "head": tip, "bundle_sha256": b["digest"], "incumbent": True}
-    for pr in _strategy_prs(cfg, tip):
-        head, changed = pr["headRefOid"], pr["changed"]
-        if pr_role(changed) == "malformed":
-            rejected[str(pr["number"])] = f"{len(changed)} changed submission directories (need exactly 1)"
-            continue
-        hotkey = changed[0]
-        b = _bundle_from_tree(cfg, head, hotkey, bundles / hotkey)
+    prs = _strategy_prs(cfg, tip)
+    for pr in prs:
+        if pr_role(pr["changed"]) == "malformed":
+            rejected[str(pr["number"])] = f"{len(pr['changed'])} changed submission directories (need exactly 1)"
+    keep, superseded = one_per_hotkey([p for p in prs if pr_role(p["changed"]) == "strategy"])
+    rejected.update({str(n): why for n, why in superseded.items()})
+    for hotkey, pr in keep.items():
+        head = pr["headRefOid"]
+        b = _bundle_from_tree(cfg, head, hotkey, bundles / hotkey, round_id=round_id)
         if b is None or b["problems"]:
             rejected[str(pr["number"])] = (b or {}).get("problems", ["empty submission"])[0]
             shutil.rmtree(bundles / hotkey, ignore_errors=True)
+            if hotkey in active and active[hotkey]["incumbent"]:
+                _bundle_from_tree(cfg, tip, hotkey, bundles / hotkey, round_id=None)  # the incumbent stands
             continue
         active[hotkey] = {"pr": pr["number"], "head": head, "bundle_sha256": b["digest"], "incumbent": False}
+    for number in [i["pr"] for i in active.values() if i.get("pr")] + [int(n) for n in rejected]:
+        _label(number, f"sh:round:{round_id}")
     record = {
-        "schema": "sh-seal-v2",
+        "schema": "sh-seal-v3",
         "round_id": round_id,
         "sealed_at": time.time(),
         "active": active,
         "rejected": rejected,
     }
     (rd / "seal.json").write_text(json.dumps(record, indent=1))
+    dest = cfg.repo / "rounds" / round_id
+    dest.mkdir(parents=True, exist_ok=True)
+    shutil.copy(rd / "seal.json", dest / "seal.json")
+    live(cfg, rd, "evaluate", progress={"done": 0, "total": 0, "by_surface": {}}, push=False)
+    _commit(cfg, f"{round_id}: seal — {len(active)} active bundles, {len(rejected)} rejected")
     log(
         rd,
         "seal",
@@ -359,22 +423,6 @@ def seal(cfg: Config, round_id: str, rd: Path) -> dict:
         rejected=len(rejected),
     )
     return record
-
-
-def publish_open(cfg: Config, round_id: str, rd: Path) -> None:
-    """The tasks (with their withheld commitments) and the seal, committed where miners can read them."""
-    dest = cfg.repo / "rounds" / round_id
-    dest.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(rd / "tasks", dest / "tasks", dirs_exist_ok=True)
-    shutil.copy(rd / "seal.json", dest / "seal.json")
-    sealed = json.loads((rd / "seal.json").read_text())
-    live(cfg, rd, "evaluate", progress={"done": 0, "total": 0, "by_surface": {}}, push=False)
-    _commit(
-        cfg,
-        f"{round_id}: open — {len(list((rd / 'tasks').glob('*.json')))} sealed instances, "
-        f"{len(sealed['active'])} active bundles",
-    )
-    log(rd, "publish_open")
 
 
 def _progress(cfg: Config, remote: str, total: int) -> dict:
@@ -405,10 +453,8 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
             _rsync(f"{rd / sub}/", f"{cfg.worker}:{remote}/{sub}/", cfg)
     surfaces = ["null", f"canon={remote}/canon"] + [f"{h}={remote}/bundles/{h}" for h in sealed["active"]]
     total = len(surfaces) * len(list((rd / "tasks").glob("*.json")))
-    # Resume-safe: if the control plane restarted mid-round, the batch may still be running on the worker.
-    # Launching a second one would double the load on the engine (which refuses at that point) and race the
-    # first on the same episode directories. If it is not running, launching is always safe — `batch` resumes
-    # on its own episode records and re-runs nothing that finished.
+    # Resume-safe: a restarted control plane finds the batch still running and polls it rather than launching a
+    # second one; if it is not running, launching is safe — `batch` resumes on its own episode records.
     already = _worker(cfg, f"pgrep -f '[b]atch --round {remote}' | wc -l").strip() not in ("", "0")
     if already:
         log(rd, "evaluate_resume", note="batch already running on the worker; polling")
@@ -471,14 +517,26 @@ def close(cfg: Config, round_id: str, rd: Path) -> dict:
     return record
 
 
-def outcome(sealed: dict, weights: dict) -> dict:
-    """What happens to each PR the seal named: the top weight's PR is merged, every other challenger's is
-    closed. Pure, so it is testable. Only PRs the seal named are ever touched — a maintenance PR is never in
-    the seal, so it is never closed by the round. Weights pool the window, so a hotkey that competed in an
-    earlier round and did not resubmit can still be paid; but only a *sealed* strategy — one with a PR to merge
-    or already merged — can be crowned, since a crown is a strategy the repository carries."""
-    sealed_w = {h: w for h, w in weights.items() if h in sealed["active"]}
-    king = max(sealed_w, key=lambda h: sealed_w[h]) if sealed_w and max(sealed_w.values()) > 0 else None
+def crown_round(cfg: Config, rd: Path, record: dict, sealed: dict) -> dict:
+    """This round's king, from this round's episodes alone (spec: the crown is a merge, not a payment)."""
+    pooled = {h: s.get("delta_c", 0.0) for h, s in record.get("scores", {}).items()}
+    result = crown_rule(
+        load_episodes(rd / "episodes"),
+        set(sealed["active"]),
+        round_id=rd.name,
+        pooled_delta_c=pooled,
+        min_paired=cfg.min_paired,
+    )
+    (rd / "close" / "crown.json").write_text(json.dumps(result, indent=1))
+    log(rd, "crown", king=result["king"], ranked=[h for h, s in result["standings"].items() if "rank" in s])
+    return result
+
+
+def outcome(sealed: dict, king: str | None) -> dict:
+    """What happens to each PR the seal named: the king's PR is merged, every other challenger's is closed, the
+    rejected ones too. Pure. Only PRs the seal named are ever touched — a maintenance PR is never in the seal."""
+    if king is not None and king not in sealed["active"]:
+        raise ValueError(f"king {king} is not a sealed strategy")
     king_pr = sealed["active"].get(king, {}).get("pr") if king else None
     close_prs = sorted(
         {info["pr"] for h, info in sealed["active"].items() if info.get("pr") and h != king}
@@ -487,36 +545,39 @@ def outcome(sealed: dict, weights: dict) -> dict:
     return {"king": king, "merge": king_pr, "close": close_prs}
 
 
-def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict) -> str | None:
+def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, crowned: dict) -> str | None:
     """Scorecards on every PR; `scored` on every PR; the crown moved to the king; the king's PR merged; every
-    other competition PR closed with the reason. Returns the king."""
+    other competition PR closed with the reason; PRs that arrived after the seal closed as outside the window."""
     reveal = json.loads((rd / "close" / "reveal.json").read_text())
     (rd / "scorecards").mkdir(exist_ok=True)
-    plan = outcome(sealed, record["weights"])
+    plan = outcome(sealed, crowned["king"])
     king = plan["king"]
     for hotkey, info in sealed["active"].items():
-        card = render_scorecard(record, hotkey, reveal)
+        st = crowned["standings"].get(hotkey, {})
+        this_round = (
+            f"**This round:** {'rank ' + str(st['rank']) if st.get('rank') else 'not ranked'} · Δ vs baseline "
+            f"{st['delta']:+.3f} on {st['n']} paired instances · {st['verified']} verified.\n\n"
+            if st.get("delta") is not None
+            else ""
+        )
+        card = this_round + render_scorecard(record, hotkey, reveal)
         (rd / "scorecards" / f"{hotkey}.md").write_text(card)
         if not info.get("pr"):
             continue  # an incumbent has no PR to write to; its card is published with the round
         body = card
         if hotkey == king:
-            body = "👑 **Crowned: top weight this round. Merging.**\n\n" + body
+            body = "👑 **Crowned: best against the baseline on this round's instances. Merging.**\n\n" + body
         else:
-            body += (
-                f"\n\n---\nNot crowned in `{round_id}`; this PR is closed with the round. "
-                "Resubmit to compete in the next one."
-            )
+            body += f"\n\n---\nNot crowned in `{round_id}`; this PR is closed with the round. Submit again in the next window."
         gh("pr", "comment", str(info["pr"]), "--repo", REPO, "--body", body)
-        gh("api", "-X", "POST", f"repos/{REPO}/issues/{info['pr']}/labels", "-f", f"labels[]={LABEL_SCORED}")
+        _label(info["pr"], LABEL_SCORED)
     # One crown. Remove it wherever it was; place it on the king's PR.
-    crowned = json.loads(
+    for pr in json.loads(
         gh("pr", "list", "--repo", REPO, "--label", LABEL_CROWN, "--state", "all", "--json", "number", "--limit", "100")
-    )
-    for pr in crowned:
+    ):
         sh(["gh", "api", "-X", "DELETE", f"repos/{REPO}/issues/{pr['number']}/labels/{LABEL_CROWN}"], check=False)
     if plan["merge"]:
-        gh("api", "-X", "POST", f"repos/{REPO}/issues/{plan['merge']}/labels", "-f", f"labels[]={LABEL_CROWN}")
+        _label(plan["merge"], LABEL_CROWN)
         merged = subprocess.run(
             [
                 "gh",
@@ -547,7 +608,7 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict) -
                 "--repo",
                 REPO,
                 "--comment",
-                f"Closed with round `{round_id}` — {why}. Resubmit to compete in the next round.",
+                f"Closed with round `{round_id}` — {why}. Submit again in the next window.",
             ],
             check=False,
         )
@@ -555,24 +616,33 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict) -
         int(n) for n in sealed.get("rejected", {})
     }
     sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
-    for pr in _strategy_prs(cfg, f"origin/{BRANCH}"):
-        if pr["number"] not in sealed_prs:
-            gh(
+    late = [pr["number"] for pr in _strategy_prs(cfg, f"origin/{BRANCH}") if pr["number"] not in sealed_prs]
+    for number in late:
+        sh(
+            [
+                "gh",
                 "pr",
-                "comment",
-                str(pr["number"]),
+                "close",
+                str(number),
                 "--repo",
                 REPO,
-                "--body",
-                f"Arrived after round `{round_id}` was sealed; active from the next round.",
-            )
-    log(rd, "announce", king=king, merged=plan["merge"], closed=plan["close"])
+                "--comment",
+                f"Arrived after the submission window of `{round_id}` closed, so it was not sealed. "
+                "Fetch the next round's tasks when its window opens and submit again.",
+            ],
+            check=False,
+        )
+    log(rd, "announce", king=king, merged=plan["merge"], closed=plan["close"], late=late)
     return king
 
 
-def export_and_upload(cfg: Config, round_id: str, rd: Path) -> dict:
-    manifest = build_exports(rd, rd / "episodes", rd / "close" / "close.json", rd / "export")
+def export_and_upload(cfg: Config, round_id: str, rd: Path, king: str | None) -> dict:
+    manifest = build_exports(rd, rd / "episodes", rd / "close" / "close.json", rd / "export", king=king)
     token = os.environ.get("HF_TOKEN", "")
+    if not manifest["sft_rows"] and not manifest["dpo_pairs"]:
+        why = "no king this round" if king is None else "the king's episodes yielded no rows"
+        log(rd, "export", sft=0, dpo=0, uploaded=False, reason=why)
+        return {"manifest": manifest, "upload": {"uploaded": False, "reason": why}}
     if not token:
         log(
             rd, "export", sft=manifest["sft_rows"], dpo=manifest["dpo_pairs"], uploaded=False, reason="HF_TOKEN not set"
@@ -590,20 +660,23 @@ def export_and_upload(cfg: Config, round_id: str, rd: Path) -> dict:
     return {"manifest": manifest, "upload": result}
 
 
-def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, king: str | None, exported: dict) -> None:
+def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: dict, exported: dict) -> None:
     """Everything a miner needs to check the round, in the repository, under the round."""
     sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)  # the merge just landed
+    king = crowned["king"]
     dest = cfg.repo / "rounds" / round_id
     dest.mkdir(parents=True, exist_ok=True)
-    for name in ("close.json", "reveal.json"):
+    for name in ("close.json", "reveal.json", "crown.json"):
         shutil.copy(rd / "close" / name, dest / name)
-    shutil.copytree(rd / "checks", dest / "checks", dirs_exist_ok=True)  # semantics of `custom` predicates
+    if (rd / "checks").exists():
+        shutil.copytree(rd / "checks", dest / "checks", dirs_exist_ok=True)  # semantics of `custom` predicates
     shutil.copytree(rd / "scorecards", dest / "scorecards", dirs_exist_ok=True)
     shutil.copy(rd / "export" / "manifest.json", dest / "manifest.json")
     artefacts = sorted(p.name for p in dest.iterdir())
     entry = {
         "round_id": round_id,
         "closed_at": time.time(),
+        "window": _read(rd / "window.json"),
         "episodes": record["episodes"],
         "king": king,
         "weights": record["weights"],
@@ -613,15 +686,13 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, king: str 
         "hf": exported["upload"].get("url"),
     }
     index_path = cfg.repo / "rounds" / "index.json"
-    index = (
-        json.loads(index_path.read_text()) if index_path.exists() else {"schema": "sh-rounds-index-v2", "rounds": []}
-    )
+    index = _read(index_path, {"schema": "sh-rounds-index-v2", "rounds": []})
     index["rounds"] = [r for r in index["rounds"] if r["round_id"] != round_id] + [entry]
     index_path.write_text(json.dumps(index, indent=1))
     page = cfg.repo / "docs" / "rounds" / round_id  # the round's page, where Pages serves it
     page.mkdir(parents=True, exist_ok=True)
     (page / "index.html").write_text(
-        render_leaderboard(record, {**entry, "artefacts": artefacts, "repo": REPO, "branch": BRANCH})
+        render_leaderboard(record, {**entry, "crown": crowned, "artefacts": artefacts, "repo": REPO, "branch": BRANCH})
     )
     live(cfg, rd, "done", push=False)
     _commit(
@@ -651,53 +722,46 @@ def unfinished_round(cfg: Config) -> Path | None:
     return None
 
 
-def run_round(cfg: Config, mock_miners: Path | None = None, resume: Path | None = None) -> dict:
+def _logged(rd: Path, stage: str, field: str):
+    for line in (rd / "phases.jsonl").read_text().splitlines():
+        rec = json.loads(line)
+        if rec.get("stage") == stage:
+            return rec.get(field)
+    return None
+
+
+def run_round(cfg: Config, mock: tuple[Path, Path] | None = None, resume: Path | None = None) -> dict:
     """One round. With `resume`, the stages that round already logged are skipped, and the seal that was
-    published is reused rather than recomputed — a restart must never change what a round sealed."""
+    published is reused rather than recomputed — a restart must never change what a round sealed. A round
+    minted by the previous loop (logged `mint`, never `open`) is taken as already open with its window over."""
     if resume:
         rd, round_id = resume, resume.name
         done = done_stages(rd)
         log(rd, "resume", completed=sorted(done))
     else:
-        round_id = next_round_id(cfg)
-        rd = cfg.rounds / round_id
-        rd.mkdir(parents=True)
-        done = set()
-        log(rd, "start")
-    if "mint" not in done:
-        live(cfg, rd, "mint")
-        mint(cfg, round_id, rd)
+        rd = open_round(cfg)
+        round_id, done = rd.name, set()
+    if "window" not in done and "seal" not in done:
+        wait_window(cfg, rd, mock)
     if "seal" not in done:
         sealed = seal(cfg, round_id, rd)
     else:
         sealed = json.loads((rd / "seal.json").read_text())
-    if "publish_open" not in done:
-        publish_open(cfg, round_id, rd)
     if "evaluate" not in done:
         evaluate(cfg, rd, sealed)
     live(cfg, rd, "close")
     record = close(cfg, round_id, rd)
+    crowned = crown_round(cfg, rd, record, sealed)
     if "announce" not in done:
-        king = announce(cfg, round_id, rd, record, sealed)
+        live(cfg, rd, "announce", push=False)
+        king = announce(cfg, round_id, rd, record, sealed, crowned)
     else:  # announced before the restart: the king is in the round's own log
-        king = next(
-            (
-                json.loads(line).get("king")
-                for line in (rd / "phases.jsonl").read_text().splitlines()
-                if json.loads(line).get("stage") == "announce"
-            ),
-            None,
-        )
+        king = _logged(rd, "announce", "king")
     live(cfg, rd, "export", push=False)
-    exported = export_and_upload(cfg, round_id, rd)
-    publish_close(cfg, round_id, rd, record, king, exported)
+    exported = export_and_upload(cfg, round_id, rd, king)
+    publish_close(cfg, round_id, rd, record, crowned, exported)
     (rd / "DONE").write_text(json.dumps({"king": king, "weights": record["weights"]}))
     log(rd, "done", king=king)
-    if mock_miners:
-        from sh.cli.mock_miners import open_prs
-
-        opened = open_prs(mock_miners, REPO, BRANCH, cfg.repo, skip={king} if king else set())
-        log(rd, "mock_resubmit", opened=opened)
     return {"round_id": round_id, "king": king, "weights": record["weights"]}
 
 
@@ -705,34 +769,37 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--state", default=os.environ.get("SH_STATE", str(Path.home() / ".spark-hermes-state")))
     ap.add_argument("--repo", default=str(Path(__file__).resolve().parents[2]))
-    ap.add_argument("--supply", default=str(Path(__file__).resolve().parents[3] / "Spark-Hermes-Withheld"))
+    ap.add_argument("--queue", default=str(Path(__file__).resolve().parents[3] / "Spark-Hermes-Withheld" / "queue"))
     ap.add_argument("--pkg", default=str(Path(__file__).resolve().parents[2]))
-    ap.add_argument("--tasks", type=int, default=8)
-    ap.add_argument("--difficulty", type=int, default=3)
-    ap.add_argument("--window", type=int, default=8)
+    ap.add_argument("--window", type=int, default=8, help="rounds pooled for payment")
+    ap.add_argument("--window-minutes", type=int, default=120, help="the submission window")
+    ap.add_argument("--min-paired", type=int, default=4)
     ap.add_argument("--once", action="store_true")
-    ap.add_argument("--pause", type=int, default=60, help="seconds between rounds")
-    ap.add_argument("--mock-miners", help="directory of mock miner bundles to resubmit after each round (test only)")
+    ap.add_argument("--pause", type=int, default=0, help="seconds between rounds")
+    ap.add_argument("--mock-miners", help="directory of mock miner bundles that submit each window (test only)")
+    ap.add_argument("--mock-keys", help="directory holding the mock miners' keypairs (created on demand)")
     a = ap.parse_args(argv)
     cfg = Config(
         state=Path(a.state),
         repo=Path(a.repo),
-        supply=Path(a.supply),
+        queue=Path(a.queue),
         pkg=Path(a.pkg),
-        tasks_per_round=a.tasks,
-        difficulty=a.difficulty,
         window=a.window,
+        window_s=a.window_minutes * 60,
+        min_paired=a.min_paired,
     )
+    mock = (Path(a.mock_miners), Path(a.mock_keys or (cfg.state / "mock-keys"))) if a.mock_miners else None
     resume = unfinished_round(cfg)  # a restart picks up the round it was in the middle of
     while True:
         try:
-            result = run_round(cfg, Path(a.mock_miners) if a.mock_miners else None, resume=resume)
+            result = run_round(cfg, mock, resume=resume)
             resume = None
             print(json.dumps(result), flush=True)
         except Exception as e:  # a failed round is logged and the loop goes on
             print(f"round failed: {e!r}", flush=True)
             if a.once:
                 return 1
+            time.sleep(60)
         if a.once:
             return 0
         time.sleep(a.pause)

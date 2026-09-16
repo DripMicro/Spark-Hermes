@@ -7,6 +7,7 @@ license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "huggingface_hub>=1.27.0",
+    "substrate-interface>=1.8.1",
 ]
 
 [project.optional-dependencies]

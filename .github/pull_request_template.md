@@ -1,9 +1,11 @@
-<!-- Strategy submission: one directory, prose only. Anything else is closed with the round.
+<!-- Strategy submission: use the CLI, which signs the bundle for the open round and opens or replaces this PR.
 
-     submissions/<hotkey>/SOUL.md             required
-     submissions/<hotkey>/skills/<name>/...   optional
+     python -m sh.cli.miner tasks
+     python -m sh.cli.miner submit --bundle DIR --key HOTKEY_FILE --checkout . --head-owner <you>
 
-     python -m sh.cli.lint submissions/<hotkey>   must print ok; paste the bundle_sha256 below. -->
+     One directory, prose only, plus the attestation.json the CLI writes. Submissions after the window closes
+     are not sealed. -->
 
 hotkey:
+round:
 bundle_sha256:

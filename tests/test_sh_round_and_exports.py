@@ -104,7 +104,12 @@ def test_exports_replace_the_converter_s_system_turn(tmp_path):
     eps = _episodes(tmp_path, [("null", False), ("5Fminer", True)])
     close(rd, eps, tmp_path / "out")
     manifest = build(
-        rd, eps, tmp_path / "out" / "close.json", tmp_path / "export", system_prompt="THE REAL PINNED PROMPT"
+        rd,
+        eps,
+        tmp_path / "out" / "close.json",
+        tmp_path / "export",
+        king="5Fminer",
+        system_prompt="THE REAL PINNED PROMPT",
     )
     rows = [json.loads(line) for line in (tmp_path / "export" / "sft.jsonl").read_text().splitlines()]
     assert manifest["sft_rows"] == 1
@@ -116,10 +121,20 @@ def test_exports_replace_the_converter_s_system_turn(tmp_path):
 def test_only_withheld_verified_episodes_become_training_data(tmp_path):
     """A row must mean "this actually solved it", not "this looked right"."""
     rd = _round(tmp_path)
-    eps = _episodes(tmp_path, [("null", False), ("5Fa", True), ("5Fb", False)])
+    eps = _episodes(tmp_path, [("null", False), ("5Fa", True), ("5Fb", True)])
+    close(rd, eps, tmp_path / "out")
+    manifest = build(rd, eps, tmp_path / "out" / "close.json", tmp_path / "export", king="5Fa")
+    assert manifest["sft_rows"] == 1 and manifest["gates"]["not_king"] == 2  # 5Fb solved it too; not the king
+    assert manifest["king"] == "5Fa"
+
+
+def test_a_round_without_a_king_exports_nothing(tmp_path):
+    """The king's trajectories are the product; without a king there is no product, only evidence."""
+    rd = _round(tmp_path)
+    eps = _episodes(tmp_path, [("null", False), ("5Fa", True)])
     close(rd, eps, tmp_path / "out")
     manifest = build(rd, eps, tmp_path / "out" / "close.json", tmp_path / "export")
-    assert manifest["sft_rows"] == 1 and manifest["gates"]["not_verified"] == 2
+    assert manifest["king"] is None and manifest["sft_rows"] == 0 and manifest["dpo_pairs"] == 0
 
 
 def test_dpo_pairs_never_cross_an_instance(tmp_path):
@@ -127,7 +142,7 @@ def test_dpo_pairs_never_cross_an_instance(tmp_path):
     rd = _round(tmp_path)
     eps = _episodes(tmp_path, [("null", False), ("5Fa", True)])
     close(rd, eps, tmp_path / "out")
-    build(rd, eps, tmp_path / "out" / "close.json", tmp_path / "export")
+    build(rd, eps, tmp_path / "out" / "close.json", tmp_path / "export", king="5Fa")
     pairs = [json.loads(line) for line in (tmp_path / "export" / "dpo.jsonl").read_text().splitlines()]
     assert len(pairs) == 1
     assert pairs[0]["chosen_surface"] == "5Fa" and pairs[0]["rejected_surface"] == "null"
@@ -143,7 +158,7 @@ def test_a_row_carrying_withheld_material_is_refused(tmp_path):
         json.dumps([{"from": "system", "value": "x"}, {"from": "gpt", "value": f"the answer digest is {'a' * 64}"}])
     )
     close(rd, eps, tmp_path / "out")
-    manifest = build(rd, eps, tmp_path / "out" / "close.json", tmp_path / "export")
+    manifest = build(rd, eps, tmp_path / "out" / "close.json", tmp_path / "export", king="5Fa")
     assert manifest["sft_rows"] == 0 and manifest["gates"]["leaked"] == 1
     assert manifest["leak_scan"]["rows_refused"] == 1
 
@@ -179,6 +194,6 @@ def test_a_pair_is_not_lost_because_the_first_loser_timed_out(tmp_path):
     eps = _episodes(tmp_path, [("5Fa", True), ("5Fb", False), ("5Fc", False)])
     (eps / "5Fb" / "t-1" / "trajectory.json").unlink()  # timed out: no trajectory was ever written
     close(rd, eps, tmp_path / "out")
-    build(rd, eps, tmp_path / "out" / "close.json", tmp_path / "export")
+    build(rd, eps, tmp_path / "out" / "close.json", tmp_path / "export", king="5Fa")
     pairs = [json.loads(line) for line in (tmp_path / "export" / "dpo.jsonl").read_text().splitlines()]
     assert len(pairs) == 1 and pairs[0]["rejected_surface"] == "5Fc"

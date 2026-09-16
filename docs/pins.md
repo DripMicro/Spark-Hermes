@@ -14,3 +14,14 @@
 Host: `root@91.224.44.223:50199` — RTX 5090 32 GB, Docker 27.3.1, nvidia runtime OK. Jupyter on `0.0.0.0:8888` — owner to close/bind (Week 0, 0.2).
 
 2026-09-16 — `sh/validator/runner/grade.py` gained an import fallback (`sh.predicates` when `/runner/predicates` is absent) so the validator's tests can load it outside the image. Inside the image the first import succeeds as before; behaviour is identical and no rebuild is needed. The image build now copies `sh/predicates` into the runner instead of keeping a second copy in the tree.
+
+## Round clock (2026-09-16)
+
+| Parameter | Pin | Where |
+|---|---|---|
+| submission window | **120 min** from open; the seal is taken at close, by PR head SHA | `sh/validator/orchestrate.py --window-minutes` |
+| tasks per round | 8, minted ahead by `supply.queue` (`--ahead 3`); future rounds published only as digests in `rounds/queue.json` | private repo |
+| attestation | `sr25519(hotkey, "spark-hermes:<round>:<bundle_sha256>")` in `attestation.json`; one PR per hotkey per round, newest counts | `sh/cli/attest.py` |
+| crown | best Δ vs baseline on **this round's** instances, > 0, ≥ 4 paired; ties by pooled Δc | `sh/scoring/crown.py` |
+| payment | pooled over the last 8 rounds; Δc = one-sided 90 % lower bound | `sh/scoring/v2.py` |
+| training data | the king's verified episodes only (SFT); king vs any failing surface on the same instance (DPO); no king → nothing uploaded | `sh/exports/build.py` |

@@ -49,7 +49,9 @@ jobs:
           echo "BUNDLE=$changed" >> "$GITHUB_ENV"
 
       - name: Lint the bundle and print its canonical digest
-        run: python -m sh.cli.lint "$BUNDLE"
+        # Structure, digest and the attestation's binding to the directory are checked here; the signature
+        # itself is verified by the seal, which has the signing library and knows the round.
+        run: python -m sh.cli.lint "$BUNDLE" --require-attestation --hotkey "$(basename "$BUNDLE")"
 
       - name: Digest for the commitment
         run: |
