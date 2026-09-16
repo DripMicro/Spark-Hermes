@@ -1,0 +1,53 @@
+<title>Spark-Hermes s1</title>
+<style>
+:root { --bg:#fbfaf8; --ink:#1b1a18; --muted:#6b6862; --line:#e4e0d8; --good:#1d6a4f; --warn:#8a5a1a; }
+:root:not([data-theme="light"]) { }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#16151a; --ink:#ece9e3; --muted:#9a968e; --line:#2e2c33; --good:#63c79e; --warn:#d9a441; } }
+:root[data-theme="dark"] { --bg:#16151a; --ink:#ece9e3; --muted:#9a968e; --line:#2e2c33; --good:#63c79e; --warn:#d9a441; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, sans-serif;
+       padding-block: 2.5rem; padding-left: 20px; padding-right: 20px; max-width: 60rem; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin: 0 0 .25rem; letter-spacing: -.01em; }
+.sub { color: var(--muted); margin: 0 0 2rem; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: .55rem .6rem; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.hotkey { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.zero { color: var(--muted); }
+.why { color: var(--warn); font-size: .82rem; }
+.ok { color: var(--good); }
+section { margin-top: 2.5rem; }
+h2 { font-size: .95rem; margin: 0 0 .6rem; }
+.note { color: var(--muted); font-size: .85rem; }
+.wrap { overflow-x: auto; }
+</style>
+<h1>Round s1</h1>
+<p class="sub">48 episodes · 12 instances ·
+scoring <code>sh-scoring-v2</code> · era e0</p>
+
+<div class="wrap"><table>
+<thead><tr><th>hotkey</th><th>#</th><th>episodes</th><th>mean d</th><th>&Delta;c</th>
+<th>gate</th><th>overfit</th><th>dq</th><th>weight</th></tr></thead>
+<tbody><tr><td><span class="hotkey">5FGoodOperator</span></td><td>1</td><td>12</td><td>+0.417</td><td>0.234</td><td>yes</td><td>0.00</td><td>0</td><td class="">1.000</td></tr><tr><td><span class="hotkey">5FHastyRunner</span></td><td>2</td><td>12</td><td>+0.167</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td class="zero">0.000</td></tr></tbody>
+</table></div>
+<p class="note"><strong>mean d</strong> is the miner's pass rate minus the family's baseline rate on the same
+instances. <strong>&Delta;c</strong> is its one-sided 90&nbsp;% lower bound, which is what pays: beating the
+baseline on average is not enough to be paid for beating it. A miner at the baseline earns nothing.</p>
+
+<section>
+<h2>Families this round</h2>
+<div class="wrap"><table>
+<thead><tr><th>family</th><th>null n</th><th>null p</th><th>canon p</th><th>&Delta;c canon</th><th>label</th></tr></thead>
+<tbody><tr><td>process_lifecycle</td><td>12</td><td>0.58</td><td>0.92</td><td>0.3333</td><td>frontier</td></tr></tbody>
+</table></div>
+</section>
+
+<section>
+<h2>Withheld halves</h2>
+<p class="note">12 of 12 instances had a sealed withheld half.
+Commitments re-verified at close: <span class="ok">all match</span>.
+The revealed halves and their salts are published in <code>reveal.json</code>, so anyone can recompute
+<code>HMAC(salt, withheld)</code> and confirm the grading criteria were fixed before submissions opened.</p>
+</section>
