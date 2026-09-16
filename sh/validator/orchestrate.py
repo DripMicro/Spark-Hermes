@@ -144,13 +144,28 @@ def _read(path: Path, default: Any = None) -> Any:
     return json.loads(path.read_text()) if path.exists() else default
 
 
+def _trim_scores(closed: dict) -> dict:
+    """Per-hotkey score, weight and the paired deltas from a close record — what the board and history show."""
+    weights = closed.get("weights", {})
+    return {
+        h: {
+            "score": s.get("score"),
+            "weight": weights.get(h, 0.0),
+            "mean_d": s.get("mean_d"),
+            "delta_c": s.get("delta_c"),
+            "n": s.get("n"),
+        }
+        for h, s in closed.get("scores", {}).items()
+    }
+
+
 def live(
     cfg: Config,
     rd: Path,
     stage: str,
     *,
     progress: dict | None = None,
-    submissions: int | None = None,
+    submissions: list[dict] | None = None,
     push: bool = True,
 ) -> None:
     """The dashboard's single source: the round, its window, its stage and progress, the crown and scores once
@@ -170,6 +185,7 @@ def live(
         progress = prev.get("progress") if same else None
     if submissions is None and same:
         submissions = prev.get("submissions")
+    last = history[-1] if history else None
     scores = None
     if closed:
         weights = closed.get("weights", {})
@@ -198,7 +214,9 @@ def live(
         "started": phases[0]["t"] if phases else time.time(),
         "phases": [{"stage": p["stage"], "t": p["t"]} for p in phases],
         "window": _read(rd / "window.json"),
-        "submissions": submissions,
+        "submissions": submissions or [],
+        "standings": (last or {}).get("scores") or {},  # the pooled standing after the last close: what pays now
+        "last_round": (last or {}).get("round_id"),
         "tasks": len(list((rd / "tasks").glob("*.json"))) if (rd / "tasks").exists() else 0,
         "active": sealed.get("active", {}),
         "rejected": sealed.get("rejected", {}),
@@ -274,7 +292,7 @@ def publish_round(cfg: Config, rd: Path) -> None:
     (cfg.repo / "rounds" / "queue.json").write_text(
         json.dumps({"schema": "sh-queue-v1", "published_at": time.time(), "ready": ready}, indent=1)
     )
-    live(cfg, rd, "window", progress={}, submissions=0, push=False)
+    live(cfg, rd, "window", progress={}, submissions=[], push=False)
     _commit(
         cfg, f"{round_id}: open — {len(list((rd / 'tasks').glob('*.json')))} tasks, window {cfg.window_s // 60} min"
     )
@@ -294,6 +312,21 @@ def window_state(rd: Path, now: float | None = None) -> dict:
     return {"open": now < w["closes_at"], "remaining": max(0.0, w["closes_at"] - now), "closes_at": w["closes_at"]}
 
 
+def _submissions(cfg: Config) -> list[dict]:
+    """Open strategy PRs as the board lists them during the window."""
+    return [
+        {
+            "pr": p["number"],
+            "hotkey": p["changed"][0],
+            "created_at": p.get("createdAt"),
+            "updated_at": p.get("updatedAt"),
+            "url": p.get("url"),
+        }
+        for p in _strategy_prs(cfg, f"origin/{BRANCH}")
+        if pr_role(p["changed"]) == "strategy"
+    ]
+
+
 def wait_window(cfg: Config, rd: Path, mock: tuple[Path, Path] | None = None) -> None:
     """Hold the round open until the window closes, showing the count of submissions on the board. Mock
     challengers submit at the start of the window, signed for this round, like any miner would."""
@@ -307,9 +340,8 @@ def wait_window(cfg: Config, rd: Path, mock: tuple[Path, Path] | None = None) ->
         st = window_state(rd)
         if not st["open"]:
             break
-        if time.time() - last_push > 300:
-            n = len(_strategy_prs(cfg, f"origin/{BRANCH}"))
-            live(cfg, rd, "window", submissions=n)
+        if time.time() - last_push > 120:
+            live(cfg, rd, "window", submissions=_submissions(cfg))
             last_push = time.time()
         time.sleep(min(60.0, max(1.0, st["remaining"])))
     log(rd, "window", closed_at=time.time())
@@ -364,7 +396,7 @@ def _strategy_prs(cfg: Config, tip: str) -> list[dict]:
             "--state",
             "open",
             "--json",
-            "number,headRefOid,headRefName,title,labels,createdAt",
+            "number,headRefOid,headRefName,title,labels,createdAt,updatedAt,url",
             "--limit",
             "100",
         )
@@ -763,6 +795,8 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: d
         "episodes": record["episodes"],
         "king": king,
         "weights": record["weights"],
+        "scores": _trim_scores(record),
+        "crown": {h: st for h, st in crowned.get("standings", {}).items() if st.get("rank")},
         "commitments_ok": record["commitments_ok"],
         "sft_rows": exported["manifest"]["sft_rows"],
         "dpo_pairs": exported["manifest"]["dpo_pairs"],
