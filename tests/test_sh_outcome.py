@@ -46,3 +46,12 @@ def test_prs_the_seal_never_named_are_never_touched():
     """A dependabot or maintenance PR is not in the seal, so it cannot appear in the plan at all."""
     plan = outcome(_seal(A=101, B=102), {"A": 1.0, "B": 0.0})
     assert 85 not in plan["close"] and plan["merge"] != 85
+
+
+def test_a_pull_request_is_a_strategy_by_what_it_touches_not_by_its_label():
+    """A miner cannot label a PR, and a maintenance PR must never be swept into a round."""
+    from sh.validator.orchestrate import pr_role
+
+    assert pr_role([]) == "maintenance"
+    assert pr_role(["5Fa"]) == "strategy"
+    assert pr_role(["5Fa", "5Fb"]) == "malformed"

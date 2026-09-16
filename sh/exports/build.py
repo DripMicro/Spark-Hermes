@@ -25,7 +25,6 @@ from pathlib import Path
 
 SCHEMA_SFT = "sh-sft-v2"
 SCHEMA_DPO = "sh-dpo-v2"
-RESERVED = ("null", "canon")
 
 
 def _leak_scan(text: str, secrets: set[str]) -> list[str]:

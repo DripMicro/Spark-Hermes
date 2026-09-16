@@ -8,7 +8,7 @@ reference produced by a different path would not be a reference.
 
     python -m sh.reference.run --round DIR --arm null --arm canon --canon-dir DIR --image IMG \
         --out OUT --network sh-ep --tokens FILE --usage-dir DIR
-    python -m sh.reference.run --stats --archive DIR --family posix_report --window r1,r2 --era e0
+    python -m sh.reference.run --stats --archive DIR --family process_lifecycle --window r1,r2 --era e0
 """
 
 from __future__ import annotations

@@ -256,11 +256,60 @@ def _changed_submissions(cfg: Config, base: str, head: str) -> list[str]:
     return sorted({p.split("/")[1] for p in names.split() if p.count("/") >= 2 and p.split("/")[1] != "README.md"})
 
 
+def pr_role(changed: list[str]) -> str:
+    """What a pull request is to the round, from the submission directories it touches: none — maintenance,
+    never sealed, never closed by a round; one — a strategy; more — a strategy PR done wrong, rejected."""
+    return "maintenance" if not changed else "strategy" if len(changed) == 1 else "malformed"
+
+
+def _strategy_prs(cfg: Config, tip: str) -> list[dict]:
+    """Every open PR against the branch that touches `submissions/`, with the directories it changes. Recognised
+    by content, not by label — a miner cannot label a PR — and labelled `sh:strategy` here so the board can see
+    it. Fork heads are fetched by their pull ref; `origin` alone carries only same-repository branches."""
+    sh(["git", "fetch", "-q", "origin", "+refs/pull/*/head:refs/remotes/origin/pr/*"], cwd=cfg.repo, check=False)
+    prs = json.loads(
+        gh(
+            "pr",
+            "list",
+            "--repo",
+            REPO,
+            "--base",
+            BRANCH,
+            "--state",
+            "open",
+            "--json",
+            "number,headRefOid,headRefName,title,labels",
+            "--limit",
+            "100",
+        )
+    )
+    out = []
+    for pr in prs:
+        changed = _changed_submissions(cfg, tip, pr["headRefOid"])
+        if not changed:
+            continue
+        if LABEL_STRATEGY not in {lb["name"] for lb in pr.get("labels", [])}:
+            sh(
+                [
+                    "gh",
+                    "api",
+                    "-X",
+                    "POST",
+                    f"repos/{REPO}/issues/{pr['number']}/labels",
+                    "-f",
+                    f"labels[]={LABEL_STRATEGY}",
+                ],
+                check=False,
+            )
+        out.append({**pr, "changed": changed})
+    return out
+
+
 def seal(cfg: Config, round_id: str, rd: Path) -> dict:
     """Which bundles are in this round, decided before any evaluation and published with the tasks.
 
     Two sources. **Incumbents**: strategies already merged into `submissions/` on the branch — a crowned king
-    defends the crown every round without resubmitting. **Challengers**: every open `sh:strategy` PR whose lint
+    defends the crown every round without resubmitting. **Challengers**: every open PR touching `submissions/` whose lint
     passes, taken at its head SHA so a later push cannot change what was sealed, and carrying exactly one new
     or changed submission. A challenger for a hotkey supersedes that hotkey's incumbent."""
     sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
@@ -277,28 +326,9 @@ def seal(cfg: Config, round_id: str, rd: Path) -> dict:
         b = _bundle_from_tree(cfg, tip, hotkey, bundles / hotkey)
         if b and not b["problems"]:
             active[hotkey] = {"pr": None, "head": tip, "bundle_sha256": b["digest"], "incumbent": True}
-    prs = json.loads(
-        gh(
-            "pr",
-            "list",
-            "--repo",
-            REPO,
-            "--base",
-            BRANCH,
-            "--label",
-            LABEL_STRATEGY,
-            "--state",
-            "open",
-            "--json",
-            "number,headRefOid,headRefName,title",
-            "--limit",
-            "100",
-        )
-    )
-    for pr in prs:
-        head = pr["headRefOid"]
-        changed = _changed_submissions(cfg, tip, head)
-        if len(changed) != 1:
+    for pr in _strategy_prs(cfg, tip):
+        head, changed = pr["headRefOid"], pr["changed"]
+        if pr_role(changed) == "malformed":
             rejected[str(pr["number"])] = f"{len(changed)} changed submission directories (need exactly 1)"
             continue
         hotkey = changed[0]
@@ -516,25 +546,8 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict) -
     sealed_prs = {i["pr"] for i in sealed["active"].values() if i.get("pr")} | {
         int(n) for n in sealed.get("rejected", {})
     }
-    open_now = json.loads(
-        gh(
-            "pr",
-            "list",
-            "--repo",
-            REPO,
-            "--base",
-            BRANCH,
-            "--label",
-            LABEL_STRATEGY,
-            "--state",
-            "open",
-            "--json",
-            "number",
-            "--limit",
-            "100",
-        )
-    )
-    for pr in open_now:
+    sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
+    for pr in _strategy_prs(cfg, f"origin/{BRANCH}"):
         if pr["number"] not in sealed_prs:
             gh(
                 "pr",
@@ -579,6 +592,7 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, king: str 
     shutil.copytree(rd / "checks", dest / "checks", dirs_exist_ok=True)  # semantics of `custom` predicates
     shutil.copytree(rd / "scorecards", dest / "scorecards", dirs_exist_ok=True)
     shutil.copy(rd / "export" / "manifest.json", dest / "manifest.json")
+    artefacts = sorted(p.name for p in dest.iterdir())
     entry = {
         "round_id": round_id,
         "closed_at": time.time(),
@@ -598,7 +612,9 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, king: str 
     index_path.write_text(json.dumps(index, indent=1))
     page = cfg.repo / "docs" / "rounds" / round_id  # the round's page, where Pages serves it
     page.mkdir(parents=True, exist_ok=True)
-    (page / "index.html").write_text(render_leaderboard(record, {**entry, "repo": REPO, "branch": BRANCH}))
+    (page / "index.html").write_text(
+        render_leaderboard(record, {**entry, "artefacts": artefacts, "repo": REPO, "branch": BRANCH})
+    )
     live(cfg, rd, "done", push=False)
     _commit(
         cfg,

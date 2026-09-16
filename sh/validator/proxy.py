@@ -23,18 +23,6 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-SAMPLING_KEYS = (
-    "temperature",
-    "top_p",
-    "max_tokens",
-    "seed",
-    "reasoning_effort",
-    "top_k",
-    "min_p",
-    "presence_penalty",
-    "frequency_penalty",
-)
-
 
 class Tokens:
     """A token store as a **directory with one file per token**.

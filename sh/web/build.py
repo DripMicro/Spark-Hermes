@@ -90,7 +90,11 @@ def render(close: dict, meta: dict | None = None) -> str:
         (f"{tree}/scorecards", "scorecards"),
         (f"{tree}/checks", "checks"),
         (f"{blob}/manifest.json", "manifest.json"),
-    ] + ([(hf, "dataset")] if hf else [])
+    ]
+    present = meta.get("artefacts")
+    if present is not None:  # an older round may lack a directory; never link to a 404
+        links = [(u, t) for u, t in links if t.split("/")[0] in present]
+    links += [(hf, "dataset")] if hf else []
     artefacts = " · ".join(f'<a href="{_e(u)}">{_e(t)}</a>' for u, t in links)
 
     return f"""<!doctype html>

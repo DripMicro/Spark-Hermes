@@ -12,3 +12,5 @@
 | episode network | `sh-ep` 172.30.0.0/24, gateway 172.30.0.1, proxy on `:8090`; `--dns 172.30.0.1` with 53 REJECTed (Docker 27 has no `--dns none`) | `sh/validator/net/net-up.sh` |
 
 Host: `root@91.224.44.223:50199` — RTX 5090 32 GB, Docker 27.3.1, nvidia runtime OK. Jupyter on `0.0.0.0:8888` — owner to close/bind (Week 0, 0.2).
+
+2026-09-16 — `sh/validator/runner/grade.py` gained an import fallback (`sh.predicates` when `/runner/predicates` is absent) so the validator's tests can load it outside the image. Inside the image the first import succeeds as before; behaviour is identical and no rebuild is needed. The image build now copies `sh/predicates` into the runner instead of keeping a second copy in the tree.

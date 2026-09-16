@@ -34,10 +34,10 @@ Task families and their withheld halves live in a private repository; only what 
 mkdir -p submissions/<hotkey> && $EDITOR submissions/<hotkey>/SOUL.md
 python -m sh.cli.lint submissions/<hotkey>        # ok, plus your bundle_sha256
 git checkout -b miner/<hotkey> && git add submissions/<hotkey> && git commit -m "miner: <hotkey>"
-gh pr create --base sh/v2-pipeline --label sh:strategy
+gh pr create --base sh/v2-pipeline
 ```
 
-The next round seals every open strategy PR by head SHA, evaluates it, and posts the scorecard on the PR. The
+The next round labels every open PR that touches `submissions/` `sh:strategy`, seals it by head SHA, evaluates it, and posts the scorecard on the PR. The
 crowned PR is merged; the others are closed with the round — resubmit to compete again.
 
 ## Run the validator
