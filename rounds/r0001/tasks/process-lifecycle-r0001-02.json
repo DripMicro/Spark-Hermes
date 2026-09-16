@@ -1,0 +1,43 @@
+{
+ "schema": "sh-instance-v2",
+ "task_id": "process-lifecycle-r0001-02",
+ "family": "process_lifecycle",
+ "behaviour": "act",
+ "round_id": "r0001",
+ "prompt": "`bin/reconciler.py` is a long-running job. It takes a moment to warm up and writes an empty `serving` file when it is serving. On `SIGUSR1` it writes `state.json`; on `SIGTERM` it shuts down. It appends what it does to `reconciler.log`.\n\nRun it, wait until it is serving, make it write `state.json`, then stop it cleanly. Do not leave it running, and do not edit `bin/reconciler.py`.",
+ "fixture": {
+  "bin/reconciler.py": {
+   "b64": "IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoiIiJUaGUgcmVjb25jaWxlciBqb2IuIFdyaXRlcyBgc2VydmluZ2Agb25jZSB3YXJtZWQgdXAsIGR1bXBzIGBzdGF0ZS5qc29uYCBvbiBTSUdVU1IxLCBsb2dzIG9uIFNJR1RFUk0uIiIiCmltcG9ydCBqc29uCmltcG9ydCBvcwppbXBvcnQgc2lnbmFsCmltcG9ydCBzeXMKaW1wb3J0IHRpbWUKCkxPRyA9IG9wZW4oInJlY29uY2lsZXIubG9nIiwgImEiLCBidWZmZXJpbmc9MSkKTE9HLndyaXRlKCJzdGFydGVkIHBpZD0lZFxuIiAlIG9zLmdldHBpZCgpKQp0aWNrcyA9IDAKCgpkZWYgZHVtcChzaWdudW0sIGZyYW1lKToKICAgIGpzb24uZHVtcCh7InRpY2tzIjogdGlja3MsICJwaWQiOiBvcy5nZXRwaWQoKX0sIG9wZW4oInN0YXRlLmpzb24iLCAidyIpKQogICAgTE9HLndyaXRlKCJkdW1wZWQgdGlja3M9JWRcbiIgJSB0aWNrcykKCgpkZWYgc3RvcChzaWdudW0sIGZyYW1lKToKICAgIExPRy53cml0ZSgic3RvcHBlZFxuIikKICAgIHN5cy5leGl0KDApCgoKc2lnbmFsLnNpZ25hbChzaWduYWwuU0lHVVNSMSwgZHVtcCkKc2lnbmFsLnNpZ25hbChzaWduYWwuU0lHVEVSTSwgc3RvcCkKdGltZS5zbGVlcCg4LjApCm9wZW4oInNlcnZpbmciLCAidyIpLndyaXRlKCIxXG4iKQpMT0cud3JpdGUoInNlcnZpbmdcbiIpCndoaWxlIFRydWU6CiAgICB0aW1lLnNsZWVwKDAuMDUpCiAgICB0aWNrcyArPSAxCg==",
+   "mode": "0755"
+  }
+ },
+ "setup_commands": [],
+ "protected_paths": [
+  "bin/reconciler.py"
+ ],
+ "commands": [],
+ "published": {
+  "predicates": [
+   [
+    "file_exists",
+    "reconciler.log"
+   ],
+   [
+    "grep_count",
+    "reconciler.log",
+    "stopped",
+    "1"
+   ]
+  ]
+ },
+ "withheld_commitment": "hmac-sha256:aeb032c6724be524048a4ce730a8cecbe8a1672e6f3136e85e27121d32969fff",
+ "image": "family-process-lifecycle:pin",
+ "network": "none",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 30,
+ "timeout_s": 600,
+ "requires_self_check": true
+}

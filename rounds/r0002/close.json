@@ -1,0 +1,196 @@
+{
+ "schema": "sh-round-close-v2",
+ "round_id": "r0002",
+ "era": "e0",
+ "tasks": [
+  "process-lifecycle-r0002-00",
+  "process-lifecycle-r0002-01",
+  "process-lifecycle-r0002-02",
+  "process-lifecycle-r0002-03",
+  "process-lifecycle-r0002-04",
+  "process-lifecycle-r0002-05",
+  "process-lifecycle-r0002-06",
+  "process-lifecycle-r0002-07"
+ ],
+ "episodes": 128,
+ "family_stats": {
+  "process_lifecycle": {
+   "schema": "sh-family-stats-v2",
+   "family": "process_lifecycle",
+   "era": "e0",
+   "window": [
+    "r0001",
+    "r0002"
+   ],
+   "null": {
+    "n": 16,
+    "successes": 10,
+    "p": 0.625,
+    "wilson": [
+     0.3864,
+     0.8152
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 6.5,
+      "p25": 6.0,
+      "n": 10
+     },
+     "tool_calls": {
+      "median": 6.0,
+      "p25": 6.0,
+      "n": 10
+     }
+    }
+   },
+   "canon": {
+    "n": 16,
+    "successes": 15,
+    "p": 0.9375,
+    "wilson": [
+     0.7167,
+     0.9889
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 9.0,
+      "p25": 9.0,
+      "n": 15
+     },
+     "tool_calls": {
+      "median": 10.0,
+      "p25": 9.0,
+      "n": 15
+     }
+    },
+    "delta_c": 0.3125,
+    "delta_e": {
+     "api_calls": -0.4918,
+     "tool_calls": -0.7544
+    },
+    "delta_e_paired_instances": 9
+   },
+   "label": "frontier",
+   "partial_rate": 0.0938,
+   "in_rotation": true,
+   "retirement": null
+  }
+ },
+ "scores": {
+  "5FCarefulOps": {
+   "hotkey": "5FCarefulOps",
+   "n": 16,
+   "score": 0.0,
+   "delta_c": 0.06040393815622999,
+   "delta_e": {
+    "api_calls": -0.5154524778142731,
+    "tool_calls": -0.6314887703001721
+   },
+   "gate": true,
+   "se": 0.148122,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "the efficiency term outweighs \u0394c",
+   "mean_d": 0.25
+  },
+  "5FGoodOperator": {
+   "hotkey": "5FGoodOperator",
+   "n": 16,
+   "score": 0.036563534230614814,
+   "delta_c": 0.22008066615170332,
+   "delta_e": {
+    "api_calls": -0.6095778746873984,
+    "tool_calls": -0.7854321122200801
+   },
+   "gate": true,
+   "se": 0.121031,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "mean_d": 0.375
+  },
+  "5FHastyRunner": {
+   "hotkey": "5FHastyRunner",
+   "n": 16,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.20083739016174537,
+    "tool_calls": -0.2692564551108443
+   },
+   "gate": true,
+   "se": 0.164768,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 +0.125 \u00b1 0.165 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": 0.125
+  },
+  "5FMinimal": {
+   "hotkey": "5FMinimal",
+   "n": 16,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.35149123617424727,
+    "tool_calls": -0.46827073961593646
+   },
+   "gate": true,
+   "se": 0.17021,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 +0.062 \u00b1 0.170 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": 0.0625
+  },
+  "5FPlanner": {
+   "hotkey": "5FPlanner",
+   "n": 16,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.2566456292535242,
+    "tool_calls": -0.36051127216439127
+   },
+   "gate": true,
+   "se": 0.157495,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 +0.188 \u00b1 0.157 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": 0.1875
+  },
+  "5FRefusalReader": {
+   "hotkey": "5FRefusalReader",
+   "n": 16,
+   "score": 0.011116711654468425,
+   "delta_c": 0.13814404225837304,
+   "delta_e": {
+    "api_calls": -0.44384447770175595,
+    "tool_calls": -0.5501407438205441
+   },
+   "gate": true,
+   "se": 0.136216,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "mean_d": 0.3125
+  }
+ },
+ "weights": {
+  "5FCarefulOps": 0.0,
+  "5FGoodOperator": 0.7668486928263454,
+  "5FHastyRunner": 0.0,
+  "5FMinimal": 0.0,
+  "5FPlanner": 0.0,
+  "5FRefusalReader": 0.23315130717365465
+ },
+ "commitments_verified": {
+  "process-lifecycle-r0002-00": true,
+  "process-lifecycle-r0002-01": true,
+  "process-lifecycle-r0002-02": true,
+  "process-lifecycle-r0002-03": true,
+  "process-lifecycle-r0002-04": true,
+  "process-lifecycle-r0002-05": true,
+  "process-lifecycle-r0002-06": true,
+  "process-lifecycle-r0002-07": true
+ },
+ "commitments_ok": true
+}

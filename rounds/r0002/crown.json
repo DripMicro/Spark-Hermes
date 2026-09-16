@@ -1,0 +1,44 @@
+{
+ "schema": "sh-crown-v1",
+ "round_id": "r0002",
+ "king": "5FGoodOperator",
+ "standings": {
+  "5FCarefulOps": {
+   "n": 8,
+   "verified": 8,
+   "delta": 0.625,
+   "rank": 2
+  },
+  "5FGoodOperator": {
+   "n": 8,
+   "verified": 8,
+   "delta": 0.625,
+   "rank": 1
+  },
+  "5FHastyRunner": {
+   "n": 8,
+   "verified": 7,
+   "delta": 0.5,
+   "rank": 4
+  },
+  "5FMinimal": {
+   "n": 8,
+   "verified": 7,
+   "delta": 0.5,
+   "rank": 5
+  },
+  "5FPlanner": {
+   "n": 8,
+   "verified": 7,
+   "delta": 0.5,
+   "rank": 6
+  },
+  "5FRefusalReader": {
+   "n": 8,
+   "verified": 7,
+   "delta": 0.5,
+   "rank": 3
+  }
+ },
+ "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired; ties by pooled \u0394c"
+}

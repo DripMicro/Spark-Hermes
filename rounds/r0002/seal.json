@@ -1,0 +1,44 @@
+{
+ "schema": "sh-seal-v2",
+ "round_id": "r0002",
+ "sealed_at": 1789548516.6173472,
+ "active": {
+  "5FRefusalReader": {
+   "pr": 106,
+   "head": "5d0bceb000812b4d956e23c9b4305a242b4b448f",
+   "bundle_sha256": "8b8bbdbd45c5bb7c2dd08c44d75809e0d5213dd836c09bc043631ddd75b20986",
+   "incumbent": false
+  },
+  "5FPlanner": {
+   "pr": 105,
+   "head": "fe54d433023773b71d34964112ce50fc2273007d",
+   "bundle_sha256": "d81aa18146c34c3eb540d98bd46f0218443881f248d6490c88c0051ca57a7782",
+   "incumbent": false
+  },
+  "5FMinimal": {
+   "pr": 104,
+   "head": "156cbddb517a9671a74d8c08b2e3804eee42aa83",
+   "bundle_sha256": "1931157ea1be3df1ba6f894851b3afa6c23d77f61223ba19b0bb24f3f04fa016",
+   "incumbent": false
+  },
+  "5FHastyRunner": {
+   "pr": 103,
+   "head": "65482781eb377d2e52c6388ad2e7a64812c8b961",
+   "bundle_sha256": "e26dcd4bddb12b77ac11a45f6435796fafdc24d418e718b11ac0dcf87154619b",
+   "incumbent": false
+  },
+  "5FGoodOperator": {
+   "pr": 102,
+   "head": "a28edad1a4b61c04e5ad9255ac1caee38bf77d41",
+   "bundle_sha256": "4c490c109f8ef2045de835184755a059087d91aa2e28df59c9139d7e4e850024",
+   "incumbent": false
+  },
+  "5FCarefulOps": {
+   "pr": 101,
+   "head": "955a27ae858690c2d5d1b852e7880ef120b58e70",
+   "bundle_sha256": "bd5d7d2ec04153083a48fde33c149df46b34d3a7ea15709f86dfa33eaf3d9dab",
+   "incumbent": false
+  }
+ },
+ "rejected": {}
+}

@@ -1,0 +1,200 @@
+{
+ "schema": "sh-rounds-index-v2",
+ "rounds": [
+  {
+   "round_id": "s1",
+   "closed_at": 1789536780,
+   "episodes": 48,
+   "king": "5FGoodOperator",
+   "weights": {
+    "5FGoodOperator": 1.0,
+    "5FHastyRunner": 0.0
+   },
+   "commitments_ok": true,
+   "sft_rows": 39,
+   "dpo_pairs": 5,
+   "hf": null,
+   "scores": {
+    "5FGoodOperator": {
+     "score": 0.06445992244256477,
+     "weight": 1.0,
+     "mean_d": 0.416667,
+     "delta_c": 0.23449865304960707,
+     "n": 12
+    },
+    "5FHastyRunner": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": 0.166667,
+     "delta_c": 0.0,
+     "n": 12
+    }
+   },
+   "crown": {}
+  },
+  {
+   "round_id": "r0001",
+   "closed_at": 1789547606.8317137,
+   "episodes": 64,
+   "king": null,
+   "weights": {
+    "5FCarefulOps": 0.0,
+    "5FGoodOperator": 0.0,
+    "5FHastyRunner": 0.0,
+    "5FMinimal": 0.0,
+    "5FPlanner": 0.0,
+    "5FRefusalReader": 0.0
+   },
+   "commitments_ok": true,
+   "sft_rows": 51,
+   "dpo_pairs": 7,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0001",
+   "scores": {
+    "5FCarefulOps": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.125,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5FGoodOperator": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": 0.125,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5FHastyRunner": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.25,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5FMinimal": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.375,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5FPlanner": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.125,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5FRefusalReader": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": 0.125,
+     "delta_c": 0.0,
+     "n": 8
+    }
+   },
+   "crown": {}
+  },
+  {
+   "round_id": "r0002",
+   "closed_at": 1789553941.6995945,
+   "window": null,
+   "episodes": 128,
+   "king": "5FGoodOperator",
+   "weights": {
+    "5FCarefulOps": 0.0,
+    "5FGoodOperator": 0.7668486928263454,
+    "5FHastyRunner": 0.0,
+    "5FMinimal": 0.0,
+    "5FPlanner": 0.0,
+    "5FRefusalReader": 0.23315130717365465
+   },
+   "commitments_ok": true,
+   "sft_rows": 8,
+   "dpo_pairs": 3,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0002",
+   "scores": {
+    "5FCarefulOps": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": 0.25,
+     "delta_c": 0.06040393815622999,
+     "n": 16
+    },
+    "5FGoodOperator": {
+     "score": 0.036563534230614814,
+     "weight": 0.7668486928263454,
+     "mean_d": 0.375,
+     "delta_c": 0.22008066615170332,
+     "n": 16
+    },
+    "5FHastyRunner": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": 0.125,
+     "delta_c": 0.0,
+     "n": 16
+    },
+    "5FMinimal": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": 0.0625,
+     "delta_c": 0.0,
+     "n": 16
+    },
+    "5FPlanner": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": 0.1875,
+     "delta_c": 0.0,
+     "n": 16
+    },
+    "5FRefusalReader": {
+     "score": 0.011116711654468425,
+     "weight": 0.23315130717365465,
+     "mean_d": 0.3125,
+     "delta_c": 0.13814404225837304,
+     "n": 16
+    }
+   },
+   "crown": {
+    "5FCarefulOps": {
+     "n": 8,
+     "verified": 8,
+     "delta": 0.625,
+     "rank": 2
+    },
+    "5FGoodOperator": {
+     "n": 8,
+     "verified": 8,
+     "delta": 0.625,
+     "rank": 1
+    },
+    "5FHastyRunner": {
+     "n": 8,
+     "verified": 7,
+     "delta": 0.5,
+     "rank": 4
+    },
+    "5FMinimal": {
+     "n": 8,
+     "verified": 7,
+     "delta": 0.5,
+     "rank": 5
+    },
+    "5FPlanner": {
+     "n": 8,
+     "verified": 7,
+     "delta": 0.5,
+     "rank": 6
+    },
+    "5FRefusalReader": {
+     "n": 8,
+     "verified": 7,
+     "delta": 0.5,
+     "rank": 3
+    }
+   }
+  }
+ ]
+}

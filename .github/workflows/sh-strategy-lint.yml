@@ -1,0 +1,62 @@
+name: strategy lint
+
+# Runs on every PR that touches `submissions/`. Deliberately the *safe* half of the pipeline:
+#
+#   * `pull_request`, never `pull_request_target` — the PR's own code must not run with repository
+#     credentials, and a strategy PR is untrusted by definition.
+#   * `permissions: contents: read` only. It reports through the check's own status, and writes nothing.
+#   * No network, no secrets, no self-hosted runner. Linting a bundle is pure text work.
+#
+# Evaluation is not here and cannot be: episodes need the validator's pinned model on its own GPU, inside the
+# sealed boundary. A miner sees lint here, and the scorecard on the PR after the round closes.
+
+on:
+  pull_request:
+    paths:
+      - "submissions/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: strategy-lint-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          # The three-dot diff below needs a merge base, and the default shallow fetch has none.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: One submission directory per pull request
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          # Diff against the base commit the PR actually forked from, which checkout has already fetched.
+          changed=$(git diff --name-only "$BASE_SHA"...HEAD -- submissions/ | cut -d/ -f1-2 | sort -u)
+          echo "$changed"
+          test "$(echo "$changed" | grep -c .)" -eq 1 || {
+            echo "::error::a pull request may add or change exactly one submissions/<hotkey>/ directory"; exit 1; }
+          echo "BUNDLE=$changed" >> "$GITHUB_ENV"
+
+      - name: Lint the bundle and print its canonical digest
+        # Structure, digest and the attestation's binding to the directory are checked here; the signature
+        # itself is verified by the seal, which has the signing library and knows the round.
+        run: python -m sh.cli.lint "$BUNDLE" --require-attestation --hotkey "$(basename "$BUNDLE")"
+
+      - name: Digest for the commitment
+        run: |
+          python -m sh.cli.lint "$BUNDLE" --json > lint.json
+          echo "### Strategy lint" >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat lint.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,84 @@
+{
+ "schema": "sh-instance-v2",
+ "task_id": "terminal-task-r0003-05",
+ "family": "terminal_task",
+ "behaviour": "act",
+ "round_id": "r0003",
+ "prompt": "# Objective\n\nProduce a single, self-contained Markdown consolidation report at `/task_file/consolidation_report.md`. The report must declaratively summarize the state of every captured workflow artifact present under `/task_file/input`. Each workflow domain must appear under its own level\u20112 heading. The final document serves as an offline verification record that all captured workflow states have been inspected and summarized locally; it must not describe steps, commands, or implementation details.\n\n# Inputs\n\nAll inputs reside under `/task_file/input`. The following files are available:\n\n- `/task_file/input/fixture_manifest.json` \u2013 provenance manifest listing every fixture file and its intended workflow domain.\n- `/task_file/input/weather_snapshot.png` \u2013 captured weather image.\n- `/task_file/input/stock_table.json` \u2013 stock price table snapshot.\n- `/task_file/input/smart_plug_status.json` \u2013 smart plug status response.\n- `/task_file/input/habit_registration_confirmation.json` \u2013 habit registration confirmation message.\n- `/task_file/input/habit_listing_snapshot.json` \u2013 habit listing snapshot.\n- `/task_file/input/flight_search_results.json` \u2013 flight search result set.\n- `/task_file/input/rss_health_check.log` \u2013 RSS service health check log.\n- `/task_file/input/video_concat_command_catalog.json` \u2013 video concatenation command catalog.\n- `/task_file/input/video_segment_manifest.json` \u2013 video segment manifest.\n\n# Required output\n\nCreate `/task_file/consolidation_report.md` as a single Markdown file with no external references, embedded images, or live links. The report must contain exactly one level\u20112 heading per workflow domain, in the order listed below.\n\n# Required content\n\nThe report must contain the following sections (level\u20112 headings) and declarative statements:\n\n## Weather\n- Confirm that `/task_file/input/weather_snapshot.png` is a valid PNG image.\n- State the source city label captured in the image.\n\n## Stock Tracker\n- Extract the stock name, symbol, current price, and daily change values from `/task_file/input/stock_table.json`.\n- Present those values in a single normalized sentence: \u201cThe stock <name> (<symbol>) is currently priced at <current_price> with a daily change of <daily_change>.\u201d\n\n## Smart Plug\n- Read the status response in `/task_file/input/smart_plug_status.json`.\n- Declare whether the device is powered on.\n\n## Habit Tracker\n- Verify the registration confirmation message in `/task_file/input/habit_registration_confirmation.json`.\n- Confirm that the habit registered appears in the listing snapshot `/task_file/input/habit_listing_snapshot.json`.\n\n## Flight Search\n- Identify the cheapest connecting flight option from `/task_file/input/flight_search_results.json`.\n- Include its book-link placeholder value.\n\n## RSS Service\n- Using `/task_file/input/rss_health_check.log`, confirm that port 4000 was listening.\n\n## Video Production\n- Confirm that a concatenation command exists in `/task_file/input/video_concat_command_catalog.json`.\n- Note the expected combined duration from `/task_file/input/video_segment_manifest.json`.\n\n# Source-to-output mapping\n\n| Workflow Domain | Source File(s) | Required Output Content |\n|----------------|----------------|--------------------------|\n| Weather | `/task_file/input/weather_snapshot.png` | Validity as PNG; source city label |\n| Stock Tracker | `/task_file/input/stock_table.json` | Name, symbol, current price, daily change in a normalized sentence |\n| Smart Plug | `/task_file/input/smart_plug_status.json` | Powered\u2011on status |\n| Habit Tracker | `/task_file/input/habit_registration_confirmation.json`, `/task_file/input/habit_listing_snapshot.json` | Registration confirmed; habit exists in listing |\n| Flight Search | `/task_file/input/flight_search_results.json` | Cheapest connecting flight; book\u2011link placeholder |\n| RSS Service | `/task_file/input/rss_health_check.log` | Port 4000 listening confirmation |\n| Video Production | `/task_file/input/video_concat_command_catalog.json`, `/task_file/input/video_segment_manifest.json` | Concatenation command exists; expected combined duration |\n\n# Formatting and validation constraints\n\n- The report must be a single Markdown file at `/task_file/consolidation_report.md`.\n- Every workflow domain must appear as a level\u20112 heading (##) in the exact order: Weather, Stock Tracker, Smart Plug, Habit Tracker, Flight Search, RSS Service, Video Production.\n- Each finding must be stated declaratively; no imperative language, shell commands, code blocks, or implementation steps.\n- The report must not contain any external URLs, embedded images, or references to files outside `/task_file`.\n- All extracted values (prices, durations, names, symbols, labels, statuses, port numbers) must be taken verbatim from the source files; no rounding, unit conversion, or reformatting beyond the required sentence structure for the Stock Tracker section.\n- The weather section must include the statement that the file is a valid PNG and must include the exact city label string found in the image metadata or content.\n- The Stock Tracker sentence must follow the exact template: \u201cThe stock <name> (<symbol>) is currently priced at <current_price> with a daily change of <daily_change>.\u201d\n- The Smart Plug section must state \u201cThe device is powered on\u201d or \u201cThe device is powered off\u201d based on the source data.\n- The Habit Tracker section must explicitly reference both source files and confirm the habit\u2019s presence in the listing.\n- The Flight Search section must include the phrase \u201ccheapest connecting flight\u201d and the book\u2011link placeholder value.\n- The RSS Service section must include the port number 4000 and the word \u201clistening\u201d.\n- The Video Production section must include the word \u201cexists\u201d for the concatenation command and must state the combined duration value from the segment manifest.\n",
+ "fixture": {},
+ "setup_commands": [],
+ "protected_paths": [
+  "input/fixture_manifest.json",
+  "input/flight_search_results.json",
+  "input/habit_listing_snapshot.json",
+  "input/habit_registration_confirmation.json",
+  "input/rss_health_check.log",
+  "input/smart_plug_status.json",
+  "input/stock_table.json",
+  "input/video_concat_command_catalog.json",
+  "input/video_segment_manifest.json",
+  "input/weather_snapshot.png",
+  "output/.gitkeep"
+ ],
+ "commands": [],
+ "published": {
+  "predicates": [
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::TestOutputFileExistence::test_report_file_exists"
+   ],
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::TestOutputFileExistence::test_report_file_non_empty"
+   ],
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::TestReportStructure::test_no_code_blocks"
+   ],
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::TestReportStructure::test_no_embedded_images"
+   ],
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::TestReportStructure::test_no_external_urls_except_book_link"
+   ],
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::TestSmartPlugSection::test_power_state_declared"
+   ],
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::TestStockTrackerSection::test_stock_sentence_present"
+   ],
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::TestWeatherSection::test_city_label_present"
+   ],
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::TestWeatherSection::test_png_validity_stated"
+   ]
+  ]
+ },
+ "withheld_commitment": "hmac-sha256:489497cbde9cab964a74ab4ed4894bcd07f5f05ee588ffc100dd2d480076e448",
+ "image": "facet-task:6cb88e6893a96f50",
+ "network": "none",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "workdir": "/task_file",
+ "max_turns": 30,
+ "timeout_s": 600,
+ "requires_self_check": false
+}

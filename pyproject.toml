@@ -1,78 +1,32 @@
 [project]
-name = "sparkdistill"
-version = "0.2.0"
-description = "Teacher-trajectory distillation and training recipes for SparkInfer student models"
+name = "spark-hermes"
+version = "2.0.0"
+description = "SN74 Spark-Hermes: a strategy competition on one pinned agent, with a validator that pays for beating the baseline"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
-    "anthropic==0.120.2",
-    "openai==2.53.0",
-    "transformers>=5.14.1,<5.15",
-    "datasets>=5.0.1,<6",
-    "pyyaml==6.0.3",
-    "click==8.4.2",
-    "rich==15.0.0",
     "huggingface_hub>=1.27.0",
-    "jinja2>=3.1.4",
+    "substrate-interface>=1.8.1",
 ]
-
-[project.scripts]
-spark-hermes = "admin.cli:main"
 
 [project.optional-dependencies]
 dev = [
-    # The chat-template renderer. A declared test dependency rather than a transitive one, because
-    # tests/test_corpus_template.py renders a real training row through the pinned template and a
-    # test that skips when jinja2 is missing is a check that cannot fire -- which is the exact shape
-    # of defect it exists to catch.
-    "jinja2>=3.1.4",
-    "pre-commit==4.6.1",
     "pyright==1.1.411",
     "pytest==9.1.1",
     "ruff==0.16.2",
-]
-# Proof-of-training: GPU confidential-computing attestation + Hugging Face
-# proof-bundle publishing. Needs a real NVIDIA CC-capable GPU/driver stack to
-# actually attest (e.g. a Blackwell RTX PRO 6000 Server Edition CC node) —
-# not required for the rest of the repo, so kept as an extra like Axolotl.
-# The validator's HTTP surface. Optional so importing hermes/ or running the bench never
-# pulls in a web stack: the only thing here that listens on a socket is validator/api.py.
-validator = [
-  "fastapi>=0.115",
-  "uvicorn[standard]>=0.32",
-]
-
-proof = [
-    "nv-attestation-sdk==2.7.3",
-    "huggingface_hub>=1.27.0",
-    # Validator-side Intel DCAP verification of TDX quotes (signature chain,
-    # PCK certs, QE identity, TCB status via Intel PCS).
-    "dcap-qvl==0.6.1",
-    # Validator-side verification of NRAS-signed GPU tokens (ES384 vs NVIDIA JWKS).
-    "pyjwt[crypto]>=2.7",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.uv]
-# nv-attestation-sdk's published metadata leaks its own dev/test pins (pytest==8.1.1,
-# build, twine, pylint) into requires_dist — override so they don't collide with our
-# actual dev-tool versions.
-override-dependencies = ["pytest==9.1.1", "numpy<2.5"]
-
 [tool.hatch.build.targets.wheel]
-packages = ["admin", "teacher", "eval", "proof", "hermes", "hermesbench", "validator", "miner"]
+packages = ["sh"]
 
 [tool.ruff]
 line-length = 120
 target-version = "py312"
-# tritonbench/ was a vendored upstream tree with its own LICENSE and pyproject. It moved
-# to the `archive/tritonbench` branch; the exclude stays so a local checkout of that branch
-# beside this one is not linted as if it were ours.
-extend-exclude = ["tritonbench"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
@@ -87,8 +41,7 @@ testpaths = ["tests"]
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
-include = ["admin", "teacher", "eval", "proof", "hermes", "hermesbench", "validator"]
-# Optional training/miner-side entrypoints that import the uninstalled GPU/training
-# stack (torch, flash_attn, axolotl, cut_cross_entropy); not import-resolvable in CI.
-ignore = ["eval/train_prep.py", "eval/export_gsm8k_regression_sample.py"]
+include = ["sh"]
+# The runner runs inside the pinned image, where `predicates` and `run_agent` resolve; not here.
+exclude = ["sh/validator/runner"]
 pythonVersion = "3.12"

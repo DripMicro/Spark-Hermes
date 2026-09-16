@@ -1,0 +1,56 @@
+{
+ "schema": "sh-instance-v2",
+ "task_id": "terminal-task-r0003-09",
+ "family": "terminal_task",
+ "behaviour": "act",
+ "round_id": "r0003",
+ "prompt": "# Objective\nProduce a single breaker export file containing all security findings from the provided Gomboc API scan result, and a final remediation notification manifest that consolidates the scan findings, session context, inbox review summary, and notification readiness into one coherent record. All work is confined to `/task_file`.\n\n# Inputs\nEvery input file is rooted under `/task_file/input`. The following files are present:\n\n- `/task_file/input/gomboc_scan_result.json` \u2013 primary source of raw vulnerability findings, misconfigurations, and policy violations discovered in the scanned codebase.\n- `/task_file/input/codebase/terraform/main.tf` \u2013 Terraform infrastructure-as-code source (primary configuration).\n- `/task_file/input/codebase/terraform/variables.tf` \u2013 Terraform variable definitions.\n- `/task_file/input/codebase/terraform/outputs.tf` \u2013 Terraform output definitions.\n- `/task_file/input/codebase/cloudformation/stack.yaml` \u2013 CloudFormation stack template.\n- `/task_file/input/codebase/kubernetes/deployment.yaml` \u2013 Kubernetes Deployment manifest.\n- `/task_file/input/codebase/kubernetes/service.yaml` \u2013 Kubernetes Service manifest.\n- `/task_file/input/codebase/config/app.json` \u2013 Application configuration in JSON.\n- `/task_file/input/codebase/config/settings.yaml` \u2013 Application settings in YAML.\n- `/task_file/input/codebase/policies/policy.hcl` \u2013 Policy-as-code definitions.\n- `/task_file/input/codebase/manifest.yaml` \u2013 Codebase manifest providing provenance metadata for the scanned infrastructure files.\n- `/task_file/input/agent_session_transcript.jsonl` \u2013 pre-existing agent session transcript in JSONL format.\n- `/task_file/input/session_naming_metadata.json` \u2013 validated session name (letters, digits, hyphens, underscores; up to 64 characters) that was confirmed unique.\n- `/task_file/input/inbox_message_count.json` \u2013 snapshot of the agent public inbox message count.\n- `/task_file/input/inbox_messages.json` \u2013 retrieved inbox messages representing cross-session collaboration context.\n- `/task_file/input/fixture_manifest.json` \u2013 fixture provenance record describing the origin and structure of all input files.\n\nThe codebase files listed above are the scanned infrastructure-as-code and configuration sources. The Gomboc scan result at `/task_file/input/gomboc_scan_result.json` is the sole source of security findings and replaces any live API call.\n\n# Required outputs\n1. **Breaker export file** \u2013 a structured CSV or JSON file placed at `/task_file/output/breaker_export.csv` (if CSV) or `/task_file/output/breaker_export.json` (if JSON). The file must contain every finding from `/task_file/input/gomboc_scan_result.json`, be non-zero in size, and be confirmed complete.\n2. **Remediation notification manifest** \u2013 a single JSON file placed at `/task_file/output/remediation_notification.json`.\n\n# Required content for `/task_file/output/breaker_export.csv` or `/task_file/output/breaker_export.json`\n- The export must include every finding present in `/task_file/input/gomboc_scan_result.json`.\n- Each finding record must include the fields `timestamp`, `command`, and `value` derived directly from the corresponding finding in `/task_file/input/gomboc_scan_result.json`. The exact field names in the scan result may differ; map the closest semantic equivalents to `timestamp`, `command`, and `value`.\n- All additional fields present in each finding record of `/task_file/input/gomboc_scan_result.json` must also be included in the export.\n- The export must be non-zero in size.\n- If CSV is chosen, the first row must be a header line naming every column exactly as they appear in the export records.\n- If JSON is chosen, the top-level structure must be an array of finding objects.\n- The order of records must match the order of findings as they appear in `/task_file/input/gomboc_scan_result.json`.\n\n# Required content for `/task_file/output/remediation_notification.json`\nThe manifest must be a single JSON object with the following keys:\n- `remediation_summary` \u2013 a plain-text Markdown string that summarizes the remediation steps derived from the breaker export. This summary must be generated from the complete set of findings in the breaker export file and must reference at least the count of total findings and the types of misconfigurations present.\n- `session_name` \u2013 the validated session identifier taken exactly from the `session_name` field in `/task_file/input/session_naming_metadata.json`.\n- `inbox_summary` \u2013 an object summarizing the inbox review with the following keys:\n  - `message_count` \u2013 the integer count taken exactly from the `count` field in `/task_file/input/inbox_message_count.json`.\n  - `reviewed_topics` \u2013 an array of strings, each a short topic label derived from the subject or body of a message in `/task_file/input/inbox_messages.json`. Every message present in `/task_file/input/inbox_messages.json` must be represented by exactly one topic label.\n- `notification_audio` \u2013 an object confirming readiness of a synthesized audio notification with the following keys:\n  - `output_path` \u2013 the writable absolute path `/task_file/output/remediation_audio.wav` where the audio file would be written.\n  - `ready_for_delivery` \u2013 a boolean value set to `true`.\n  - `content_hash` \u2013 a string placeholder that must be set to the SHA-256 hex digest of the remediation summary string (the Markdown value stored in `remediation_summary`).\n\n# Source-to-output mapping\n- **Breaker export** (`/task_file/output/breaker_export.csv` or `/task_file/output/breaker_export.json`): derived entirely from `/task_file/input/gomboc_scan_result.json`. Every finding must be mapped; no findings may be omitted.\n- **`remediation_summary`** in `/task_file/output/remediation_notification.json`: derived from the complete content of the breaker export file. It must be a human-readable Markdown summary of the findings and suggested remediation steps.\n- **`session_name`** in `/task_file/output/remediation_notification.json`: copied exactly from `/task_file/input/session_naming_metadata.json`.\n- **`inbox_summary.message_count`**: copied exactly from `/task_file/input/inbox_message_count.json`.\n- **`inbox_summary.reviewed_topics`**: derived from `/task_file/input/inbox_messages.json`; one topic string per message.\n- **`notification_audio.content_hash`**: computed as the SHA-256 hex digest of the `remediation_summary` Markdown string.\n\n# Formatting and validation constraints\n- The breaker export file must be valid CSV (RFC 4180) or valid JSON.\n- The remediation notification manifest must be valid JSON.\n- The `remediation_summary` value must be a non-empty string containing valid Markdown.\n- The `session_name` value must match the pattern `^[A-Za-z0-9_-]{1,64}$`.\n- The `message_count` in `inbox_summary` must be a positive integer.\n- The `reviewed_topics` array must contain exactly as many elements as there are messages in `/task_file/input/inbox_messages.json`.\n- The `notification_audio.ready_for_delivery` value must be `true`.\n- The `notification_audio.content_hash` must be a 64-character lowercase hexadecimal string.\n- No external network calls, no embedded images, and no references to files outside `/task_file` are permitted.\n- The breaker export must not reference the session transcript, inbox files, or session naming metadata; it is scoped strictly to scan findings.\n",
+ "fixture": {},
+ "setup_commands": [],
+ "protected_paths": [
+  "input/.gitkeep",
+  "input/agent_session_transcript.jsonl",
+  "input/codebase/cloudformation/stack.yaml",
+  "input/codebase/config/app.json",
+  "input/codebase/config/settings.yaml",
+  "input/codebase/kubernetes/deployment.yaml",
+  "input/codebase/kubernetes/service.yaml",
+  "input/codebase/manifest.yaml",
+  "input/codebase/policies/policy.hcl",
+  "input/codebase/terraform/main.tf",
+  "input/codebase/terraform/outputs.tf",
+  "input/codebase/terraform/variables.tf",
+  "input/fixture_manifest.json",
+  "input/gomboc_scan_result.json",
+  "input/inbox_message_count.json",
+  "input/inbox_messages.json",
+  "input/session_naming_metadata.json",
+  "output/.gitkeep"
+ ],
+ "commands": [],
+ "published": {
+  "predicates": [
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::test_breaker_export_csv_format_and_completeness"
+   ],
+   [
+    "custom",
+    "facet_test",
+    "test_state.py::test_breaker_export_exists_and_nonempty"
+   ]
+  ]
+ },
+ "withheld_commitment": "hmac-sha256:bf3ee0e85481315e631ee1345fd01c257698cc484f12d474b61722fd07609eff",
+ "image": "facet-task:20f7661b55c2c058",
+ "network": "none",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "workdir": "/task_file",
+ "max_turns": 30,
+ "timeout_s": 600,
+ "requires_self_check": false
+}
