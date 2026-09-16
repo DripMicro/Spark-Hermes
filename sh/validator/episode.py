@@ -153,7 +153,7 @@ def run_episode(
             f"{mem_mb}m",
             "--cpus",
             str(cpus),
-            "--read-only",
+            *([] if task.get("workdir") else ["--read-only"]),  # an image-defined tree must be writable
             "--user",
             "1000:1000",
             "--tmpfs",
