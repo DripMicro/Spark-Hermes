@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v2",
- "updated": 1789547362.8308017,
+ "updated": 1789547565.5554123,
  "round_id": "r0001",
  "stage": "evaluate",
  "started": 1789540619.835445,
@@ -68,6 +68,10 @@
   {
    "stage": "evaluate_resume",
    "t": 1789546748.5241606
+  },
+  {
+   "stage": "resume",
+   "t": 1789547510.4268494
   }
  ],
  "tasks": 8,
