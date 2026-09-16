@@ -29,6 +29,7 @@ Each instance's withheld half was committed to *before* submissions opened, as `
 
 ```python
 import hashlib, hmac, json
+
 salt, withheld = reveal[task_id]["salt"], reveal[task_id]["withheld"]
 body = json.dumps(withheld, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
 "hmac-sha256:" + hmac.new(bytes.fromhex(salt), body, hashlib.sha256).hexdigest()

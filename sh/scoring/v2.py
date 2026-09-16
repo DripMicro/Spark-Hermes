@@ -193,6 +193,13 @@ def score(miner: MinerWindow, references: dict, params: Params = PARAMS_V2, *, s
         return detail
 
     detail["score"] = max(0.0, raw * (1 - ofr) ** 2 * (1 - params.copy_penalty * miner.prior_copy))
+    if detail["score"] == 0.0:  # a zero always says why — the common case is the bound, not a penalty
+        if not detail["gate"]:
+            detail["reason"] = f"below the baseline: Δ {mean_d:+.3f} ± {se:.3f}"
+        elif detail["delta_c"] == 0.0:
+            detail["reason"] = f"Δ {mean_d:+.3f} ± {se:.3f} does not clear zero at 90 % — Δc = 0, nothing to pay"
+        else:
+            detail["reason"] = "the efficiency term outweighs Δc"
     return detail
 
 

@@ -39,7 +39,7 @@ def render(close: dict, hotkey: str, reveal: dict | None = None) -> str:
         f"| standard error (incl. reference term) | {score.get('se') if score.get('se') is not None else '—'} |",
         f"| Δc (one-sided 90 % lower bound — what pays) | {score['delta_c']:.4f} |",
         f"| correctness gate | {'passed' if score['gate'] else 'not passed'} |",
-        f"| Δe | {score['delta_e'] or '—'} |",
+        f"| Δe | {' · '.join(f'{m} {v:+.2f}' for m, v in (score.get('delta_e') or {}).items()) or '—'} |",
         f"| overfit rate | {score['overfit_rate']:.2f} |",
         f"| disqualified episodes | {score['dq']} |",
     ]

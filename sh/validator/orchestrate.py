@@ -499,7 +499,7 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict) -
         (rd / "scorecards" / f"{hotkey}.md").write_text(card)
         if not info.get("pr"):
             continue  # an incumbent has no PR to write to; its card is published with the round
-        body = f"### Round `{round_id}`\n\n" + card
+        body = card
         if hotkey == king:
             body = "👑 **Crowned: top weight this round. Merging.**\n\n" + body
         else:
