@@ -1,10 +1,16 @@
 #!/bin/sh
-# Build hermes-base at the pinned commit and tag family images FROM it. Run on the build host.
+# Build the agent images at the pinned commit. Run on the build host.
+#   hermes-base:pin    python:3.12-slim + hermes  (families that ship their own fixtures)
+#   hermes-ubuntu:pin  ubuntu:22.04 + hermes      (image-defined tasks: family terminal_task builds FROM it)
 set -eu
 COMMIT="${HERMES_COMMIT:?set HERMES_COMMIT}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
-cp -r "$HERE/../runner" "$HERE/hermes-base/runner"
-cp -r "$HERE/../../predicates" "$HERE/hermes-base/runner/predicates"  # the runner imports the same predicates the validator grades with
-docker build --build-arg HERMES_COMMIT="$COMMIT" -t "hermes-base:${COMMIT}" -t hermes-base:pin "$HERE/hermes-base"
-rm -rf "$HERE/hermes-base/runner"
-docker image inspect hermes-base:pin --format 'hermes-base id={{.Id}}'
+for base in hermes-base hermes-ubuntu; do
+  rm -rf "$HERE/$base/runner"
+  cp -r "$HERE/../runner" "$HERE/$base/runner"
+  cp -r "$HERE/../../predicates" "$HERE/$base/runner/predicates"  # the runner imports the same predicates the validator grades with
+  rm -rf "$HERE/$base/runner/__pycache__" "$HERE/$base/runner/predicates/__pycache__"
+  docker build --build-arg HERMES_COMMIT="$COMMIT" -t "$base:${COMMIT}" -t "$base:pin" "$HERE/$base"
+  rm -rf "$HERE/$base/runner"
+  docker image inspect "$base:pin" --format "$base id={{.Id}}"
+done

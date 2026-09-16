@@ -67,7 +67,7 @@ class Config:
     worker: str = "root@91.224.44.223"
     worker_port: int = 50199
     worker_root: str = "/root/sh"  # holds pkg/ (the public package), state/tokens, state/usage
-    image: str = "family-process-lifecycle:pin"
+    image: str = "hermes-ubuntu:pin"  # the fallback; an image-defined task names its own
     window: int = 8  # rounds pooled for payment
     window_s: int = 2 * 3600  # the submission window
     min_paired: int = 4  # instances a strategy must share with the baseline to be crowned
@@ -451,6 +451,17 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
     for sub in ("tasks", "withheld", "checks", "canon", "bundles"):
         if (rd / sub).exists():
             _rsync(f"{rd / sub}/", f"{cfg.worker}:{remote}/{sub}/", cfg)
+    if (rd / "images").exists():  # image-defined tasks: the worker builds each task's image from its context
+        _worker(cfg, f"mkdir -p {remote}/images")
+        _rsync(f"{rd / 'images'}/", f"{cfg.worker}:{remote}/images/", cfg)
+        built = _worker(
+            cfg,
+            f"for d in {remote}/images/*/; do t=$(cat $d/TAG); docker image inspect $t >/dev/null 2>&1 "
+            f'|| docker build -q -t $t $d >/dev/null 2>&1 || echo "FAILED $t"; done; echo built',
+        )
+        if "FAILED" in built:
+            raise RuntimeError(f"task image build failed on the worker: {built.strip()[-300:]}")
+        log(rd, "images", built=len(list((rd / "images").iterdir())))
     surfaces = ["null", f"canon={remote}/canon"] + [f"{h}={remote}/bundles/{h}" for h in sealed["active"]]
     total = len(surfaces) * len(list((rd / "tasks").glob("*.json")))
     # Resume-safe: a restarted control plane finds the batch still running and polls it rather than launching a

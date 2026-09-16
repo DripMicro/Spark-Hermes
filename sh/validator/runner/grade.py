@@ -42,6 +42,8 @@ def _checks() -> dict:
 def main() -> int:
     task = json.loads((EP / "task.json").read_text())
     withheld = json.loads((EP / "withheld.json").read_text())["withheld"] if (EP / "withheld.json").exists() else None
+    global WS
+    WS = Path(task.get("workdir") or WS)  # the host mounts a tmpfs there for an image-defined task
     WS.mkdir(parents=True, exist_ok=True)
     OUT.mkdir(parents=True, exist_ok=True)
     with tarfile.open(EP / "snapshot.tar") as tf:

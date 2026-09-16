@@ -33,6 +33,7 @@ def one(
     checks_py: Path | None = None,
 ) -> dict:
     ep = out / surface / task["task_id"]
+    image = task.get("image") or image  # an image-defined task names its own image; --image is the fallback
     if (ep / "episode.json").exists():
         return json.loads((ep / "episode.json").read_text())
     done = (ep / "finish.json").exists() and json.loads((ep / "finish.json").read_text()).get("stage") == "done"

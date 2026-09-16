@@ -25,3 +25,15 @@ Host: `root@91.224.44.223:50199` — RTX 5090 32 GB, Docker 27.3.1, nvidia runti
 | crown | best Δ vs baseline on **this round's** instances, > 0, ≥ 4 paired; ties by pooled Δc | `sh/scoring/crown.py` |
 | payment | pooled over the last 8 rounds; Δc = one-sided 90 % lower bound | `sh/scoring/v2.py` |
 | training data | the king's verified episodes only (SFT); king vs any failing surface on the same instance (DPO); no king → nothing uploaded | `sh/exports/build.py` |
+
+## Family #3 — `terminal_task` (2026-09-16)
+
+| Component | Pin | Where |
+|---|---|---|
+| seed material | FACET-Terminal-Tasks-6k (`hamishivi/agent-task-facet-terminal-6k`, Apache-2.0): 6,020 tasks, each an instruction, a `FROM ubuntu:22.04` environment, a reference `solve.sh`, a pytest verifier | private `data/facet/` |
+| hermes-ubuntu image | `hermes-ubuntu:pin` — ubuntu:22.04 + uv 0.9.7 + uv-managed CPython 3.12 (`/opt/uvpython`) + hermes-agent `d84ece48…` + pytest 8.3.5 on the system interpreter + the runner. Worker build `sha256:112537928c4b…`; validator build `sha256:122e6b653478…` (same pin, not bit-identical — derivation runs on the validator's, episodes on the worker's) | `sh/validator/images/hermes-ubuntu/Dockerfile` |
+| task images | `facet-task:<env hash[:16]>` = the task's Dockerfile with `FROM hermes-ubuntu:pin`, the workdir handed to uid 1000; built on the validator at mint and on the worker at evaluate from `rounds/<id>/images/<hash>/` | `supply/facet.py`, `orchestrate.evaluate` |
+| universe | one `custom facet_test:<test id>` per verifier test case; the test file reaches the grader in `withheld.json.assets`, never the agent | `supply/families/terminal_task/checks.py` |
+| cheats | reference cut at ½ and ¾ (heredoc-safe), reference then every produced file emptied, no-op | `family.truncated`, `family.forged` |
+| limits | `max_turns` 30, `timeout_s` 600, tools `terminal` + `file`, network none, uid 1000 | `family.py` |
+| retired | `posix_report` (#1) and `process_lifecycle` (#2) removed with their code on 2026-09-16 | — |

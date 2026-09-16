@@ -189,7 +189,14 @@ def run_episode(
         except subprocess.TimeoutExpired:
             timed_out = True
             _run(
-                ["docker", "exec", ep, "sh", "-c", "tar cf /ep/out/snapshot.tar -C /ep/ws . 2>/dev/null; true"],
+                [
+                    "docker",
+                    "exec",
+                    ep,
+                    "sh",
+                    "-c",
+                    f"tar cf /ep/out/snapshot.tar -C {task.get('workdir') or '/ep/ws'} . 2>/dev/null; true",
+                ],
                 timeout=60,
             )
             _run(["docker", "kill", ep])

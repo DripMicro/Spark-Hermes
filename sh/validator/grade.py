@@ -101,6 +101,7 @@ def grade_in_container(
                 "1000:1000",
                 "--tmpfs",
                 "/tmp:rw,size=256m,uid=1000,gid=1000",
+                *(["--tmpfs", f"{task['workdir']}:rw,size=1024m,uid=1000,gid=1000"] if task.get("workdir") else []),
                 "-v",
                 f"{vol}:/ep",
                 "-e",

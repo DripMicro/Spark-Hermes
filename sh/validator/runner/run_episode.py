@@ -72,6 +72,8 @@ def main() -> int:
     before, ep_before, home_before = {}, {}, {}
     try:
         task = json.loads((EP / "task.json").read_text())
+        global WS
+        WS = Path(task.get("workdir") or WS)  # an image-defined task (family terminal_task) works in its own tree
         # /ep/seed is written by the host and deliberately not applied here: sampling, the seed included, is
         # pinned by the proxy so that no bundle and no runner change can alter it (spec §5.6). Wiring the
         # per-episode seed through the proxy is still open — it pins one sampling set for all episodes today.
