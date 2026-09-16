@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789556080.4936721,
+ "updated": 1789556383.9528184,
  "round_id": "r0003",
  "stage": "window",
  "stages": [
@@ -46,14 +46,7 @@
  "progress": {},
  "crown": null,
  "scores": null,
- "queue": [
-  {
-   "round_id": "r0003",
-   "tasks_sha256": "e4bc33ab27f07816426a4e7e670a60700c5ace5bbe372bbf3c7255a2c0d6f889",
-   "tasks": 8,
-   "minted_at": 1789555302.3709116
-  }
- ],
+ "queue": [],
  "history": [
   {
    "round_id": "s1",
