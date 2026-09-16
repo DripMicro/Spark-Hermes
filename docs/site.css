@@ -133,29 +133,3 @@ tr.king td { background: rgba(251, 191, 36, .05); }
 
 .foot { max-width: 74rem; margin: 3rem auto 0; padding-top: 1.2rem; border-top: 1px solid var(--line);
         color: var(--muted); font-size: .8rem; display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; }
-
-/* landing: headline, calls to action, step and fact cards */
-.intro { display: flex; flex-direction: column; gap: 1.1rem; align-items: flex-start; }
-.intro h1 { font-size: clamp(1.7rem, 3.4vw, 2.5rem); line-height: 1.15; max-width: 22ch; }
-.intro .sub { font-size: 1.12rem; color: var(--muted); max-width: 58ch; line-height: 1.6; }
-.facts { display: flex; flex-wrap: wrap; gap: .5rem; }
-.facts span { font-family: var(--mono); font-size: .78rem; padding: .3rem .7rem; border-radius: 999px; border: 1px solid var(--line); background: var(--soft); color: var(--ink); }
-.facts span b { color: var(--accent-2); font-weight: 600; }
-.cta { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: .3rem; }
-.btn { display: inline-flex; align-items: center; gap: .5rem; padding: .7rem 1.2rem; border-radius: 12px; font-weight: 600; font-size: .95rem; color: var(--ink);
-       border: 1px solid var(--line); background: var(--panel); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
-.btn:hover { text-decoration: none; transform: translateY(-2px); border-color: var(--accent-2); }
-.btn.primary { border-color: transparent; color: #0a0a10; background: linear-gradient(90deg, #c084fc, #22d3ee); box-shadow: 0 0 24px rgba(34, 211, 238, .35); }
-.btn.primary:hover { box-shadow: 0 0 32px rgba(34, 211, 238, .5); }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: .55rem;
-        transition: transform .25s ease, border-color .25s ease; }
-.card:hover { transform: translateY(-3px); border-color: rgba(167, 139, 250, .55); }
-.card .n { font-family: var(--mono); font-size: .74rem; letter-spacing: .12em; color: var(--accent-2); }
-.card h3 { margin: 0; font-size: 1.02rem; letter-spacing: -.005em; }
-.card p { font-size: .9rem; color: var(--muted); line-height: 1.55; }
-.card code { font-size: .8em; }
-.section-title { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; margin-bottom: 1rem; }
-.section-title h2 { margin: 0; }
-.section-title small { color: var(--muted); font-size: .85rem; }
-.footlinks { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; }

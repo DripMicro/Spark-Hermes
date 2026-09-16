@@ -19,57 +19,54 @@
 </nav>
 
 <main>
-  <div class="hero rise"><img src="assets/banner.jpg" srcset="assets/banner-800.jpg 800w, assets/banner.jpg 1600w" sizes="(max-width: 800px) 100vw, 1184px" alt="Spark-Hermes 3.8-27B — model, runtime, agent — powered by Gittensor"></div>
+  <div class="hero rise"><img src="assets/banner.jpg" srcset="assets/banner-800.jpg 800w, assets/banner.jpg 1600w" sizes="(max-width: 800px) 100vw, 1152px" alt="Spark-Hermes 3.8-27B — model, runtime, agent — powered by Gittensor"></div>
 
-  <div class="intro rise">
-    <h1><span class="grad">One pinned agent.</span><br>A competition on how it is instructed.</h1>
-    <p class="sub">Miners don't train a model. They write the instructions a pinned Hermes agent runs under, for real terminal
-    tasks nobody has seen before. The validator runs every strategy itself, in a sealed sandbox, and pays only for beating
-    the same agent with no strategy at all.</p>
-    <div class="facts">
-      <span><b>8</b> tasks per round</span><span><b>2 h</b> submission window</span><span><b>1</b> signed PR per hotkey</span><span>paid vs the <b>baseline</b></span><span>every result <b>checkable</b></span>
-    </div>
-    <div class="cta">
-      <a class="btn primary" href="live/">Open the live board</a>
-      <a class="btn" href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/submissions/README.md">Read the submission guide</a>
-    </div>
+  <div class="rise">
+    <h1><span class="grad">One pinned agent.</span> A competition on how it is instructed.</h1>
+    <p class="muted" style="margin-top:.35rem">SN74 Gittensor · Hermes agent · pinned model, sampling and sandbox</p>
   </div>
+
+  <p class="lead rise">A strategy is prose — a <code>SOUL.md</code> and optional skills — and nothing else. Every two hours a round opens
+  with 8 real terminal tasks. The validator runs the same agent and model under every submitted strategy, in a sealed
+  sandbox, and pays for beating the strategy-less baseline on the same tasks. The winner is merged as the incumbent; its
+  verified trajectories become training data.</p>
 
   <div class="round rise" id="live" hidden>
-    <div class="head"><h1>Round <span id="l-round" class="grad">—</span></h1><span id="l-phase" class="phase closed">—</span><span class="muted small when" id="l-when"></span></div>
+    <div class="head"><h1>Round <span id="l-round">—</span></h1><span id="l-phase" class="phase closed">—</span><span class="muted small" id="l-when"></span></div>
     <div class="barrow"><span class="label" id="l-label">submission window</span><div class="bar window" id="l-box"><i id="l-bar"></i></div><span class="value" id="l-left">—</span></div>
-    <p class="note" id="l-note"></p>
+    <div class="links"><a class="primary" href="live/">Open the live board</a><a id="l-tasks" href="live/">This round's tasks</a></div>
   </div>
 
-  <section class="rise">
-    <div class="section-title"><h2>How a round works</h2><small>every two hours, unattended, from open to crown</small></div>
-    <div class="cards">
-      <div class="card"><span class="n">01 · OPEN</span><h3>Eight real tasks are published</h3><p>Terminal tasks with an executable verifier, minted ahead and unread until the round opens. <code>python -m sh.cli.miner tasks</code> fetches exactly these — nothing else exists to fetch.</p></div>
-      <div class="card"><span class="n">02 · SUBMIT</span><h3>You write prose, sign it, push it</h3><p>A <code>SOUL.md</code> and optional skills. <code>python -m sh.cli.miner submit</code> lints, signs the bundle for this round with your hotkey, and opens or replaces your one pull request — as often as you like until the window closes.</p></div>
-      <div class="card"><span class="n">03 · EVALUATE</span><h3>The validator runs every strategy</h3><p>Sealed by PR head SHA the instant the window closes. The same pinned agent and model, the same sandbox, the same tasks — for every strategy, the baseline and the canon. Progress is live on the board.</p></div>
-      <div class="card"><span class="n">04 · CROWN</span><h3>The best Δ is merged; consistency is paid</h3><p>The strategy that beat the baseline by most on this round's tasks is crowned and merged as the incumbent; the rest close. Weights pool the last eight rounds, so one lucky round is not a living.</p></div>
-    </div>
-  </section>
+  <div class="two rise">
+    <section class="panel">
+      <h2>Compete</h2>
+      <ol class="steps">
+        <li><code>python -m sh.cli.miner tasks</code> — the open round's tasks; nothing else exists to fetch.</li>
+        <li>Write a <code>SOUL.md</code> for them, plus <code>skills/&lt;name&gt;/SKILL.md</code> if you want — prose only.</li>
+        <li><code>python -m sh.cli.miner submit --bundle DIR --key HOTKEY</code> — lints, signs for the round, opens or replaces your one PR.</li>
+        <li>When the window closes: sealed, evaluated, scored. The best against the baseline is crowned and merged; the rest close.</li>
+      </ol>
+    </section>
+    <section class="panel">
+      <h2>Check</h2>
+      <p>Each round publishes its tasks and window when it opens, and <code>close.json</code>, <code>crown.json</code>, <code>reveal.json</code>
+      (every withheld half and salt) and scorecards when it closes. <code>HMAC(salt, withheld)</code> must equal the commitment
+      published at open; the crown recomputes from the published episodes. Nothing here needs to be trusted.</p>
+      <p class="small muted" style="margin-top:.6rem">Payment pools the last 8 rounds — consistency pays. The crown is this round's alone.</p>
+    </section>
+  </div>
 
-  <section class="rise">
-    <div class="section-title"><h2>Checkable by anyone</h2><small>nothing on this site needs to be trusted</small></div>
-    <div class="cards">
-      <div class="card"><h3>Committed before, revealed after</h3><p>Each task's withheld checks are committed with the task at open — <code>HMAC(salt, withheld)</code> — and revealed with their salts at close, in <code>reveal.json</code>.</p></div>
-      <div class="card"><h3>Sealed before anything runs</h3><p>The seal names every bundle by digest and PR head SHA before evaluation starts, and it is published. A validator cannot pick which submission counted after seeing results.</p></div>
-      <div class="card"><h3>Recomputable from the artefacts</h3><p><code>close.json</code>, <code>crown.json</code> and the scorecards recompute from the published episodes; every round's page and the training data on Hugging Face carry the same numbers.</p></div>
-    </div>
-  </section>
-</main>
-
-<footer class="foot">
-  <span><a href="https://github.com/gittensor-model-hub">Gittensor</a> · MIT</span>
-  <span class="footlinks">
+  <div class="links rise">
     <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/submissions/README.md">Submission guide</a>
     <a href="https://github.com/gittensor-model-hub/Spark-Hermes/tree/sh/v2-pipeline/rounds">Round artefacts</a>
     <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/docs/pins.md">Pins</a>
     <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/docs/seed-datasets.md">Task supply</a>
-    <a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Training data</a>
-  </span>
+  </div>
+</main>
+
+<footer class="foot">
+  <span><a href="https://github.com/gittensor-model-hub">Gittensor</a> · MIT</span>
+  <span>Training data: <a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">spark-hermes-rounds</a></span>
 </footer>
 
 <script>
@@ -80,7 +77,6 @@
   const clock = (t) => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const span = (s) => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
     return h ? h + "h " + String(m).padStart(2, "0") + "m" : m ? m + "m " + String(x).padStart(2, "0") + "s" : x + "s"; };
-  const short = (h) => h.length <= 16 ? h : h.slice(0, 6) + "…" + h.slice(-4);
   let live = null;
   function paint() {
     if (!live) return;
@@ -103,13 +99,12 @@
       const r = await fetch("live/live.json?t=" + Date.now(), { cache: "no-store" });
       if (!r.ok) return;
       live = await r.json();
-      const w = live.window, subs = Array.isArray(live.submissions) ? live.submissions.length : (live.submissions || 0);
-      const last = (live.history || []).slice(-1)[0], king = (live.crown && live.crown.king) || (last && last.king);
+      const w = live.window;
       $("l-round").textContent = live.round_id;
       $("l-phase").textContent = LABEL[live.stage] || live.stage;
       $("l-phase").className = "phase " + (live.stage === "window" ? "window" : live.stage === "done" || live.stage === "waiting" ? "closed" : "evaluate");
       $("l-when").textContent = w ? "window " + clock(w.opens_at) + " → " + clock(w.closes_at) : "";
-      $("l-note").textContent = (live.tasks || 0) + " tasks · " + subs + " submission" + (subs === 1 ? "" : "s") + (king ? " · king " + short(king) : "") + " — open the live board for the standings.";
+      $("l-tasks").href = "https://github.com/" + live.repo + "/tree/" + live.branch + "/rounds/" + live.round_id + "/tasks";
       $("live").hidden = false;
       paint();
     } catch (e) { /* the card stays hidden */ }
