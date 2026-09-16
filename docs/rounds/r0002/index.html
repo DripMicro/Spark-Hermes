@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spark-Hermes r0002</title>
+<meta name="description" content="Scores, weights and verification for round r0002 of the Spark-Hermes strategy competition.">
+<link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+<nav class="nav">
+  <a class="brand" href="../../">Spark-Hermes</a>
+  <a href="../../live/">Live</a>
+  <a href="../../live/#rounds" aria-current="page">Rounds</a>
+  <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/submissions/README.md">Submit</a>
+  <a href="https://github.com/gittensor-model-hub/Spark-Hermes">GitHub</a>
+</nav>
+<main>
+  <div class="head"><h1>Round r0002</h1><span class="muted small">closed 2026-09-16 10:19 UTC · era e0 · sh-round-close-v2</span></div>
+  <div class="strip"><div class='stat'><b>128</b><span>episodes</span></div><div class='stat'><b>8</b><span>instances</span></div><div class='stat'><b><span class="crown">👑</span> <span title="5FGoodOperator">5FGoodOperator</span></b><span>king</span></div><div class='stat'><b>8</b><span>SFT rows</span></div><div class='stat'><b>3</b><span>DPO pairs</span></div><div class='stat'><b><span class="pos">8/8 match</span></b><span>commitments</span></div></div>
+  <section class="panel">
+    <h2>This round <small>highest paired delta vs baseline on this round&#x27;s instances, &gt; 0, ≥ 4 paired; ties by pooled Δc</small></h2>
+    <div class="wrap"><table>
+      <thead><tr><th class="l">strategy</th><th>rank</th><th title="instances shared with the baseline this round">paired</th><th>verified</th><th title="mean of (pass − baseline pass) per instance, this round">Δ vs baseline</th></tr></thead>
+      <tbody><tr><td class="l"><span class="hk" title="5FGoodOperator">5FGoodOperator</span> <span class="crown" title="crowned">👑</span></td><td>1</td><td>8</td><td>8</td><td class="pos">+0.625</td></tr><tr><td class="l"><span class="hk" title="5FCarefulOps">5FCarefulOps</span></td><td>2</td><td>8</td><td>8</td><td class="pos">+0.625</td></tr><tr><td class="l"><span class="hk" title="5FRefusalReader">5FRefusalReader</span></td><td>3</td><td>8</td><td>7</td><td class="pos">+0.500</td></tr><tr><td class="l"><span class="hk" title="5FHastyRunner">5FHastyRunner</span></td><td>4</td><td>8</td><td>7</td><td class="pos">+0.500</td></tr><tr><td class="l"><span class="hk" title="5FMinimal">5FMinimal</span></td><td>5</td><td>8</td><td>7</td><td class="pos">+0.500</td></tr><tr><td class="l"><span class="hk" title="5FPlanner">5FPlanner</span></td><td>6</td><td>8</td><td>7</td><td class="pos">+0.500</td></tr></tbody>
+    </table></div>
+  </section>
+  <section class="panel">
+    <h2>Payment <small>pooled over the window — Δc, the one-sided 90% lower bound of Δ vs baseline, is what pays</small></h2>
+    <div class="wrap"><table>
+      <thead><tr><th class="l">strategy</th><th>#</th><th>episodes</th><th title="mean of (miner pass − baseline pass) per instance">Δ vs baseline</th><th title="one-sided 90% lower bound of Δ vs baseline">Δc</th><th title="efficiency term admitted">gate</th><th title="passed the published check while failing the withheld one">overfit</th><th title="disqualified episodes">dq</th><th>score</th><th>weight</th></tr></thead>
+      <tbody><tr><td class="l"><span class="hk" title="5FGoodOperator">5FGoodOperator</span> <span class="crown" title="crowned">👑</span></td><td>1</td><td>16</td><td class="pos">+0.375</td><td>0.220</td><td>yes</td><td>0.00</td><td>0</td><td>0.0366</td><td class="">0.767</td></tr><tr><td class="l"><span class="hk" title="5FRefusalReader">5FRefusalReader</span></td><td>2</td><td>16</td><td class="pos">+0.312</td><td>0.138</td><td>yes</td><td>0.00</td><td>0</td><td>0.0111</td><td class="">0.233</td></tr><tr><td class="l"><span class="hk" title="5FCarefulOps">5FCarefulOps</span><span class="why">the efficiency term outweighs Δc</span></td><td>3</td><td>16</td><td class="pos">+0.250</td><td>0.060</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk" title="5FHastyRunner">5FHastyRunner</span><span class="why">Δ +0.125 ± 0.165 does not clear zero at 90 % — Δc = 0, nothing to pay</span></td><td>4</td><td>16</td><td class="pos">+0.125</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk" title="5FMinimal">5FMinimal</span><span class="why">Δ +0.062 ± 0.170 does not clear zero at 90 % — Δc = 0, nothing to pay</span></td><td>5</td><td>16</td><td class="pos">+0.062</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk" title="5FPlanner">5FPlanner</span><span class="why">Δ +0.188 ± 0.157 does not clear zero at 90 % — Δc = 0, nothing to pay</span></td><td>6</td><td>16</td><td class="pos">+0.188</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr></tbody>
+    </table></div>
+  </section>
+  <section class="panel">
+    <h2>Families</h2>
+    <div class="wrap"><table>
+      <thead><tr><th class="l">family</th><th>baseline n</th><th>baseline</th><th>canon</th><th title="canon's Δc against the baseline">Δc canon</th><th class="l">label</th></tr></thead>
+      <tbody><tr><td class="l">process_lifecycle</td><td>16</td><td>62%</td><td>94%</td><td>+0.312</td><td class="l">frontier</td></tr></tbody>
+    </table></div>
+  </section>
+  <p class="small muted">Artefacts: <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/rounds/r0002/crown.json">crown.json</a> · <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/rounds/r0002/close.json">close.json</a> · <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/rounds/r0002/reveal.json">reveal.json</a> · <a href="https://github.com/gittensor-model-hub/Spark-Hermes/tree/sh/v2-pipeline/rounds/r0002/scorecards">scorecards</a> · <a href="https://github.com/gittensor-model-hub/Spark-Hermes/tree/sh/v2-pipeline/rounds/r0002/checks">checks</a> · <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/rounds/r0002/manifest.json">manifest.json</a> · <a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0002">dataset</a>. Every withheld half and its salt is in <code>reveal.json</code>; <code>HMAC(salt, withheld)</code> must equal the commitment published when the round opened.</p>
+</main>
+</body>
+</html>

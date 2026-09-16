@@ -32,6 +32,25 @@
    "sft_rows": 51,
    "dpo_pairs": 7,
    "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0001"
+  },
+  {
+   "round_id": "r0002",
+   "closed_at": 1789553941.6995945,
+   "window": null,
+   "episodes": 128,
+   "king": "5FGoodOperator",
+   "weights": {
+    "5FCarefulOps": 0.0,
+    "5FGoodOperator": 0.7668486928263454,
+    "5FHastyRunner": 0.0,
+    "5FMinimal": 0.0,
+    "5FPlanner": 0.0,
+    "5FRefusalReader": 0.23315130717365465
+   },
+   "commitments_ok": true,
+   "sft_rows": 8,
+   "dpo_pairs": 3,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0002"
   }
  ]
 }

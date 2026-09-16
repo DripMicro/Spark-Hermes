@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789553895.2106137,
+ "updated": 1789553941.7110903,
  "round_id": "r0002",
- "stage": "close",
+ "stage": "done",
  "stages": [
   "open",
   "window",
@@ -52,6 +52,26 @@
   {
    "stage": "evaluate",
    "t": 1789553895.2075882
+  },
+  {
+   "stage": "close",
+   "t": 1789553899.0662591
+  },
+  {
+   "stage": "crown",
+   "t": 1789553899.0806298
+  },
+  {
+   "stage": "merge",
+   "t": 1789553925.0061631
+  },
+  {
+   "stage": "announce",
+   "t": 1789553936.824425
+  },
+  {
+   "stage": "export",
+   "t": 1789553941.6826427
   }
  ],
  "window": null,
@@ -142,8 +162,137 @@
    }
   }
  },
- "crown": null,
- "scores": null,
+ "crown": {
+  "schema": "sh-crown-v1",
+  "round_id": "r0002",
+  "king": "5FGoodOperator",
+  "standings": {
+   "5FCarefulOps": {
+    "n": 8,
+    "verified": 8,
+    "delta": 0.625,
+    "rank": 2
+   },
+   "5FGoodOperator": {
+    "n": 8,
+    "verified": 8,
+    "delta": 0.625,
+    "rank": 1
+   },
+   "5FHastyRunner": {
+    "n": 8,
+    "verified": 7,
+    "delta": 0.5,
+    "rank": 4
+   },
+   "5FMinimal": {
+    "n": 8,
+    "verified": 7,
+    "delta": 0.5,
+    "rank": 5
+   },
+   "5FPlanner": {
+    "n": 8,
+    "verified": 7,
+    "delta": 0.5,
+    "rank": 6
+   },
+   "5FRefusalReader": {
+    "n": 8,
+    "verified": 7,
+    "delta": 0.5,
+    "rank": 3
+   }
+  },
+  "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired; ties by pooled \u0394c"
+ },
+ "scores": {
+  "weights": {
+   "5FCarefulOps": 0.0,
+   "5FGoodOperator": 0.7668486928263454,
+   "5FHastyRunner": 0.0,
+   "5FMinimal": 0.0,
+   "5FPlanner": 0.0,
+   "5FRefusalReader": 0.23315130717365465
+  },
+  "king": "5FGoodOperator",
+  "per_hotkey": {
+   "5FCarefulOps": {
+    "n": 16,
+    "score": 0.0,
+    "mean_d": 0.25,
+    "se": 0.148122,
+    "delta_c": 0.06040393815622999,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": "the efficiency term outweighs \u0394c"
+   },
+   "5FGoodOperator": {
+    "n": 16,
+    "score": 0.036563534230614814,
+    "mean_d": 0.375,
+    "se": 0.121031,
+    "delta_c": 0.22008066615170332,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": null
+   },
+   "5FHastyRunner": {
+    "n": 16,
+    "score": 0.0,
+    "mean_d": 0.125,
+    "se": 0.164768,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": "\u0394 +0.125 \u00b1 0.165 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
+   },
+   "5FMinimal": {
+    "n": 16,
+    "score": 0.0,
+    "mean_d": 0.0625,
+    "se": 0.17021,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": "\u0394 +0.062 \u00b1 0.170 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
+   },
+   "5FPlanner": {
+    "n": 16,
+    "score": 0.0,
+    "mean_d": 0.1875,
+    "se": 0.157495,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": "\u0394 +0.188 \u00b1 0.157 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
+   },
+   "5FRefusalReader": {
+    "n": 16,
+    "score": 0.011116711654468425,
+    "mean_d": 0.3125,
+    "se": 0.136216,
+    "delta_c": 0.13814404225837304,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": null
+   }
+  },
+  "family_stats": {
+   "process_lifecycle": {
+    "null_p": 0.625,
+    "canon_p": 0.9375,
+    "label": "frontier"
+   }
+  },
+  "commitments_ok": true
+ },
  "queue": [],
  "history": [
   {
@@ -177,6 +326,25 @@
    "sft_rows": 51,
    "dpo_pairs": 7,
    "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0001"
+  },
+  {
+   "round_id": "r0002",
+   "closed_at": 1789553941.6995945,
+   "window": null,
+   "episodes": 128,
+   "king": "5FGoodOperator",
+   "weights": {
+    "5FCarefulOps": 0.0,
+    "5FGoodOperator": 0.7668486928263454,
+    "5FHastyRunner": 0.0,
+    "5FMinimal": 0.0,
+    "5FPlanner": 0.0,
+    "5FRefusalReader": 0.23315130717365465
+   },
+   "commitments_ok": true,
+   "sft_rows": 8,
+   "dpo_pairs": 3,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0002"
   }
  ],
  "repo": "gittensor-model-hub/Spark-Hermes",
