@@ -123,22 +123,23 @@
     const active = live.active || {};
     const sc = live.scores, cr = live.crown;
     const miners = Object.keys(active);
-    const nullR = by["null"] || { n: 0, verified: 0 };
-    const nullRate = nullR.n ? nullR.verified / nullR.n : null;
-    const rate = (s) => { const r = by[s]; return r && r.n ? r.verified / r.n : null; };
+    const share = (r) => r && r.n ? (r.credit != null ? r.credit : r.verified / r.n) : null;  // mean share of checks passed
+    const nullRate = share(by["null"]);
+    const rate = (s) => share(by[s]);
     $("board-panel").hidden = live.stage === "window" || live.stage === "waiting";
 
     if (sc && sc.per_hotkey) {
       const fs = Object.values(sc.family_stats || {})[0] || {};
       const st = (cr && cr.standings) || {};
       $("board-title").firstChild.textContent = "Final ";
-      $("board-sub").textContent = "baseline " + pct(fs.null_p) + " · canon " + pct(fs.canon_p) + " — the crown is this round's; weight pools the window";
+      const nullShare = fs.null_credit != null ? fs.null_credit : fs.null_p, canonShare = fs.canon_credit != null ? fs.canon_credit : fs.canon_p;
+      $("board-sub").textContent = "baseline passes " + pct(nullShare) + " of checks · canon " + pct(canonShare) + " — the crown is this round's; weight pools the window";
       $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("rank", "this round: by Δ vs baseline on these instances") +
-        th("Δ round", "mean of (pass − baseline pass) per instance, this round only") + th("verified") +
+        th("Δ round", "mean of (share of checks passed − the baseline's) per instance, this round only") + th("checks", "mean share of withheld checks passed, this round") +
         th("episodes", "pooled window") + th("Δ window", "mean paired delta over the pooled window") +
         th("Δc", "one-sided 90% lower bound of Δ window — what is paid") + th("score") + th("weight") + "</tr>";
-      const refs = ["null", "canon"].map((s) => "<tr class='ref'>" + surfaceCell(live, s) + "<td></td><td></td><td>" + (by[s] ? by[s].verified : "—") + "</td><td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
-        pct(s === "null" ? fs.null_p : fs.canon_p) + "</td><td colspan='3'></td></tr>");
+      const refs = ["null", "canon"].map((s) => "<tr class='ref'>" + surfaceCell(live, s) + "<td></td><td></td><td>" + pct(share(by[s])) + "</td><td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
+        "</td><td colspan='3'></td></tr>");
       const all = [...new Set([...miners, ...Object.keys(sc.per_hotkey)])];
       const ranked = all.sort((a, b) => ((st[a] || {}).rank || 1e6) - ((st[b] || {}).rank || 1e6) || (sc.weights[b] || 0) - (sc.weights[a] || 0) || a.localeCompare(b));
       const rows = ranked.map((h) => {
@@ -146,7 +147,7 @@
         const crown = isKing ? ' <span class="crown" title="crowned">👑</span>' : "";
         const why = s && w === 0 && s.reason ? '<span class="why">' + esc(s.reason) + "</span>" : "";
         const cell = surfaceCell(live, h).replace("</td>", crown + why + "</td>");
-        return "<tr" + (isKing ? " class='king'" : "") + ">" + cell + "<td>" + (t.rank || "—") + "</td><td class='" + cls(t.delta) + "'>" + signed(t.delta, 3) + "</td><td>" + (t.verified ?? "—") + "</td>" +
+        return "<tr" + (isKing ? " class='king'" : "") + ">" + cell + "<td>" + (t.rank || "—") + "</td><td class='" + cls(t.delta) + "'>" + signed(t.delta, 3) + "</td><td>" + pct(t.credit) + "</td>" +
           "<td>" + (s ? s.n : 0) + "</td><td class='" + cls(s && s.mean_d) + "'>" + signed(s && s.mean_d, 3) + "</td><td>" + (s ? num(s.delta_c || 0, 3) : "—") + "</td>" +
           "<td>" + (s ? num(s.score || 0, 4) : "—") + "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>";
       });
@@ -156,9 +157,10 @@
 
     const evaluating = live.stage === "evaluate";
     $("board-title").firstChild.textContent = evaluating ? "Evaluating " : "Sealed ";
-    $("board-sub").textContent = evaluating ? "pass rates so far — the crown and the scores are computed at close" : miners.length ? "strategies in this round, by PR head SHA" : "";
-    $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("episodes") + th("verified") + th("rate") +
-      th("vs baseline", "pass rate so far minus the baseline's pass rate so far") + "</tr>";
+    $("board-sub").textContent = evaluating ? "share of checks passed so far — the crown and the scores are computed at close" : miners.length ? "strategies in this round, by PR head SHA" : "";
+    $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("episodes") + th("full passes", "episodes where every withheld check held") +
+      th("checks passed", "mean share of the withheld checks that held — what is scored") +
+      th("vs baseline", "checks passed so far minus the baseline's, in points") + "</tr>";
     const order = ["null", "canon", ...miners.sort((a, b) => (rate(b) ?? -1) - (rate(a) ?? -1) || a.localeCompare(b))];
     $("board").innerHTML = miners.length || evaluating ? order.map((s) => {
       const r = by[s] || { n: 0, verified: 0 }, p = rate(s);
