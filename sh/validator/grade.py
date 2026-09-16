@@ -128,7 +128,9 @@ def grade_in_container(
 ALLOWED_WRITE_PREFIXES = ("/ep/ws", "/tmp", "/home/hermes")
 PATH_KEYS = ("path", "file_path", "target", "directory", "dir", "cwd", "file")
 CMD_KEYS = ("command", "cmd", "script", "query", "pattern", "args")
-GRADER_PATH = re.compile(r"/ep/(out|task\.json|withheld|before)|/runner\b|withheld\.json|grade\.py")
+GRADER_PATH = re.compile(  # the grader's own paths — not any task file that happens to be called grade.py
+    r"/ep/(out|task\.json|withheld|before)|/runner\b|/ep/withheld\.json|/runner/grade\.py"
+)
 
 
 def _reaching(args_json: str) -> tuple[list[str], list[str]]:
