@@ -300,3 +300,15 @@ def test_a_round_closed_before_the_credit_window_still_scores_itself(tmp_path):
         (cfg.state / "archive" / rid).mkdir(parents=True)
     pooled = window_archive(cfg, "r0003")
     assert json.loads((pooled / "rounds.json").read_text()) == ["r0003"]
+
+
+def test_a_previewing_family_shows_miners_its_previews_and_publishes_the_evaluated_tasks_only_at_close(tmp_path):
+    import sh.validator.orchestrate as o
+
+    rd = tmp_path / "r0005"
+    (rd / "tasks").mkdir(parents=True)
+    (rd / "tasks" / "swe-fix-r0005-00.json").write_text("{}")
+    assert o.shown(rd) == rd / "tasks"  # a family without previews: the tasks themselves
+    (rd / "preview").mkdir()
+    (rd / "preview" / "swe-fix-r0005-p00.json").write_text("{}")
+    assert o.shown(rd) == rd / "preview"

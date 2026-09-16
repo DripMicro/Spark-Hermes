@@ -27,31 +27,31 @@
   </div>
 
   <p class="lead rise">A strategy is prose — a <code>SOUL.md</code> and optional skills — and nothing else. Every two hours a round opens
-  with 8 real terminal tasks. The validator runs the same agent and model under every submitted strategy, in a sealed
-  sandbox, and pays for beating the strategy-less baseline on the same tasks. The winner is merged as the incumbent; its
+  on real bugs in real Python repositories. The validator runs the same agent and model under every submitted strategy,
+  in a sealed sandbox, and pays for beating the strategy-less baseline on 8 hidden bugs. The winner is merged as the incumbent; its
   verified trajectories become training data.</p>
 
   <div class="round rise" id="live" hidden>
     <div class="head"><h1>Round <span id="l-round">—</span></h1><span id="l-phase" class="phase closed">—</span><span class="muted small" id="l-when"></span></div>
     <div class="barrow"><span class="label" id="l-label">submission window</span><div class="bar window" id="l-box"><i id="l-bar"></i></div><span class="value" id="l-left">—</span></div>
-    <div class="links"><a class="primary" href="live/">Open the live board</a><a id="l-tasks" href="live/">This round's tasks</a></div>
+    <div class="links"><a class="primary" href="live/">Open the live board</a><a id="l-tasks" href="live/">This round's practice bugs</a></div>
   </div>
 
   <div class="two rise">
     <section class="panel">
       <h2>Compete</h2>
       <ol class="steps">
-        <li><code>python -m sh.cli.miner tasks</code> — the open round's tasks; nothing else exists to fetch.</li>
-        <li>Write a <code>SOUL.md</code> for them, plus <code>skills/&lt;name&gt;/SKILL.md</code> if you want — prose only.</li>
+        <li><code>python -m sh.cli.miner tasks</code> — the open round's practice bugs, one per repository it is scored on.</li>
+        <li>Write a <code>SOUL.md</code> on fixing bugs in those codebases, plus <code>skills/&lt;name&gt;/SKILL.md</code> if you want — prose only.</li>
         <li><code>python -m sh.cli.miner submit --bundle DIR --key HOTKEY</code> — lints, signs for the round, opens or replaces your one PR.</li>
         <li>When the window closes: sealed, evaluated, scored. The best against the baseline is crowned and merged; the rest close.</li>
       </ol>
     </section>
     <section class="panel">
       <h2>Check</h2>
-      <p>Each round publishes its tasks and window when it opens, and <code>close.json</code>, <code>crown.json</code>, <code>reveal.json</code>
-      (every withheld half and salt) and scorecards when it closes. <code>HMAC(salt, withheld)</code> must equal the commitment
-      published at open; the crown recomputes from the published episodes. Nothing here needs to be trusted.</p>
+      <p>Each round publishes its practice bugs, window and a digest of the hidden bugs when it opens, and the hidden bugs,
+      <code>close.json</code>, <code>crown.json</code>, <code>reveal.json</code> (every withheld half and salt) and scorecards when it
+      closes. <code>HMAC(salt, withheld)</code> must equal each task's commitment; the crown recomputes from the published episodes. Nothing here needs to be trusted.</p>
       <p class="small muted" style="margin-top:.6rem">Payment pools the last 8 rounds — consistency pays. The crown is this round's alone.</p>
     </section>
   </div>

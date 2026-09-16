@@ -30,11 +30,14 @@ Task families and their withheld halves live in a private repository; only what 
 
 ## Compete
 
-A round opens with 8 tasks and a 2-hour submission window; the board shows the countdown.
+A round opens with a 2-hour submission window; the board shows the countdown. The family is `swe_fix`: fix a real
+bug in a real Python repository. While the window is open you get 8 practice bugs — one from each repository and
+environment the round is scored on — and the round is scored on 8 different, hidden bugs from those same
+repositories, published when it closes.
 
 ```sh
-python -m sh.cli.miner tasks                                   # this round's tasks; nothing else exists to fetch
-$EDITOR my-strategy/SOUL.md                                    # prose for those tasks
+python -m sh.cli.miner tasks                                   # this round's practice bugs; nothing else exists to fetch
+$EDITOR my-strategy/SOUL.md                                    # prose for debugging those codebases
 python -m sh.cli.miner submit --bundle my-strategy --key ~/.bittensor/wallets/<cold>/hotkeys/<hot> \
         --checkout . --head-owner <your github user>           # one signed PR per hotkey; resubmit to replace
 ```
@@ -47,7 +50,7 @@ round opens at once. Payment pools the last 8 rounds. Details: [`submissions/REA
 
 ```sh
 uv sync --extra dev
-SH_SALT_SECRET=... DOCKER_HOST=ssh://<worker> python -m supply.queue --queue queue --plan terminal_task:8:1 --ahead 3   # private repo: mints rounds ahead, images built on the worker
+SH_SALT_SECRET=... DOCKER_HOST=ssh://<worker> python -m supply.queue --queue queue --plan swe_fix:8:1 --ahead 3 --screen   # private repo: mints rounds ahead, images built on the worker
 HF_TOKEN=... uv run python -m sh.validator.orchestrate --queue ../Spark-Hermes-Withheld/queue       # forever; --once for one round
 uv run python -m sh.validator.orchestrate --help
 ```
@@ -60,8 +63,10 @@ it reached and never changes what that round sealed.
 ## Check a round
 
 `rounds/<id>/reveal.json` carries every withheld half and salt. For each instance,
-`"hmac-sha256:" + HMAC(salt, canonical_json(withheld))` must equal the commitment published in `rounds/<id>/tasks/`
-when the round opened, and `close.json` recomputes from the graded episodes. Nothing here needs to be trusted.
+`"hmac-sha256:" + HMAC(salt, canonical_json(withheld))` must equal the commitment in the task record — in
+`rounds/<id>/tasks/` when miners were shown the evaluated tasks, in `rounds/<id>/evaluated/` when they were shown
+previews — and `rounds/queue.json`, published before the round opened, carries the digest of both. `close.json`
+recomputes from the graded episodes. Nothing here needs to be trusted.
 
 ## Develop
 

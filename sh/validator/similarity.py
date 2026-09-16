@@ -1,8 +1,9 @@
 """Does a bundle reproduce the round's answers? (the seal's S1 check)
 
-The tasks of family terminal_task come from a public dataset whose reference solutions and verifiers are public
-too, and miners see the tasks for the whole window. A strategy is prose, but prose can carry a pasted solution
-as a code block, and neither the lint nor the overfit rule can see it: the reference passes both halves.
+The tasks come from public datasets whose solutions are public too (FACET-Terminal's references and verifiers,
+SWE-smith's bug diffs), and miners see tasks — or, for swe_fix, sibling bugs from the same repositories — for the
+whole window. A strategy is prose, but prose can carry a pasted solution as a code block, and neither the lint nor
+the overfit rule can see it: the reference passes every check.
 
 This check compares a bundle with what the validator privately holds for the round — every task's reference
 and alternate solutions and its verifier — and refuses a bundle that carries a material share of them. Two
@@ -77,10 +78,15 @@ def load(round_dir: Path) -> References:
     answers: list[str] = []
     for p in sorted((round_dir / "private").glob("*.json")) if (round_dir / "private").is_dir() else []:
         sol = json.loads(p.read_text()).get("solutions", {})
-        answers += [sol.get("reference") or "", *(sol.get("alternates") or [])]
+        if sol.get("answer"):  # the correct code as a miner would paste it (swe_fix: the lines its bug replaced) —
+            answers.append(sol["answer"])  # its reference is a diff whose context is the repository's own code
+        else:
+            answers += [sol.get("reference") or "", *(sol.get("alternates") or [])]
     for p in sorted((round_dir / "withheld").glob("*.json")) if (round_dir / "withheld").is_dir() else []:
-        for b64 in (json.loads(p.read_text()).get("assets") or {}).values():
-            answers.append(base64.b64decode(b64).decode("utf-8", "replace"))
+        record = json.loads(p.read_text())
+        if record.get("assets_are_answers", True):  # a verifier is an answer; a repository's own tests are not
+            for b64 in (record.get("assets") or {}).values():
+                answers.append(base64.b64decode(b64).decode("utf-8", "replace"))
     prompts = [json.loads(p.read_text()).get("prompt", "") for p in sorted((round_dir / "tasks").glob("*.json"))]
     return References([a for a in answers if a], prompts)
 
