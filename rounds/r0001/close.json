@@ -1,0 +1,192 @@
+{
+ "schema": "sh-round-close-v2",
+ "round_id": "r0001",
+ "era": "e0",
+ "tasks": [
+  "process-lifecycle-r0001-00",
+  "process-lifecycle-r0001-01",
+  "process-lifecycle-r0001-02",
+  "process-lifecycle-r0001-03",
+  "process-lifecycle-r0001-04",
+  "process-lifecycle-r0001-05",
+  "process-lifecycle-r0001-06",
+  "process-lifecycle-r0001-07"
+ ],
+ "episodes": 64,
+ "family_stats": {
+  "process_lifecycle": {
+   "schema": "sh-family-stats-v2",
+   "family": "process_lifecycle",
+   "era": "e0",
+   "window": [
+    "r0001"
+   ],
+   "null": {
+    "n": 8,
+    "successes": 7,
+    "p": 0.875,
+    "wilson": [
+     0.5291,
+     0.9776
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 7.0,
+      "p25": 6.0,
+      "n": 7
+     },
+     "tool_calls": {
+      "median": 6.0,
+      "p25": 6.0,
+      "n": 7
+     }
+    }
+   },
+   "canon": {
+    "n": 8,
+    "successes": 7,
+    "p": 0.875,
+    "wilson": [
+     0.5291,
+     0.9776
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 10.0,
+      "p25": 9.0,
+      "n": 7
+     },
+     "tool_calls": {
+      "median": 9.0,
+      "p25": 9.0,
+      "n": 7
+     }
+    },
+    "delta_c": 0.0,
+    "delta_e": {
+     "api_calls": -0.6098,
+     "tool_calls": -0.8205
+    },
+    "delta_e_paired_instances": 6
+   },
+   "label": "frontier",
+   "partial_rate": 0.0625,
+   "in_rotation": true,
+   "retirement": null
+  }
+ },
+ "scores": {
+  "5FCarefulOps": {
+   "hotkey": "5FCarefulOps",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.6230889591206692,
+    "tool_calls": -0.9165182506328219
+   },
+   "gate": true,
+   "se": 0.201141,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "mean_d": -0.125
+  },
+  "5FGoodOperator": {
+   "hotkey": "5FGoodOperator",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.4257653127400949,
+    "tool_calls": -0.7342205144229418
+   },
+   "gate": true,
+   "se": 0.116927,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "mean_d": 0.125
+  },
+  "5FHastyRunner": {
+   "hotkey": "5FHastyRunner",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.11448347091045674,
+    "tool_calls": -0.2773076466968317
+   },
+   "gate": true,
+   "se": 0.21715,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "mean_d": -0.25
+  },
+  "5FMinimal": {
+   "hotkey": "5FMinimal",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": false,
+   "se": 0.22223,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "mean_d": -0.375
+  },
+  "5FPlanner": {
+   "hotkey": "5FPlanner",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.17006692389889994,
+    "tool_calls": -0.4106447027583134
+   },
+   "gate": true,
+   "se": 0.201141,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "mean_d": -0.125
+  },
+  "5FRefusalReader": {
+   "hotkey": "5FRefusalReader",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.34104786342905635,
+    "tool_calls": -0.5470388316940507
+   },
+   "gate": true,
+   "se": 0.116927,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "mean_d": 0.125
+  }
+ },
+ "weights": {
+  "5FCarefulOps": 0.0,
+  "5FGoodOperator": 0.0,
+  "5FHastyRunner": 0.0,
+  "5FMinimal": 0.0,
+  "5FPlanner": 0.0,
+  "5FRefusalReader": 0.0
+ },
+ "commitments_verified": {
+  "process-lifecycle-r0001-00": true,
+  "process-lifecycle-r0001-01": true,
+  "process-lifecycle-r0001-02": true,
+  "process-lifecycle-r0001-03": true,
+  "process-lifecycle-r0001-04": true,
+  "process-lifecycle-r0001-05": true,
+  "process-lifecycle-r0001-06": true,
+  "process-lifecycle-r0001-07": true
+ },
+ "commitments_ok": true
+}

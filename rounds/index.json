@@ -14,6 +14,24 @@
    "sft_rows": 39,
    "dpo_pairs": 5,
    "hf": null
+  },
+  {
+   "round_id": "r0001",
+   "closed_at": 1789547606.8317137,
+   "episodes": 64,
+   "king": null,
+   "weights": {
+    "5FCarefulOps": 0.0,
+    "5FGoodOperator": 0.0,
+    "5FHastyRunner": 0.0,
+    "5FMinimal": 0.0,
+    "5FPlanner": 0.0,
+    "5FRefusalReader": 0.0
+   },
+   "commitments_ok": true,
+   "sft_rows": 51,
+   "dpo_pairs": 7,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0001"
   }
  ]
 }

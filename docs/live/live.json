@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v2",
- "updated": 1789547569.5616958,
+ "updated": 1789547606.8339882,
  "round_id": "r0001",
- "stage": "close",
+ "stage": "done",
  "started": 1789540619.835445,
  "phases": [
   {
@@ -76,6 +76,18 @@
   {
    "stage": "evaluate",
    "t": 1789547569.5608387
+  },
+  {
+   "stage": "close",
+   "t": 1789547572.4836798
+  },
+  {
+   "stage": "announce",
+   "t": 1789547601.3760095
+  },
+  {
+   "stage": "export",
+   "t": 1789547606.7339137
   }
  ],
  "tasks": 8,
@@ -164,7 +176,93 @@
    }
   }
  },
- "scores": null,
+ "scores": {
+  "weights": {
+   "5FCarefulOps": 0.0,
+   "5FGoodOperator": 0.0,
+   "5FHastyRunner": 0.0,
+   "5FMinimal": 0.0,
+   "5FPlanner": 0.0,
+   "5FRefusalReader": 0.0
+  },
+  "king": null,
+  "per_hotkey": {
+   "5FCarefulOps": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": -0.125,
+    "se": 0.201141,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": null
+   },
+   "5FGoodOperator": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": 0.125,
+    "se": 0.116927,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": null
+   },
+   "5FHastyRunner": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": -0.25,
+    "se": 0.21715,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": null
+   },
+   "5FMinimal": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": -0.375,
+    "se": 0.22223,
+    "delta_c": 0.0,
+    "gate": false,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": null
+   },
+   "5FPlanner": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": -0.125,
+    "se": 0.201141,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": null
+   },
+   "5FRefusalReader": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": 0.125,
+    "se": 0.116927,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": null
+   }
+  },
+  "family_stats": {
+   "process_lifecycle": {
+    "null_p": 0.875,
+    "canon_p": 0.875,
+    "label": "frontier"
+   }
+  },
+  "commitments_ok": true
+ },
  "history": [
   {
    "round_id": "s1",
@@ -179,6 +277,24 @@
    "sft_rows": 39,
    "dpo_pairs": 5,
    "hf": null
+  },
+  {
+   "round_id": "r0001",
+   "closed_at": 1789547606.8317137,
+   "episodes": 64,
+   "king": null,
+   "weights": {
+    "5FCarefulOps": 0.0,
+    "5FGoodOperator": 0.0,
+    "5FHastyRunner": 0.0,
+    "5FMinimal": 0.0,
+    "5FPlanner": 0.0,
+    "5FRefusalReader": 0.0
+   },
+   "commitments_ok": true,
+   "sft_rows": 51,
+   "dpo_pairs": 7,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0001"
   }
  ],
  "repo": "gittensor-model-hub/Spark-Hermes",

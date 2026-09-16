@@ -1,0 +1,21 @@
+{
+ "schema": "sh-export-manifest-v2",
+ "round_id": "r0001",
+ "sft_rows": 51,
+ "dpo_pairs": 7,
+ "gates": {
+  "no_trajectory": 0,
+  "not_verified": 13,
+  "disqualified": 0,
+  "leaked": 0
+ },
+ "families": [
+  "process_lifecycle"
+ ],
+ "sft_sha256": "92402c80943593ebba3d813a1ee9480913c62c44b864c19be61830e9ff312f18",
+ "dpo_sha256": "caebe2c64b186ed4db46a1d1a9ba0bad42aac85c4c823e9fa471d845d693d1ec",
+ "leak_scan": {
+  "secrets_checked": 9,
+  "rows_refused": 0
+ }
+}
