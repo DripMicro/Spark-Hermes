@@ -55,3 +55,9 @@ def test_a_pull_request_is_a_strategy_by_what_it_touches_not_by_its_label():
     assert pr_role([]) == "maintenance"
     assert pr_role(["5Fa"]) == "strategy"
     assert pr_role(["5Fa", "5Fb"]) == "malformed"
+
+
+def test_a_window_miner_who_did_not_resubmit_is_paid_but_never_crowned():
+    """Weights pool the window; the crown is a strategy the repository carries, so only a sealed one can hold it."""
+    plan = outcome(_seal(A=101), {"GHOST": 0.7, "A": 0.3})
+    assert plan["king"] == "A" and plan["merge"] == 101 and plan["close"] == []

@@ -44,8 +44,8 @@ crowned PR is merged; the others are closed with the round — resubmit to compe
 
 ```sh
 uv sync --extra dev
-HF_TOKEN=... python -m sh.validator.orchestrate --tasks 8 --difficulty 3 --window 8      # forever; --once for one round
-python -m sh.validator.orchestrate --help
+HF_TOKEN=... uv run python -m sh.validator.orchestrate --tasks 8 --difficulty 3 --window 8      # forever; --once for one round
+uv run python -m sh.validator.orchestrate --help
 ```
 
 The control plane (credentials, GitHub, Hugging Face) stays on the machine you run this on; episodes run on a GPU

@@ -42,6 +42,7 @@
       <thead id="board-head"></thead>
       <tbody id="board"><tr><td class="empty" colspan="8">waiting for the seal</td></tr></tbody>
     </table></div>
+    <p class="small muted" id="rejected" hidden style="margin-top:.6rem"></p>
   </section>
 
   <section class="panel" id="rounds">
@@ -102,12 +103,17 @@
         th("Δc", "one-sided 90% lower bound of Δ vs baseline — what is paid") + th("score") + th("weight") + "</tr>";
       const refs = ["null", "canon"].map((s) => "<tr class='ref'>" + surfaceCell(live, s) + "<td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
         pct(s === "null" ? fs.null_p : fs.canon_p) + "</td><td colspan='4'></td></tr>");
-      const ranked = miners.filter((h) => sc.per_hotkey[h]).sort((a, b) => (sc.weights[b] || 0) - (sc.weights[a] || 0) || (sc.per_hotkey[b].score || 0) - (sc.per_hotkey[a].score || 0));
+      const all = [...new Set([...miners, ...Object.keys(sc.per_hotkey)])];
+      const ranked = all.sort((a, b) => (sc.weights[b] || 0) - (sc.weights[a] || 0) ||
+        ((sc.per_hotkey[b] || {}).score || 0) - ((sc.per_hotkey[a] || {}).score || 0) || a.localeCompare(b));
       const rows = ranked.map((h) => {
         const s = sc.per_hotkey[h], w = sc.weights[h] || 0;
         const crown = h === sc.king ? ' <span class="crown" title="crowned">👑</span>' : "";
-        const why = w === 0 && s.reason ? '<span class="why">' + esc(s.reason) + "</span>" : "";
-        return "<tr>" + surfaceCell(live, h).replace("</td>", crown + why + "</td>") + "<td>" + s.n + "</td><td>" + pct(rate(h)) + "</td>" +
+        const tag = active[h] ? "" : '<span class="tag" title="scored on its episodes from earlier rounds in the window; not sealed this round, so it cannot be crowned">window</span>';
+        const why = s && w === 0 && s.reason ? '<span class="why">' + esc(s.reason) + "</span>" : "";
+        const cell = surfaceCell(live, h).replace("</td>", tag + crown + why + "</td>");
+        if (!s) return "<tr>" + cell + "<td>0</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='zero'>0.000</td></tr>";
+        return "<tr>" + cell + "<td>" + s.n + "</td><td>" + pct(rate(h)) + "</td>" +
           "<td class='" + cls(s.mean_d) + "'>" + signed(s.mean_d, 3) + "</td><td>" + (s.delta_c || 0).toFixed(3) + "</td>" +
           "<td>" + (s.score || 0).toFixed(4) + "</td><td class='" + (w ? "" : "zero") + "'>" + w.toFixed(3) + "</td></tr>";
       });
@@ -149,6 +155,9 @@
     $("started").textContent = clock(live.started);
 
     board(live);
+    const rej = Object.entries(live.rejected || {});
+    $("rejected").hidden = !rej.length;
+    $("rejected").innerHTML = rej.length ? "Rejected at seal: " + rej.map(([n, why]) => pr(live, n) + " — " + esc(why)).join(" · ") : "";
 
     const hist = (live.history || []).slice().reverse();
     $("history").innerHTML = hist.length ? hist.map((h) => {

@@ -167,7 +167,7 @@ def live(cfg: Config, rd: Path, stage: str, *, progress: dict | None = None, pus
         weights = closed.get("weights", {})
         scores = {
             "weights": weights,
-            "king": max(weights, key=lambda h: weights[h]) if weights and max(weights.values()) > 0 else None,
+            "king": outcome(sealed, weights)["king"] if sealed.get("active") is not None else None,
             "per_hotkey": {
                 h: {
                     k: s.get(k)
@@ -469,8 +469,11 @@ def close(cfg: Config, round_id: str, rd: Path) -> dict:
 def outcome(sealed: dict, weights: dict) -> dict:
     """What happens to each PR the seal named: the top weight's PR is merged, every other challenger's is
     closed. Pure, so it is testable. Only PRs the seal named are ever touched — a maintenance PR is never in
-    the seal, so it is never closed by the round."""
-    king = max(weights, key=lambda h: weights[h]) if weights and max(weights.values()) > 0 else None
+    the seal, so it is never closed by the round. Weights pool the window, so a hotkey that competed in an
+    earlier round and did not resubmit can still be paid; but only a *sealed* strategy — one with a PR to merge
+    or already merged — can be crowned, since a crown is a strategy the repository carries."""
+    sealed_w = {h: w for h, w in weights.items() if h in sealed["active"]}
+    king = max(sealed_w, key=lambda h: sealed_w[h]) if sealed_w and max(sealed_w.values()) > 0 else None
     king_pr = sealed["active"].get(king, {}).get("pr") if king else None
     close_prs = sorted(
         {info["pr"] for h, info in sealed["active"].items() if info.get("pr") and h != king}
