@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v2",
- "updated": 1789546244.9137962,
+ "updated": 1789546465.2109919,
  "round_id": "r0001",
  "stage": "evaluate",
  "started": 1789540619.835445,
@@ -52,6 +52,14 @@
   {
    "stage": "evaluate_resume",
    "t": 1789546001.2652733
+  },
+  {
+   "stage": "resume",
+   "t": 1789546411.5366466
+  },
+  {
+   "stage": "evaluate_resume",
+   "t": 1789546418.5082958
   }
  ],
  "tasks": 8,
@@ -95,16 +103,20 @@
  },
  "rejected": {},
  "progress": {
-  "done": 53,
+  "done": 56,
   "total": 64,
   "by_surface": {
    "5FCarefulOps": {
     "n": 8,
     "verified": 6
    },
+   "5FGoodOperator": {
+    "n": 1,
+    "verified": 1
+   },
    "5FHastyRunner": {
-    "n": 5,
-    "verified": 3
+    "n": 7,
+    "verified": 5
    },
    "5FMinimal": {
     "n": 8,
