@@ -228,9 +228,15 @@ def queue_ready(cfg: Config) -> list[str]:
 def open_round(cfg: Config) -> Path:
     """Take the lowest ready round from the queue, give it a window, and publish tasks + window + queue digests.
     Waits — visibly, on the board — while the queue is empty."""
+    waited = 0
     while not queue_ready(cfg):
-        print("[loop] queue empty; waiting for the daemon", flush=True)
+        if waited % 300 == 0:  # the board shows the wait rather than going stale on the last round's "done"
+            print("[loop] queue empty; waiting for the daemon", flush=True)
+            previous = sorted(p for p in cfg.rounds.glob("r*") if p.is_dir()) if cfg.rounds.exists() else []
+            if previous:
+                live(cfg, previous[-1], "waiting")
         time.sleep(60)
+        waited += 60
     round_id = queue_ready(cfg)[0]
     rd = cfg.rounds / round_id
     cfg.rounds.mkdir(parents=True, exist_ok=True)
