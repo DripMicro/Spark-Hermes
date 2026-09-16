@@ -57,14 +57,6 @@
     <p class="note" id="rejected" hidden style="margin-top:.8rem"></p>
   </section>
 
-  <section class="panel rise" id="standings-panel" hidden>
-    <h2>Standings <small id="standings-sub">after the last close — pooled over the window, what pays now</small></h2>
-    <div class="wrap"><table>
-      <thead><tr><th class="l">hotkey</th><th>weight</th><th>score</th><th title="one-sided 90% lower bound of Δ over the window — what is paid">Δc</th><th title="mean paired delta over the window">Δ window</th><th>episodes</th></tr></thead>
-      <tbody id="standings"></tbody>
-    </table></div>
-  </section>
-
   <section class="panel rise" id="rounds">
     <h2>Closed rounds <small>every round links to its page: scores, weights, the revealed withheld halves</small></h2>
     <div class="wrap"><table>
@@ -124,15 +116,6 @@
         "<td class='l'>" + pr(live, s.pr) + "</td><td>" + iso(s.created_at) + "</td><td>" + iso(s.updated_at) + "</td>" +
         "<td class='" + (k.weight ? "" : "zero") + "'>" + num(k.weight, 3) + "</td><td>" + num(k.score, 4) + "</td><td>" + num(k.delta_c, 3) + "</td></tr>";
     }).join("") : '<tr><td class="empty" colspan="7">no submission yet — the window is open</td></tr>';
-  }
-
-  function standings(live) {
-    const st = live.standings || {}, closed = live.stage === "done";
-    const rows = Object.entries(st).sort((a, b) => (b[1].weight || 0) - (a[1].weight || 0) || (b[1].score || 0) - (a[1].score || 0));
-    $("standings-panel").hidden = closed || !rows.length;
-    $("standings-sub").textContent = "after " + (live.last_round || "the last close") + " — pooled over the window, what pays now";
-    $("standings").innerHTML = rows.map(([h, s]) => "<tr><td class='l'>" + hk(h) + "</td><td class='" + (s.weight ? "" : "zero") + "'>" + num(s.weight, 3) +
-      "</td><td>" + num(s.score, 4) + "</td><td>" + num(s.delta_c, 3) + "</td><td class='" + cls(s.mean_d) + "'>" + signed(s.mean_d, 3) + "</td><td>" + (s.n ?? "—") + "</td></tr>").join("");
   }
 
   function board(live) {
@@ -236,7 +219,6 @@
     paint();
     submissions(live);
     board(live);
-    standings(live);
 
     const rej = Object.entries(live.rejected || {});
     $("rejected").hidden = !rej.length;
