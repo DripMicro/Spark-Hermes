@@ -127,3 +127,39 @@ def test_a_restart_resumes_the_unfinished_round_from_its_own_log(tmp_path):
     assert done_stages(r1) == {"start", "mint", "seal", "publish_open"}
     (r1 / "DONE").write_text("{}")
     assert unfinished_round(cfg) is None  # a finished round is never resumed
+
+
+def test_a_pull_request_changes_only_what_it_forked_with(tmp_path):
+    """A crown merged into the base after a miner branched must not count as that miner's change — two-dot
+    diffs said it did, and a well-formed PR would have been rejected as touching two directories."""
+    import subprocess
+
+    from sh.validator.orchestrate import _changed_submissions
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    def git(*args: str) -> str:
+        return subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
+            cwd=repo,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+
+    git("init", "-q", "-b", "main")
+    (repo / "submissions").mkdir()
+    (repo / "submissions" / "README.md").write_text("x")
+    git("add", "."), git("commit", "-q", "-m", "base")
+    git("checkout", "-q", "-b", "miner")
+    (repo / "submissions" / "B").mkdir()
+    (repo / "submissions" / "B" / "SOUL.md").write_text("Be careful.\n")
+    git("add", "."), git("commit", "-q", "-m", "miner: B")
+    git("checkout", "-q", "main")
+    (repo / "submissions" / "A").mkdir()
+    (repo / "submissions" / "A" / "SOUL.md").write_text("Be bold.\n")
+    git("add", "."), git("commit", "-q", "-m", "crown: A")  # merged after the miner branched
+    cfg = _cfg(tmp_path)
+    cfg.repo = repo
+    assert _changed_submissions(cfg, "main", git("rev-parse", "miner")) == ["B"]

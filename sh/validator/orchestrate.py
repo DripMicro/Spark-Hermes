@@ -138,6 +138,9 @@ def log(rd: Path, stage: str, **fields) -> None:
 
 
 def _commit(cfg: Config, message: str, paths: tuple[str, ...] = ("rounds", "docs/live", "docs/rounds")) -> None:
+    paths = tuple(p for p in paths if (cfg.repo / p).exists())  # a fresh checkout has no docs/rounds yet
+    if not paths:
+        return
     sh(["git", "add", *paths], cwd=cfg.repo)
     if sh(["git", "status", "--porcelain", *paths], cwd=cfg.repo).strip():
         sh(
@@ -252,7 +255,9 @@ def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path) -> dict | 
 
 
 def _changed_submissions(cfg: Config, base: str, head: str) -> list[str]:
-    names = sh(["git", "diff", "--name-only", base, head, "--", "submissions/"], cwd=cfg.repo, check=False)
+    """The submission directories a head changes relative to where it forked from the base (three-dot: the
+    merge base, not the base tip — a crown merged after the miner branched is not the miner's change)."""
+    names = sh(["git", "diff", "--name-only", f"{base}...{head}", "--", "submissions/"], cwd=cfg.repo, check=False)
     return sorted({p.split("/")[1] for p in names.split() if p.count("/") >= 2 and p.split("/")[1] != "README.md"})
 
 

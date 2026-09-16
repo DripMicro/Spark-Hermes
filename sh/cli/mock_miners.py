@@ -83,6 +83,9 @@ def open_prs(miners: Path, repo: str, base: str, checkout: Path, *, skip: Collec
             if not verdict["ok"]:
                 print(f"{hotkey}: lint failed, not submitting: {verdict['problems'][0]}", file=sys.stderr)
                 continue
+            merged = wt / "submissions" / hotkey
+            if merged.is_dir() and check(merged).get("bundle_sha256") == verdict["bundle_sha256"]:
+                continue  # already the incumbent, byte for byte: a PR would change nothing
             branch = f"miner/{hotkey}-{int(time.time())}"
             _run(["git", "checkout", "-q", "-B", branch, f"origin/{base}"], cwd=wt)
             dest = wt / "submissions" / hotkey
