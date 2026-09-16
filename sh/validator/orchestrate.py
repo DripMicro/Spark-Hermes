@@ -226,8 +226,8 @@ def queue_ready(cfg: Config) -> list[str]:
 
 
 def open_round(cfg: Config) -> Path:
-    """Take the lowest ready round from the queue, give it a window, and publish tasks + window + queue digests.
-    Waits — visibly, on the board — while the queue is empty."""
+    """Take the lowest ready round from the queue and give it a window. Waits — visibly, on the board — while
+    the queue is empty. Publishing is a separate, resumable step."""
     waited = 0
     while not queue_ready(cfg):
         if waited % 300 == 0:  # the board shows the wait rather than going stale on the last round's "done"
@@ -249,20 +249,34 @@ def open_round(cfg: Config) -> Path:
         json.dumps({"opens_at": now, "closes_at": now + cfg.window_s, "seconds": cfg.window_s})
     )
     log(rd, "start")
+    return rd
+
+
+def publish_round(cfg: Config, rd: Path) -> None:
+    """The tasks, the window, the queue digests, and each task image's Dockerfile and provenance (never the
+    fixture tree — that is in the image the agent sees, and upstream), committed where miners can read them."""
+    round_id = rd.name
     dest = cfg.repo / "rounds" / round_id
     dest.mkdir(parents=True, exist_ok=True)
     shutil.copytree(rd / "tasks", dest / "tasks", dirs_exist_ok=True)
     shutil.copy(rd / "window.json", dest / "window.json")
+    for ctx in sorted((rd / "images").glob("*/")) if (rd / "images").exists() else []:
+        pub = dest / "images" / ctx.name
+        pub.mkdir(parents=True, exist_ok=True)
+        for name in ("Dockerfile", "TAG", "SOURCE.json"):
+            if (ctx / name).exists():
+                shutil.copy(ctx / name, pub / name)
     queue_index = _read(cfg.queue / "index.json", {"ready": []})
     (cfg.repo / "rounds" / "queue.json").write_text(
-        json.dumps({"schema": "sh-queue-v1", "published_at": now, "ready": queue_index.get("ready", [])}, indent=1)
+        json.dumps(
+            {"schema": "sh-queue-v1", "published_at": time.time(), "ready": queue_index.get("ready", [])}, indent=1
+        )
     )
     live(cfg, rd, "window", progress={}, submissions=0, push=False)
     _commit(
         cfg, f"{round_id}: open — {len(list((rd / 'tasks').glob('*.json')))} tasks, window {cfg.window_s // 60} min"
     )
-    log(rd, "open", tasks=len(list((rd / "tasks").glob("*.json"))), closes_at=now + cfg.window_s)
-    return rd
+    log(rd, "open", tasks=len(list((rd / "tasks").glob("*.json"))), closes_at=_read(rd / "window.json")["closes_at"])
 
 
 def _image_tags(rd: Path) -> list[str]:
@@ -580,6 +594,25 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
     (rd / "scorecards").mkdir(exist_ok=True)
     plan = outcome(sealed, crowned["king"])
     king = plan["king"]
+    already = {
+        pr["number"]
+        for pr in json.loads(
+            gh(
+                "pr",
+                "list",
+                "--repo",
+                REPO,
+                "--label",
+                LABEL_SCORED,
+                "--state",
+                "all",
+                "--json",
+                "number",
+                "--limit",
+                "200",
+            )
+        )
+    }
     for hotkey, info in sealed["active"].items():
         st = crowned["standings"].get(hotkey, {})
         this_round = (
@@ -590,8 +623,8 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
         )
         card = this_round + render_scorecard(record, hotkey, reveal)
         (rd / "scorecards" / f"{hotkey}.md").write_text(card)
-        if not info.get("pr"):
-            continue  # an incumbent has no PR to write to; its card is published with the round
+        if not info.get("pr") or info["pr"] in already:
+            continue  # an incumbent has no PR to write to; a PR scored before a restart is not written to twice
         body = card
         if hotkey == king:
             body = "👑 **Crowned: best against the baseline on this round's instances. Merging.**\n\n" + body
@@ -769,6 +802,8 @@ def run_round(cfg: Config, mock: tuple[Path, Path] | None = None, resume: Path |
     else:
         rd = open_round(cfg)
         round_id, done = rd.name, set()
+    if "open" not in done and "seal" not in done:  # a restart between taking a round and publishing it
+        publish_round(cfg, rd)
     if "window" not in done and "seal" not in done:
         wait_window(cfg, rd, mock)
     if "seal" not in done:

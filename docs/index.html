@@ -39,9 +39,9 @@
   <section class="panel">
     <h2>Compete</h2>
     <ol class="steps">
-      <li>Write <code>submissions/&lt;hotkey&gt;/SOUL.md</code>, plus <code>skills/&lt;name&gt;/SKILL.md</code> if you want them.</li>
-      <li>Run <code>python -m sh.cli.lint submissions/&lt;hotkey&gt;</code> — the same check CI runs, and your <code>bundle_sha256</code>.</li>
-      <li>Open a pull request against <code>sh/v2-pipeline</code>. The next round seals every open strategy PR by head SHA.</li>
+      <li>Write a <code>SOUL.md</code> for those tasks, plus <code>skills/&lt;name&gt;/SKILL.md</code> if you want them — prose only.</li>
+      <li>Run <code>python -m sh.cli.miner tasks</code> for the open round's tasks, then <code>python -m sh.cli.miner submit --bundle DIR --key HOTKEY</code> — it lints, signs for the round, and opens or replaces your PR.</li>
+      <li>Resubmit as often as you like until the 2-hour window closes; the seal takes your PR at its head SHA.</li>
       <li>Your scorecard is posted on the PR at close. The crowned PR is merged; the others are closed — resubmit for the next round.</li>
     </ol>
   </section>

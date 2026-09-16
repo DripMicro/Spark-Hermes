@@ -1,6 +1,6 @@
 """The hotkey's signature over a submission — what binds a pull request to a miner and to a round.
 
-    message   = "spark-hermes:" + round_id + ":" + bundle_sha256
+    message   = "spark-hermes:" + repo + ":" + round_id + ":" + bundle_sha256
     signature = sr25519_sign(hotkey, message)
 
 `attestation.json` sits at the bundle root, outside the digest and outside the prose rules. It names the hotkey
@@ -20,13 +20,14 @@ from pathlib import Path
 
 SCHEMA = "sh-attestation-v1"
 FILE = "attestation.json"
+DOMAIN = "gittensor-model-hub/Spark-Hermes"  # the competition the signature is for; a fork's rounds share nothing
 SS58 = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{46,48}$")
 ROUND = re.compile(r"^r\d{4}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 
 def message(round_id: str, bundle_sha256: str) -> bytes:
-    return f"spark-hermes:{round_id}:{bundle_sha256}".encode()
+    return f"spark-hermes:{DOMAIN}:{round_id}:{bundle_sha256}".encode()
 
 
 def available() -> bool:
