@@ -1,24 +1,7 @@
 {
- "schema": "sh-live-v2",
- "updated": 1789541419.3827379,
+ "schema": "sh-seal-v2",
  "round_id": "r0001",
- "stage": "evaluate",
- "started": 1789540619.835445,
- "phases": [
-  {
-   "stage": "start",
-   "t": 1789540619.835445
-  },
-  {
-   "stage": "mint",
-   "t": 1789541417.7799327
-  },
-  {
-   "stage": "seal",
-   "t": 1789541419.3791783
-  }
- ],
- "tasks": 8,
+ "sealed_at": 1789541419.3787405,
  "active": {
   "5FMinimal": {
    "pr": 100,
@@ -57,14 +40,5 @@
    "incumbent": false
   }
  },
- "rejected": {},
- "progress": {
-  "done": 0,
-  "total": 0,
-  "by_surface": {}
- },
- "history": [],
- "repo": "gittensor-model-hub/Spark-Hermes",
- "branch": "sh/v2-pipeline",
- "hf_repo": "gittensor-model-hub/spark-hermes-rounds"
+ "rejected": {}
 }
