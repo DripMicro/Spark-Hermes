@@ -66,8 +66,8 @@ class Config:
     repo: Path  # a checkout of BRANCH the loop commits to
     queue: Path  # the private queue daemon's directory of minted rounds
     pkg: Path  # the public package's parent
-    worker: str = "root@91.224.44.223"
-    worker_port: int = 50199
+    worker: str = "root@91.224.44.85"
+    worker_port: int = 20100
     worker_root: str = "/root/sh"  # holds pkg/ (the public package), state/tokens, state/usage
     image: str = "hermes-ubuntu:pin"  # the fallback; an image-defined task names its own
     window: int = 8  # rounds pooled for payment
@@ -1008,6 +1008,10 @@ def main(argv=None) -> int:
     ap.add_argument("--repo", default=str(Path(__file__).resolve().parents[2]))
     ap.add_argument("--queue", default=str(Path(__file__).resolve().parents[3] / "Spark-Hermes-Withheld" / "queue"))
     ap.add_argument("--pkg", default=str(Path(__file__).resolve().parents[2]))
+    ap.add_argument(
+        "--worker", default=os.environ.get("SH_WORKER", "root@91.224.44.85"), help="the GPU worker, user@host"
+    )
+    ap.add_argument("--worker-port", type=int, default=int(os.environ.get("SH_WORKER_PORT", "20100")))
     ap.add_argument("--window", type=int, default=8, help="rounds pooled for payment")
     ap.add_argument("--window-from", default="r0004", help="the first round pooled (the credit scoring era)")
     ap.add_argument("--window-minutes", type=int, default=120, help="the submission window")
@@ -1024,6 +1028,8 @@ def main(argv=None) -> int:
         pkg=Path(a.pkg),
         window=a.window,
         window_from=a.window_from,
+        worker=a.worker,
+        worker_port=a.worker_port,
         window_s=a.window_minutes * 60,
         min_paired=a.min_paired,
     )
