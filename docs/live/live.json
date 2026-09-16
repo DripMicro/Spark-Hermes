@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789551098.753088,
+ "updated": 1789551287.8270051,
  "round_id": "r0002",
  "stage": "evaluate",
  "stages": [
@@ -85,12 +85,12 @@
  },
  "rejected": {},
  "progress": {
-  "done": 24,
+  "done": 27,
   "total": 64,
   "by_surface": {
    "5FPlanner": {
-    "n": 0,
-    "verified": 0
+    "n": 3,
+    "verified": 3
    },
    "5FRefusalReader": {
     "n": 8,
