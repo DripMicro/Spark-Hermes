@@ -110,3 +110,20 @@ def test_upload_is_idempotent_per_round(tmp_path, monkeypatch):
     second = up.upload(d, "org/repo", "tok")
     assert not second["uploaded"] and "already present" in second["reason"]
     assert len(api.uploads) == n
+
+
+def test_a_restart_resumes_the_unfinished_round_from_its_own_log(tmp_path):
+    """Crash-safe resume (spec §5.7): the stages a round logged are skipped; the round it was in is picked up."""
+    from sh.validator.orchestrate import done_stages, unfinished_round
+
+    cfg = _cfg(tmp_path)
+    assert unfinished_round(cfg) is None
+    r1 = cfg.rounds / "r0001"
+    r1.mkdir(parents=True)
+    (r1 / "phases.jsonl").write_text(
+        "\n".join(json.dumps({"t": 1, "stage": s}) for s in ("start", "mint", "seal", "publish_open")) + "\n"
+    )
+    assert unfinished_round(cfg) == r1
+    assert done_stages(r1) == {"start", "mint", "seal", "publish_open"}
+    (r1 / "DONE").write_text("{}")
+    assert unfinished_round(cfg) is None  # a finished round is never resumed

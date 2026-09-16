@@ -340,14 +340,22 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
             _rsync(f"{rd / sub}/", f"{cfg.worker}:{remote}/{sub}/", cfg)
     surfaces = ["null", f"canon={remote}/canon"] + [f"{h}={remote}/bundles/{h}" for h in sealed["active"]]
     total = len(surfaces) * len(list((rd / "tasks").glob("*.json")))
-    _worker_launch(
-        cfg,
-        f"cd {cfg.worker_root}/pkg && PYTHONPATH={cfg.worker_root}/pkg setsid nohup python3 -m sh.validator.batch "
-        f"--round {remote} --surfaces {','.join(surfaces)} --image {cfg.image} --inference unused "
-        f"--out {remote}/episodes --concurrency {cfg.concurrency} --network sh-ep "
-        f"--tokens {cfg.worker_root}/state/tokens --usage-dir {cfg.worker_root}/state/usage "
-        f"> {remote}/batch.log 2>&1 < /dev/null & echo started",
-    )
+    # Resume-safe: if the control plane restarted mid-round, the batch may still be running on the worker.
+    # Launching a second one would double the load on the engine (which refuses at that point) and race the
+    # first on the same episode directories. If it is not running, launching is always safe — `batch` resumes
+    # on its own episode records and re-runs nothing that finished.
+    already = _worker(cfg, f"pgrep -f 'batch --round {remote}' | wc -l").strip() not in ("", "0")
+    if already:
+        log(rd, "evaluate_resume", note="batch already running on the worker; polling")
+    else:
+        _worker_launch(
+            cfg,
+            f"cd {cfg.worker_root}/pkg && PYTHONPATH={cfg.worker_root}/pkg setsid nohup python3 -m sh.validator.batch "
+            f"--round {remote} --surfaces {','.join(surfaces)} --image {cfg.image} --inference unused "
+            f"--out {remote}/episodes --concurrency {cfg.concurrency} --network sh-ep "
+            f"--tokens {cfg.worker_root}/state/tokens --usage-dir {cfg.worker_root}/state/usage "
+            f"> {remote}/batch.log 2>&1 < /dev/null & echo started",
+        )
     last_push = 0.0
     while True:
         time.sleep(45)
@@ -570,19 +578,61 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, king: str 
 
 
 # ─── the round, and the loop ───────────────────────────────────────────────────────────────────────
-def run_round(cfg: Config, mock_miners: Path | None = None) -> dict:
-    round_id = next_round_id(cfg)
-    rd = cfg.rounds / round_id
-    rd.mkdir(parents=True)
-    log(rd, "start")
-    live(cfg, rd, "mint")
-    mint(cfg, round_id, rd)
-    sealed = seal(cfg, round_id, rd)
-    publish_open(cfg, round_id, rd)
-    evaluate(cfg, rd, sealed)
+def done_stages(rd: Path) -> set[str]:
+    """The stages a round has completed, from its own log — what a restart resumes from (spec §5.7)."""
+    p = rd / "phases.jsonl"
+    if not p.exists():
+        return set()
+    return {json.loads(line)["stage"] for line in p.read_text().splitlines() if line.strip()}
+
+
+def unfinished_round(cfg: Config) -> Path | None:
+    """The latest round directory without a DONE marker, if any — the one a restarted loop must pick up."""
+    if not cfg.rounds.exists():
+        return None
+    rounds = sorted(p for p in cfg.rounds.iterdir() if p.is_dir() and p.name.startswith("r"))
+    if rounds and not (rounds[-1] / "DONE").exists():
+        return rounds[-1]
+    return None
+
+
+def run_round(cfg: Config, mock_miners: Path | None = None, resume: Path | None = None) -> dict:
+    """One round. With `resume`, the stages that round already logged are skipped, and the seal that was
+    published is reused rather than recomputed — a restart must never change what a round sealed."""
+    if resume:
+        rd, round_id = resume, resume.name
+        done = done_stages(rd)
+        log(rd, "resume", completed=sorted(done))
+    else:
+        round_id = next_round_id(cfg)
+        rd = cfg.rounds / round_id
+        rd.mkdir(parents=True)
+        done = set()
+        log(rd, "start")
+    if "mint" not in done:
+        live(cfg, rd, "mint")
+        mint(cfg, round_id, rd)
+    if "seal" not in done:
+        sealed = seal(cfg, round_id, rd)
+    else:
+        sealed = json.loads((rd / "seal.json").read_text())
+    if "publish_open" not in done:
+        publish_open(cfg, round_id, rd)
+    if "evaluate" not in done:
+        evaluate(cfg, rd, sealed)
     live(cfg, rd, "close")
     record = close(cfg, round_id, rd)
-    king = announce(cfg, round_id, rd, record, sealed)
+    if "announce" not in done:
+        king = announce(cfg, round_id, rd, record, sealed)
+    else:  # announced before the restart: the king is in the round's own log
+        king = next(
+            (
+                json.loads(line).get("king")
+                for line in (rd / "phases.jsonl").read_text().splitlines()
+                if json.loads(line).get("stage") == "announce"
+            ),
+            None,
+        )
     live(cfg, rd, "export", push=False)
     exported = export_and_upload(cfg, round_id, rd)
     publish_close(cfg, round_id, rd, record, king, exported)
@@ -618,9 +668,11 @@ def main(argv=None) -> int:
         difficulty=a.difficulty,
         window=a.window,
     )
+    resume = unfinished_round(cfg)  # a restart picks up the round it was in the middle of
     while True:
         try:
-            result = run_round(cfg, Path(a.mock_miners) if a.mock_miners else None)
+            result = run_round(cfg, Path(a.mock_miners) if a.mock_miners else None, resume=resume)
+            resume = None
             print(json.dumps(result), flush=True)
         except Exception as e:  # a failed round is logged and the loop goes on
             print(f"round failed: {e!r}", flush=True)
