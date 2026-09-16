@@ -12,17 +12,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 # Hermes needs Python >=3.11 and jammy ships 3.10: a uv-managed CPython 3.12 in a world-readable prefix
 # (under /root it is unreadable by uid 1000 at run time — the mistake hermes-base documents).
-RUN curl -LsSf https://astral.sh/uv/0.9.7/install.sh | env UV_INSTALL_DIR=/usr/local/bin INSTALLER_NO_MODIFY_PATH=1 sh
+# uv from PyPI, as hermes-base does: the standalone installer's 0.9.x cannot read the lock file Hermes ships.
+RUN python3 -m pip install --no-cache-dir uv
 ENV UV_PYTHON_INSTALL_DIR=/opt/uvpython UV_PYTHON_PREFERENCE=only-managed
 RUN uv python install 3.12 && chmod -R a+rX /opt/uvpython
 RUN mkdir -p /opt/hermes && cd /opt/hermes && git init -q \
     && git fetch -q --depth 1 https://github.com/NousResearch/hermes-agent "$HERMES_COMMIT" \
     && git checkout -q FETCH_HEAD && rm -rf .git
 WORKDIR /opt/hermes
-RUN uv sync --frozen --no-dev --python 3.12 2>&1 | tail -5 && /opt/hermes/.venv/bin/python -c "import sys; assert sys.version_info[:2] == (3, 12)"
+RUN uv sync --frozen --no-dev --python 3.12 \
+    && /opt/hermes/.venv/bin/python -c "import sys, dotenv; assert sys.version_info[:2] == (3, 12)"
 # The tasks' verifiers are pytest files run on the system interpreter, which the task layer may extend.
 RUN python3 -m pip install --no-cache-dir pytest==8.3.5
 RUN useradd -u 1000 -m -d /home/hermes hermes
 COPY runner/ /runner/
-ENV PATH=/opt/hermes/.venv/bin:$PATH HERMES_HOME=/home/hermes HOME=/home/hermes
+# The venv goes last: inside a task the shell's `python3` must be the system one the task layer provisioned.
+ENV PATH=$PATH:/opt/hermes/.venv/bin HERMES_HOME=/home/hermes HOME=/home/hermes
 LABEL org.spark-hermes.hermes-commit="$HERMES_COMMIT"

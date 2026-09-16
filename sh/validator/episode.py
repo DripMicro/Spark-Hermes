@@ -175,7 +175,7 @@ def run_episode(
             "-e",
             "SH_EP=/ep",
             image,
-            "python",
+            "/opt/hermes/.venv/bin/python",
             "/runner/run_episode.py",
         ]
         _run(cmd).check_returncode()

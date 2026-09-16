@@ -107,7 +107,7 @@ def grade_in_container(
                 "-e",
                 "SH_EP=/ep",
                 image,
-                "python",
+                "/opt/hermes/.venv/bin/python",
                 "/runner/grade.py",
             ],
             timeout=int(task["timeout_s"]) * 3 + 60,

@@ -242,6 +242,8 @@ def open_round(cfg: Config) -> Path:
     cfg.rounds.mkdir(parents=True, exist_ok=True)
     shutil.move(str(cfg.queue / round_id), str(rd))  # consumed: the daemon refills
     (rd / "READY").unlink(missing_ok=True)
+    for tag in _image_tags(rd):  # derivation is done; the images only cost disk here now
+        subprocess.run(["docker", "image", "rm", "-f", tag], capture_output=True)
     now = time.time()
     (rd / "window.json").write_text(
         json.dumps({"opens_at": now, "closes_at": now + cfg.window_s, "seconds": cfg.window_s})
@@ -261,6 +263,10 @@ def open_round(cfg: Config) -> Path:
     )
     log(rd, "open", tasks=len(list((rd / "tasks").glob("*.json"))), closes_at=now + cfg.window_s)
     return rd
+
+
+def _image_tags(rd: Path) -> list[str]:
+    return [p.read_text().strip() for p in sorted((rd / "images").glob("*/TAG"))] if (rd / "images").exists() else []
 
 
 def window_state(rd: Path, now: float | None = None) -> dict:
@@ -495,6 +501,11 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
         if running == "0":
             break
     _rsync(f"{cfg.worker}:{remote}/episodes/", f"{rd / 'episodes'}/", cfg)
+    if tags := _image_tags(rd):
+        _worker(
+            cfg,
+            "docker image rm -f " + " ".join(tags) + " >/dev/null 2>&1; docker image prune -f >/dev/null 2>&1; true",
+        )
     n = len(list((rd / "episodes").rglob("episode.json")))
     if not n:
         raise RuntimeError("the worker returned no episodes")
