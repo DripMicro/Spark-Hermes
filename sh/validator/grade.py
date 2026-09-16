@@ -115,7 +115,27 @@ def grade_in_container(
         if r.returncode != 0:
             raise RuntimeError(f"grader exited {r.returncode}: {r.stderr[-800:].decode(errors='replace')}")
         data = _run(["docker", "run", "--rm", "-v", f"{vol}:/ep", "alpine", "cat", "/ep/out/grade.json"]).stdout
-        return json.loads(data)
+        g = json.loads(data)
+        # A family whose checks run a test suite leaves every test's outcome beside the grade (checks.py writes
+        # it): the grader itself stops at the first failing predicate, and a fraction needs all of them.
+        tests = _run(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                f"{vol}:/ep",
+                "alpine",
+                "sh",
+                "-c",
+                "cat /ep/out/facet_tests.json 2>/dev/null",
+            ]
+        ).stdout
+        try:
+            g["tests"] = json.loads(tests) if tests.strip() else None
+        except ValueError:
+            g["tests"] = None
+        return g
     finally:
         _run(["docker", "volume", "rm", "-f", vol])
 
@@ -217,6 +237,17 @@ def trajectory_rules(
     return signals, self_checked, failed_tool
 
 
+def fraction(predicates: list, passed: bool, tests: dict | None) -> float:
+    """The share of a half's predicates that hold. When the half is a set of test cases (`custom facet_test <id>`)
+    and the test outcomes are known, each counts; otherwise the half is one unit — all or nothing. Pure."""
+    if predicates and tests is not None and all(p[:2] == ["custom", "facet_test"] and len(p) > 2 for p in predicates):
+        return sum(1 for p in predicates if tests.get(p[2])) / len(predicates)
+    return 1.0 if passed else 0.0
+
+
+OVERFIT_GAP = 0.5  # published share minus withheld share at or above this: the shortcut, not the work
+
+
 def grade(
     episode_out: Path,
     task: dict,
@@ -258,8 +289,15 @@ def grade(
     withheld_pass = bool(g.get("withheld_pass", False))
     disqualified = any(s in DQ for s in signals)
     verified = published_pass and (withheld_pass or not graded_withheld) and not disqualified
+    # Credit: the share of the withheld half that holds (of the published half, for a probe). It is what scoring
+    # compares against the baseline; `verified_success` — every check holds — still gates training data.
+    tests = g.get("tests")
+    published_fraction = fraction(task["published"]["predicates"], bool(g["published_pass"]), tests)
+    w_preds = (withheld or {}).get("withheld", withheld or {}).get("predicates", []) if withheld else []
+    withheld_fraction = fraction(w_preds, withheld_pass, tests) if graded_withheld else None
+    credit = 0.0 if disqualified or void else (withheld_fraction if graded_withheld else published_fraction)
     return {
-        "schema": "sh-episode-v2",
+        "schema": "sh-episode-v3",
         "episode_id": f"{round_id}/{task['task_id']}/{surface}",
         "round_id": round_id,
         "task_id": task["task_id"],
@@ -270,7 +308,10 @@ def grade(
         "published_pass": published_pass,
         "withheld_pass": withheld_pass if graded_withheld else None,
         "verified_success": verified,
-        "overfit": graded_withheld and published_pass and not withheld_pass,
+        "published_fraction": round(published_fraction, 6),
+        "withheld_fraction": None if withheld_fraction is None else round(withheld_fraction, 6),
+        "credit": round(float(credit or 0.0), 6),
+        "overfit": bool(graded_withheld and published_fraction - (withheld_fraction or 0.0) >= OVERFIT_GAP),
         "disqualified": disqualified,
         "void": void,
         "void_reason": reason if void else None,

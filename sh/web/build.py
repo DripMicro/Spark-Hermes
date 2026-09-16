@@ -65,8 +65,8 @@ def render(close: dict, meta: dict | None = None) -> str:
             f'<td>{s.get("score", 0):.4f}</td><td class="{"" if w else "zero"}">{w:.3f}</td></tr>'
         )
     families = "".join(
-        f'<tr><td class="l">{_e(f)}</td><td>{r["null"]["n"]}</td><td>{_pct(r["null"]["p"])}</td>'
-        f'<td>{_pct(r["canon"]["p"])}</td><td>{_signed(r["canon"].get("delta_c"))}</td><td class="l">{_e(r.get("label"))}</td></tr>'
+        f'<tr><td class="l">{_e(f)}</td><td>{r["null"]["n"]}</td><td>{_pct(r["null"].get("mean_credit", r["null"]["p"]))}</td>'
+        f'<td>{_pct(r["canon"].get("mean_credit", r["canon"]["p"]))}</td><td>{_signed(r["canon"].get("delta_c"))}</td><td class="l">{_e(r.get("label"))}</td></tr>'
         for f, r in close.get("family_stats", {}).items()
     )
 
@@ -158,7 +158,7 @@ def render(close: dict, meta: dict | None = None) -> str:
   <section class="panel">
     <h2>Families</h2>
     <div class="wrap"><table>
-      <thead><tr><th class="l">family</th><th>baseline n</th><th>baseline</th><th>canon</th><th title="canon's Δc against the baseline">Δc canon</th><th class="l">label</th></tr></thead>
+      <thead><tr><th class="l">family</th><th>baseline n</th><th title="mean share of withheld checks passed">baseline</th><th title="mean share of withheld checks passed">canon</th><th title="canon's Δc against the baseline">Δc canon</th><th class="l">label</th></tr></thead>
       <tbody>{families or '<tr><td class="empty" colspan="6">—</td></tr>'}</tbody>
     </table></div>
   </section>

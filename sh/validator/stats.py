@@ -76,6 +76,19 @@ class Arm:
     def p(self) -> float | None:
         return self.successes / self.n if self.n else None
 
+    @property
+    def mean_credit(self) -> float | None:
+        """Mean credit — the share of withheld checks that hold — over the arm (sh-scoring-v3's reference)."""
+        from sh.scoring.v2 import credit
+
+        return statistics.mean(credit(e) for e in self.episodes) if self.episodes else None
+
+    @property
+    def var_credit(self) -> float | None:
+        from sh.scoring.v2 import credit
+
+        return statistics.pvariance([credit(e) for e in self.episodes]) if self.n > 1 else None
+
     def wilson(self) -> tuple[float, float] | None:
         if not self.n:
             return None
@@ -97,6 +110,7 @@ class Arm:
             "n": self.n,
             "successes": self.successes,
             "p": self.p,
+            "mean_credit": None if self.mean_credit is None else round(self.mean_credit, 4),
             "wilson": self.wilson(),
             "efficiency": self.efficiency(),
         }
@@ -124,15 +138,19 @@ class FamilyStats:
             return "unknown"
         if iv[0] >= TRIVIAL_LOW:
             return "trivial"
-        if self.null.successes == 0 and self.canon.successes == 0 and self.null.n >= IMPOSSIBLE_MIN_N:
+        if (
+            (self.null.mean_credit or 0) < 0.02
+            and (self.canon.mean_credit or 0) < 0.02
+            and self.null.n >= IMPOSSIBLE_MIN_N
+        ):
             return "impossible"
         return "frontier"
 
     def delta_c(self) -> float | None:
         """How much prose alone moves the baseline — the miners' yardstick (FR-BL-5)."""
-        if self.null.p is None or self.canon.p is None:
+        if self.null.mean_credit is None or self.canon.mean_credit is None:
             return None
-        return round(self.canon.p - self.null.p, 4)
+        return round(self.canon.mean_credit - self.null.mean_credit, 4)
 
     def delta_e(self) -> dict[str, float]:
         """Fractional efficiency gain of CANON over NULL, **paired by instance**.

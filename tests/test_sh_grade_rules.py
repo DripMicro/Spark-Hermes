@@ -178,3 +178,26 @@ def test_an_image_defined_workdir_is_the_workspace():
     call = ("write_file", {"path": "/task_file/output/report.json", "content": "{}"}, '{"bytes_written": 2}')
     assert trajectory_rules(list(_msgs(call)), [], None, task, None)[0] == []
     assert "wrote_outside_workspace" in _signals(call)
+
+
+def test_a_half_of_test_cases_counts_each_test():
+    from sh.validator.grade import fraction
+
+    half = [
+        ["custom", "facet_test", "t.py::a"],
+        ["custom", "facet_test", "t.py::b"],
+        ["custom", "facet_test", "t.py::c"],
+        ["custom", "facet_test", "t.py::d"],
+    ]
+    assert (
+        fraction(half, False, {"t.py::a": True, "t.py::b": True, "t.py::c": False}) == 0.5
+    )  # an unknown test did not pass
+    assert fraction(half, True, {k[2]: True for k in half}) == 1.0
+
+
+def test_a_half_that_is_not_a_test_suite_is_all_or_nothing():
+    from sh.validator.grade import fraction
+
+    half = [["file_exists", "out.txt"], ["digest_is", "out.txt", "a" * 64]]
+    assert fraction(half, True, {"irrelevant": False}) == 1.0 and fraction(half, False, None) == 0.0
+    assert fraction([["custom", "facet_test", "t.py::a"]], True, None) == 1.0  # outcomes unknown: the verdict stands

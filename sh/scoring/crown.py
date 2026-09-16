@@ -3,7 +3,7 @@
 Payment is the pooled window's lower bound: it needs many instances and rewards consistency. The crown is a
 different question — which strategy the repository should carry next — and it is answered on *this round's*
 instances alone: among the sealed strategies, the one with the highest paired delta against the baseline on
-these tasks, provided it actually beat the baseline here. Ties fall to the pooled Δc, then to the name, so the
+these tasks (by credit: the share of withheld checks that hold), provided it actually beat the baseline here. Ties fall to the pooled Δc, then to the name, so the
 verdict is total and recomputable from the published episodes.
 
 A hotkey needs `min_paired` instances shared with the baseline to be a candidate; a round where nobody beat
@@ -12,27 +12,38 @@ the baseline crowns nobody.
 
 from __future__ import annotations
 
+from sh.scoring.v2 import credit
+
 BASELINE = "null"
 
 
 def standings(episodes: list[dict], hotkeys: set[str], *, round_id: str) -> dict[str, dict]:
-    """Per sealed hotkey: instances paired with the baseline this round, verified count, and the paired delta."""
-    null: dict[str, bool] = {}
-    mine: dict[str, dict[str, bool]] = {h: {} for h in hotkeys}
+    """Per sealed hotkey: instances paired with the baseline this round, full passes, mean credit, and the paired
+    delta of credit (the share of withheld checks that hold) against the baseline."""
+    null: dict[str, float] = {}
+    mine: dict[str, dict[str, float]] = {h: {} for h in hotkeys}
+    full: dict[str, int] = {h: 0 for h in hotkeys}
     for e in episodes:
         if e.get("round_id") != round_id or e.get("void"):
             continue
-        s, t, v = e.get("surface"), str(e.get("task_id")), bool(e.get("verified_success"))
+        s, t = e.get("surface"), str(e.get("task_id"))
         if s == BASELINE:
-            null[t] = v
+            null[t] = credit(e)
         elif s in mine:
-            mine[s][t] = v
+            mine[s][t] = credit(e)
+            full[s] += bool(e.get("verified_success"))
     out = {}
     for h in sorted(hotkeys):
         paired = [t for t in mine[h] if t in null]
         n = len(paired)
         delta = (sum(mine[h][t] for t in paired) - sum(null[t] for t in paired)) / n if n else None
-        out[h] = {"n": n, "verified": sum(mine[h].values()), "delta": None if delta is None else round(delta, 6)}
+        mean = sum(mine[h].values()) / len(mine[h]) if mine[h] else None
+        out[h] = {
+            "n": n,
+            "verified": full[h],
+            "credit": None if mean is None else round(mean, 6),
+            "delta": None if delta is None else round(delta, 6),
+        }
     return out
 
 

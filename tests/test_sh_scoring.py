@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import statistics
+
 from sh.scoring.v2 import FamilyReference, MinerWindow, score, stat, weights
 
 REF = FamilyReference(
@@ -130,3 +132,27 @@ def test_the_worked_example_from_the_spec_reproduces():
     assert 0.2 < s["mean_d"] < 0.3
     assert 0.05 < s["se"] < 0.12  # the spec's 0.083, to the nearest band
     assert 0.10 < s["delta_c"] < 0.20  # the spec's 0.144
+
+
+def test_credit_is_scored_against_the_baseline_s_mean_credit():
+    """sh-scoring-v3: nobody passes every check; doing more of the work than the baseline, consistently, pays."""
+    from sh.scoring.v2 import FamilyReference, MinerWindow, credit, score
+
+    null = [0.40, 0.35, 0.45, 0.40, 0.38, 0.42, 0.40, 0.40]
+    ref = FamilyReference(
+        "f", n=8, successes=0, medians={}, samples={}, mean_credit=sum(null) / 8, var_credit=statistics.pvariance(null)
+    )
+    good = MinerWindow(
+        "A",
+        [
+            {"family": "f", "task_id": f"t{i}", "credit": 0.75 + 0.01 * (i % 3), "verified_success": False}
+            for i in range(16)
+        ],
+    )
+    flat = MinerWindow(
+        "B", [{"family": "f", "task_id": f"t{i}", "credit": 0.40, "verified_success": False} for i in range(16)]
+    )
+    s_good, s_flat = score(good, {"f": ref}), score(flat, {"f": ref})
+    assert s_good["delta_c"] > 0.3 and s_good["score"] > 0
+    assert s_flat["delta_c"] == 0.0 and s_flat["score"] == 0.0
+    assert credit({"verified_success": True}) == 1.0 and credit({"credit": 0.25, "verified_success": True}) == 0.25

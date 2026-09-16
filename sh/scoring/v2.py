@@ -1,6 +1,9 @@
-"""`sh-scoring-v2` — what a miner is paid for (spec §7).
+"""`sh-scoring-v3` — what a miner is paid for (spec §7).
 
-A miner is paid for **beating the baseline on the same instances**, not for passing tasks. Everything here is a
+A miner is paid for **beating the baseline on the same instances**, not for passing tasks. Since v3 an episode
+counts by its **credit** — the share of the task's withheld checks that hold, 0 to 1 — rather than all or nothing:
+on real multi-deliverable tasks the pinned model does a third of the work and nobody passes every check, so a
+binary outcome measured nothing. Rounds scored before v3 carry no credit; theirs is 1 for a verified success. Everything here is a
 pure function of archived Episode records and the family statistics computed from the reference arms, so
 `sh scoring recompute` reproduces a validator's Score records byte for byte.
 
@@ -24,7 +27,15 @@ import random
 import statistics
 from dataclasses import dataclass, field
 
-__all__ = ["PARAMS_V2", "Params", "score", "stat", "weights"]
+__all__ = ["PARAMS_V2", "Params", "credit", "score", "stat", "weights"]
+
+
+def credit(episode: dict) -> float:
+    """An episode's credit: recorded since sh-episode-v3, else 1 for a verified success and 0 otherwise."""
+    c = episode.get("credit")
+    if isinstance(c, (int, float)) and not isinstance(c, bool):
+        return max(0.0, min(1.0, float(c)))
+    return 1.0 if episode.get("verified_success") else 0.0
 
 
 @dataclass(frozen=True)
@@ -56,10 +67,18 @@ class FamilyReference:
     medians: dict  # metric -> median over NULL verified successes
     samples: dict  # metric -> the values behind that median, for the bootstrap
     requires_self_check: bool = False
+    mean_credit: float | None = None  # the NULL arm's mean credit; None -> the binary success rate
+    var_credit: float | None = None  # the variance of that credit; None -> p(1 - p)
 
     @property
     def p(self) -> float:
+        if self.mean_credit is not None:
+            return self.mean_credit
         return self.successes / self.n if self.n else 0.0
+
+    @property
+    def var(self) -> float:
+        return self.var_credit if self.var_credit is not None else self.p * (1 - self.p)
 
 
 def stat(episode: dict, reference: FamilyReference, params: Params = PARAMS_V2) -> tuple[float, dict]:
@@ -69,7 +88,7 @@ def stat(episode: dict, reference: FamilyReference, params: Params = PARAMS_V2) 
     opposite — so a single outlier cannot dominate the mean the way a raw ratio would.
     """
     won = bool(episode.get("verified_success"))
-    d = (1.0 if won else 0.0) - reference.p
+    d = credit(episode) - reference.p
     ratios: dict = {}
     if not won or reference.successes < params.min_null_successes:
         return d, ratios
@@ -104,7 +123,13 @@ class MinerWindow:
 
     @property
     def public_passers(self) -> int:
-        return sum(1 for e in self.episodes if e.get("published_pass"))
+        """Episodes that did most of what the published half checks — the population overfitting is a share of."""
+
+        def published(e: dict) -> float:
+            f = e.get("published_fraction")
+            return float(f) if isinstance(f, (int, float)) else (1.0 if e.get("published_pass") else 0.0)
+
+        return sum(1 for e in self.episodes if published(e) >= 0.5)
 
     @property
     def overfit(self) -> int:
@@ -151,7 +176,7 @@ def score(miner: MinerWindow, references: dict, params: Params = PARAMS_V2, *, s
         ref = next(r for _, r in pairs if r.family == family)
         share = sum(1 for _, r in pairs if r.family == family) / n
         if ref.n:
-            ref_var += share**2 * ref.p * (1 - ref.p) / ref.n
+            ref_var += share**2 * ref.var / ref.n
     se = math.sqrt((statistics.variance(ds) / n if n > 1 else 0.0) + ref_var)
     mean_d = statistics.mean(ds)
     detail["se"] = round(se, 6)

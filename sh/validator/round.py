@@ -63,6 +63,8 @@ def reference_stats(episodes: list[dict], families: set[str], window: list[str],
             medians={m: v["median"] for m, v in st.null.efficiency().items()},
             samples=samples,
             requires_self_check=any(e.get("requires_self_check") for e in st.null.episodes),
+            mean_credit=st.null.mean_credit,
+            var_credit=st.null.var_credit,
         )
     return records, refs
 
@@ -122,7 +124,8 @@ def close(
         verified[task_id] = bool(commitment) and verify_commitment(withheld, salt, commitment)
 
     record = {
-        "schema": "sh-round-close-v2",
+        "schema": "sh-round-close-v3",
+        "scoring": "sh-scoring-v3 (credit)",
         "round_id": round_id,
         "era": era,
         "tasks": sorted(tasks),

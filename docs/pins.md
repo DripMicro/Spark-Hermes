@@ -15,7 +15,7 @@ deliberate, dated act — and a new era when it changes the reference arms' comp
 | agent image | `hermes-ubuntu:pin` — ubuntu:22.04 + uv (PyPI) + uv-managed CPython 3.12 in `/opt/uvpython` + hermes-agent at the commit above + pytest 8.3.5 on the system interpreter + the runner. The venv is *last* on PATH so a task's own `python3` wins in the shell; the runner is started by absolute path. Built on the worker: `sha256:7017979f522f…` | `sh/validator/images/build.sh` |
 | episode network | `sh-ep` 172.30.0.0/24, gateway 172.30.0.1, proxy on `:8090`; `--dns 172.30.0.1` with 53 REJECTed (Docker 27 has no `--dns none`); a counted DROP rule per container → `network_egress_attempt` | `sh/validator/net/` |
 | sandbox | uid 1000, no capabilities, no new privileges, pids 256, 4 GB, tmpfs home; the workspace is the image's own tree for image-defined tasks (writable), `/ep/ws` otherwise (read-only rootfs); the grader is a fresh read-only container with a tmpfs at the workdir | `sh/validator/episode.py`, `sh/validator/grade.py` |
-| scoring | `sh-scoring-v2`: paired Δ vs the NULL arm on the same instances, se with the reference term, Δc = max(0, mean − 1.28·se); efficiency gated; window pooled over the last 8 rounds for references and miners alike; min 8 window episodes; overfit / DQ / near-duplicate zeroing | `sh/scoring/v2.py` |
+| scoring | `sh-scoring-v3` (from r0004): an episode counts by its **credit** — the share of the task's withheld checks that hold (0–1; 0 when disqualified) — not all-or-nothing. On r0003 nobody passed every check while agents passed 19–41 % of them. Overfit = published share − withheld share ≥ 0.5. Paired Δ of credit vs the NULL arm on the same instances, se with the reference term, Δc = max(0, mean − 1.28·se); efficiency gated; window pooled over the last 8 rounds for references and miners alike; min 8 window episodes; overfit / DQ / near-duplicate zeroing | `sh/scoring/v2.py` |
 | commitment | `salt = HMAC(secret, "sh-salt\|task_id)`, `commitment = "hmac-sha256:" + HMAC(salt, canonical_json(withheld))`; revealed at close | private `supply/seal.py`, `sh/validator/round.py` |
 
 ## Round clock (2026-09-16)
@@ -26,9 +26,9 @@ deliberate, dated act — and a new era when it changes the reference arms' comp
 | tasks per round | 8, minted ahead by `supply.queue` (`--ahead 3`); future rounds published only as digests in `rounds/queue.json` | private repo |
 | attestation | `sh-attestation-v2`: `sr25519(hotkey, "spark-hermes:<repo>:<round>:<bundle_sha256>:<signed_at>")` in `attestation.json`. One submission per hotkey per round: the **latest signed** counts (not the newest PR — signed bundles are public and could be reopened by anyone); a signing time more than 10 min in the future is refused. From r0004 | `sh/cli/attest.py`, `orchestrate.one_per_hotkey` |
 | S1 — copied answers | a challenger sharing more than 8 distinct solution lines (≥ 24 chars) or more than 40 distinct 12-token runs with the round's private reference/alternate solutions and verifiers — text that also appears in a task's prompt excluded — is refused at seal. Calibrated on r0003: every mock bundle, the canon and the incumbent share 0; a pasted reference shares 186 lines, a 12-line snippet 12 lines, a verifier reflowed into prose 504 runs. From r0004 | `sh/validator/similarity.py` |
-| crown | best Δ vs baseline on **this round's** instances, > 0, ≥ 4 paired; ties by pooled Δc | `sh/scoring/crown.py` |
-| payment | pooled over the last 8 rounds; Δc = one-sided 90 % lower bound | `sh/scoring/v2.py` |
-| training data | the king's verified episodes only (SFT); king vs any failing surface on the same instance (DPO); no king → nothing uploaded | `sh/exports/build.py` |
+| crown | best Δ credit vs baseline on **this round's** instances, > 0, ≥ 4 paired; ties by pooled Δc | `sh/scoring/crown.py` |
+| payment | pooled over the last 8 rounds from r0004 (rounds scored all-or-nothing are not pooled); Δc = one-sided 90 % lower bound of Δ credit | `sh/scoring/v2.py`, `--window-from` |
+| training data | SFT: the king's episodes where **every** check holds; DPO: the king's episode with credit ≥ 0.8 vs another surface's with at least 0.5 less, same instance; no king → nothing uploaded | `sh/exports/build.py` |
 
 ## Family #3 — `terminal_task` (2026-09-16)
 

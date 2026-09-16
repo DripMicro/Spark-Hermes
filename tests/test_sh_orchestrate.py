@@ -12,7 +12,12 @@ from sh.validator.orchestrate import Config, window_archive
 
 def _cfg(tmp_path: Path, window: int = 8) -> Config:
     return Config(
-        state=tmp_path / "state", repo=tmp_path / "repo", queue=tmp_path / "queue", pkg=tmp_path, window=window
+        state=tmp_path / "state",
+        repo=tmp_path / "repo",
+        queue=tmp_path / "queue",
+        pkg=tmp_path,
+        window=window,
+        window_from="r0000",
     )
 
 
@@ -275,3 +280,23 @@ def test_a_forged_later_resubmission_cannot_take_a_miners_real_submission_out_of
     assert active["A"]["pr"] == 7 and active["B"]["pr"] == 9
     assert rejected == {"12": "L10 attestation.json: signature is not the hotkey's over this round and digest"}
     assert sorted(p.name for p in (tmp_path / "bundles").iterdir()) == ["A", "B"]  # staging directories cleaned up
+
+
+def test_the_credit_window_does_not_pool_rounds_scored_all_or_nothing(tmp_path):
+    """Rounds before sh-scoring-v3 carry no credit: pooling them would drag every reference toward zero."""
+    cfg = _cfg(tmp_path)
+    cfg.window_from = "r0004"
+    for rid in ("r0002", "r0003", "r0004", "r0005"):
+        (cfg.state / "archive" / rid).mkdir(parents=True)
+    (cfg.rounds / "r0005").mkdir(parents=True)
+    pooled = window_archive(cfg, "r0005")
+    assert json.loads((pooled / "rounds.json").read_text()) == ["r0004", "r0005"]
+
+
+def test_a_round_closed_before_the_credit_window_still_scores_itself(tmp_path):
+    cfg = _cfg(tmp_path)
+    cfg.window_from = "r0004"
+    for rid in ("r0002", "r0003"):
+        (cfg.state / "archive" / rid).mkdir(parents=True)
+    pooled = window_archive(cfg, "r0003")
+    assert json.loads((pooled / "rounds.json").read_text()) == ["r0003"]

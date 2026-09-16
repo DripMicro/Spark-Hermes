@@ -5,8 +5,8 @@ says "this trajectory actually solved the task", not "this trajectory looked rig
 
   * **SFT** — one row per verified, non-disqualified episode **of the crowned strategy**, in the converter's
     `{from, value}` shape. The king's trajectories are the round's product; every other surface's are evidence.
-  * **DPO** — a chosen/rejected pair per instance: the king solved it, another surface (a rival, the baseline,
-    the canon) did not. The pair is only meaningful within one instance: across instances it would encode
+  * **DPO** — a chosen/rejected pair per instance: the king's best episode, doing at least 80 % of the withheld
+    checks, against another surface's episode (a rival, the baseline, the canon) doing at least 50 points fewer. The pair is only meaningful within one instance: across instances it would encode
     difficulty. A round with no king exports nothing, and the manifest says so.
 
 Two rules from V4 govern the system turn, and they matter more than they look. The converter emits Hermes'
@@ -25,8 +25,12 @@ import json
 import sys
 from pathlib import Path
 
+from sh.scoring.v2 import credit
+
 SCHEMA_SFT = "sh-sft-v2"
 SCHEMA_DPO = "sh-dpo-v2"
+DPO_CHOSEN_MIN = 0.8  # the preferred side must do most of the task
+DPO_MARGIN = 0.5  # and the other side at least this much less of it
 
 
 def _leak_scan(text: str, secrets: set[str]) -> list[str]:
@@ -120,28 +124,26 @@ def build(
         # Take the first side of each pair that actually yields a row. An episode killed on its timeout has no
         # trajectory at all, and picking only the first loser silently dropped every pair whose first loser
         # happened to be one of those — half the training value of the round, lost to list order.
-        chosen = next(
-            (
-                row
-                for e, d in entries
-                if e.get("surface") == king
-                and e.get("verified_success")
-                and not e.get("disqualified")
-                and (row := _rows_for(d, e, task, prompt))
-            ),
-            None,
-        )
-        rejected = next(
-            (
-                row
-                for e, d in entries
-                if e.get("surface") != king
-                and not e.get("verified_success")
-                and not e.get("void")
-                and (row := _rows_for(d, e, task, prompt))
-            ),
-            None,
-        )
+        kings = [
+            (credit(e), e, d)
+            for e, d in entries
+            if e.get("surface") == king and not e.get("disqualified") and credit(e) >= DPO_CHOSEN_MIN
+        ]
+        chosen = rejected = None
+        c_credit = 0.0
+        for c_credit, e, d in sorted(kings, key=lambda x: -x[0]):
+            if (chosen := _rows_for(d, e, task, prompt)) is not None:
+                break
+        if chosen is not None:
+            losers = sorted(
+                (
+                    (credit(e), e, d)
+                    for e, d in entries
+                    if e.get("surface") != king and not e.get("void") and credit(e) <= c_credit - DPO_MARGIN
+                ),
+                key=lambda x: x[0],
+            )
+            rejected = next((row for _, e, d in losers if (row := _rows_for(d, e, task, prompt)) is not None), None)
         if chosen and rejected:
             dpo.append(
                 {

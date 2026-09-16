@@ -39,10 +39,20 @@ def test_only_this_rounds_instances_count_and_void_episodes_do_not():
     eps = _round("11110000", {"A": "11110000"}) + _round("00000000", {"A": "11111111"}, round_id="r0001")
     eps.append(_ep("A", "t7", True, void=True))  # a provider outage is not a pass
     st = standings(eps, {"A"}, round_id="r0002")
-    assert st["A"] == {"n": 8, "verified": 4, "delta": 0.0}
+    assert st["A"] == {"n": 8, "verified": 4, "credit": 0.5, "delta": 0.0}
 
 
 def test_a_hotkey_with_too_few_paired_instances_is_not_a_candidate():
     eps = _round("1100", {"A": "1110"})  # 4 instances, delta +0.25
     assert crown(eps, {"A"}, round_id="r0002", pooled_delta_c={}, min_paired=5)["king"] is None
     assert crown(eps, {"A"}, round_id="r0002", pooled_delta_c={}, min_paired=4)["king"] == "A"
+
+
+def test_the_crown_counts_the_share_of_checks_not_only_full_passes():
+    """Nobody passes every check of a large task; the one that does more of the work than the baseline is king."""
+    eps = [_ep("null", f"t{i}", False, credit=0.40) for i in range(8)]
+    eps += [_ep("A", f"t{i}", False, credit=0.55) for i in range(8)]
+    eps += [_ep("B", f"t{i}", False, credit=0.35) for i in range(8)]
+    c = crown(eps, {"A", "B"}, round_id="r0002", pooled_delta_c={})
+    assert c["king"] == "A" and c["standings"]["A"]["delta"] == 0.15 and c["standings"]["A"]["verified"] == 0
+    assert "rank" not in c["standings"]["B"]

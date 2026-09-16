@@ -35,7 +35,7 @@ def render(close: dict, hotkey: str, reveal: dict | None = None) -> str:
         "| | |",
         "|---|---|",
         f"| episodes | {score['n']} |",
-        f"| mean d (you − baseline, same instances) | {score.get('mean_d', 0) or 0:+.4f} |",
+        f"| mean d (your share of checks passed − the baseline's, same instances) | {score.get('mean_d', 0) or 0:+.4f} |",
         f"| standard error (incl. reference term) | {score.get('se') if score.get('se') is not None else '—'} |",
         f"| Δc (one-sided 90 % lower bound — what pays) | {score['delta_c']:.4f} |",
         f"| correctness gate | {'passed' if score['gate'] else 'not passed'} |",
@@ -48,8 +48,8 @@ def render(close: dict, hotkey: str, reveal: dict | None = None) -> str:
 
     lines += [
         "",
-        "`mean d` is your pass rate minus the pinned model's pass rate on the *same instances*, with no "
-        "strategy. Passing tasks is not the achievement — beating that baseline is. `Δc` is the lower bound of "
+        "`mean d` is the share of each task's withheld checks your episodes passed, minus the pinned model's share "
+        "on the *same instances* with no strategy. Passing tasks is not the achievement — beating that baseline is. `Δc` is the lower bound of "
         "that difference, so beating the baseline on average is not enough to be *paid* for beating it.",
     ]
 

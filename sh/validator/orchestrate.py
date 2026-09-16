@@ -28,6 +28,7 @@ Transparency rules the loop enforces, each because its absence would let a valid
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
 import shutil
@@ -70,6 +71,7 @@ class Config:
     worker_root: str = "/root/sh"  # holds pkg/ (the public package), state/tokens, state/usage
     image: str = "hermes-ubuntu:pin"  # the fallback; an image-defined task names its own
     window: int = 8  # rounds pooled for payment
+    window_from: str = "r0004"  # the first round scored on credit (sh-scoring-v3); earlier rounds are not pooled
     window_s: int = 2 * 3600  # the submission window
     min_paired: int = 4  # instances a strategy must share with the baseline to be crowned
     concurrency: int = 2
@@ -201,7 +203,13 @@ def live(
                 for h, s in closed.get("scores", {}).items()
             },
             "family_stats": {
-                f: {"null_p": r["null"].get("p"), "canon_p": r["canon"].get("p"), "label": r.get("label")}
+                f: {
+                    "null_p": r["null"].get("p"),
+                    "canon_p": r["canon"].get("p"),
+                    "null_credit": r["null"].get("mean_credit"),
+                    "canon_credit": r["canon"].get("mean_credit"),
+                    "label": r.get("label"),
+                }
                 for f, r in closed.get("family_stats", {}).items()
             },
             "commitments_ok": closed.get("commitments_ok"),
@@ -567,19 +575,28 @@ def seal(cfg: Config, round_id: str, rd: Path) -> dict:
 
 
 def _progress(cfg: Config, remote: str, total: int) -> dict:
-    """Per-surface counts from the worker's episode records so far — what the dashboard shows mid-round."""
-    raw = _worker(
-        cfg,
-        f"cd {remote}/episodes 2>/dev/null && for s in *; do "
-        f"n=$(ls $s/*/episode.json 2>/dev/null | wc -l); "
-        f"v=$(grep -l '\"verified_success\": true' $s/*/episode.json 2>/dev/null | wc -l); "
-        f'echo "$s $n $v"; done',
+    """Per-surface counts and mean credit from the worker's episode records so far — what the board shows."""
+    script = (
+        "import glob, json, sys\n"
+        "out = {}\n"
+        f"for p in glob.glob('{remote}/episodes/*/*/episode.json'):\n"
+        "    try:\n"
+        "        e = json.load(open(p))\n"
+        "    except (OSError, ValueError):\n"
+        "        continue\n"
+        "    s = out.setdefault(p.split('/')[-3], {'n': 0, 'verified': 0, 'credit': 0.0})\n"
+        "    c = e.get('credit')\n"
+        "    s['n'] += 1; s['verified'] += bool(e.get('verified_success'))\n"
+        "    s['credit'] += float(c) if isinstance(c, (int, float)) else float(bool(e.get('verified_success')))\n"
+        "print(json.dumps(out))\n"
     )
-    by = {}
-    for line in raw.split("\n"):
-        parts = line.split()
-        if len(parts) == 3 and parts[1].isdigit():
-            by[parts[0]] = {"n": int(parts[1]), "verified": int(parts[2])}
+    raw = _worker(cfg, f'python3 -c "$(echo {base64.b64encode(script.encode()).decode()} | base64 -d)"')
+    try:
+        by = json.loads(raw.strip().splitlines()[-1]) if raw.strip() else {}
+    except (ValueError, IndexError):
+        by = {}
+    for v in by.values():
+        v["credit"] = round(v["credit"] / v["n"], 4) if v["n"] else None
     return {"done": sum(v["n"] for v in by.values()), "total": total, "by_surface": by}
 
 
@@ -663,9 +680,14 @@ def window_archive(cfg: Config, round_id: str) -> Path:
     dst = archive / round_id
     if src.exists() and not dst.exists():
         shutil.copytree(src, dst)
-    rounds = sorted(p.name for p in archive.iterdir() if p.is_dir())[-cfg.window :]
+    # The round being closed is always in its own window, even one scored before the window's start (r0003).
+    rounds = sorted(
+        p.name for p in archive.iterdir() if p.is_dir() and (p.name >= cfg.window_from or p.name == round_id)
+    )
+    rounds = rounds[-cfg.window :]
     pooled = cfg.state / "window"
     shutil.rmtree(pooled, ignore_errors=True)
+    pooled.mkdir(parents=True)
     for r in rounds:
         shutil.copytree(archive / r, pooled / r)
     (pooled / "rounds.json").write_text(json.dumps(rounds))
@@ -987,6 +1009,7 @@ def main(argv=None) -> int:
     ap.add_argument("--queue", default=str(Path(__file__).resolve().parents[3] / "Spark-Hermes-Withheld" / "queue"))
     ap.add_argument("--pkg", default=str(Path(__file__).resolve().parents[2]))
     ap.add_argument("--window", type=int, default=8, help="rounds pooled for payment")
+    ap.add_argument("--window-from", default="r0004", help="the first round pooled (the credit scoring era)")
     ap.add_argument("--window-minutes", type=int, default=120, help="the submission window")
     ap.add_argument("--min-paired", type=int, default=4)
     ap.add_argument("--once", action="store_true")
@@ -1000,6 +1023,7 @@ def main(argv=None) -> int:
         queue=Path(a.queue),
         pkg=Path(a.pkg),
         window=a.window,
+        window_from=a.window_from,
         window_s=a.window_minutes * 60,
         min_paired=a.min_paired,
     )
