@@ -72,3 +72,13 @@ def test_the_newest_pr_per_hotkey_counts_and_the_rest_are_superseded():
     )
     assert keep["A"]["number"] == 12 and keep["B"]["number"] == 9
     assert superseded == {7: "superseded by #12 (one PR per hotkey per round)"}
+
+
+def test_a_dethroned_incumbent_leaves_submissions():
+    """submissions/ carries exactly the king; a former king does not compete for free forever."""
+    from sh.validator.orchestrate import dethroned
+
+    sealed = _seal(OLD=None, OLDER=None, A=101)
+    assert dethroned(sealed, "A") == ["OLD", "OLDER"]
+    assert dethroned(sealed, "OLD") == ["OLDER"]  # keeping the crown removes only the others
+    assert dethroned(sealed, None) == ["OLD", "OLDER"]  # nobody won: nobody is carried

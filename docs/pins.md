@@ -19,7 +19,7 @@ Host: `root@91.224.44.223:50199` — RTX 5090 32 GB, Docker 27.3.1, nvidia runti
 
 | Parameter | Pin | Where |
 |---|---|---|
-| submission window | **120 min** from open; the seal is taken at close, by PR head SHA | `sh/validator/orchestrate.py --window-minutes` |
+| submission window | **120 min** from open; the seal is taken at close, by PR head SHA. `submissions/` carries exactly the current king: a dethroned incumbent is removed at announce | `sh/validator/orchestrate.py --window-minutes` |
 | tasks per round | 8, minted ahead by `supply.queue` (`--ahead 3`); future rounds published only as digests in `rounds/queue.json` | private repo |
 | attestation | `sr25519(hotkey, "spark-hermes:<round>:<bundle_sha256>")` in `attestation.json`; one PR per hotkey per round, newest counts | `sh/cli/attest.py` |
 | crown | best Δ vs baseline on **this round's** instances, > 0, ≥ 4 paired; ties by pooled Δc | `sh/scoring/crown.py` |

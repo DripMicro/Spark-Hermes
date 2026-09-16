@@ -587,6 +587,12 @@ def outcome(sealed: dict, king: str | None) -> dict:
     return {"king": king, "merge": king_pr, "close": close_prs}
 
 
+def dethroned(sealed: dict, king: str | None) -> list[str]:
+    """Incumbents that are not this round's king. `submissions/` carries exactly the current king: a strategy
+    that lost the crown does not keep competing for free, round after round, at the validator's expense. Pure."""
+    return sorted(h for h, info in sealed["active"].items() if info.get("incumbent") and h != king)
+
+
 def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, crowned: dict) -> str | None:
     """Scorecards on every PR; `scored` on every PR; the crown moved to the king; the king's PR merged; every
     other competition PR closed with the reason; PRs that arrived after the seal closed as outside the window."""
@@ -657,6 +663,17 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
         log(rd, "merge", pr=plan["merge"], ok=merged.returncode == 0, err=merged.stderr[-200:])
     elif king:
         log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown")
+    if gone := dethroned(sealed, king):  # after the merge, so the tree the removal commits onto is current
+        sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)
+        for hotkey in gone:
+            sh(["git", "rm", "-r", "-q", f"submissions/{hotkey}"], cwd=cfg.repo, check=False)
+        if sh(["git", "status", "--porcelain", "submissions"], cwd=cfg.repo).strip():
+            sh(
+                ["git", "commit", "-q", "-m", f"{round_id}: dethroned {', '.join(gone)}", "--", "submissions"],
+                cwd=cfg.repo,
+            )
+            sh(["git", "push", "-q", "origin", BRANCH], cwd=cfg.repo)
+        log(rd, "dethroned", hotkeys=gone)
     for number in plan["close"]:
         reason = sealed.get("rejected", {}).get(str(number))
         why = f"rejected at seal: {reason}" if reason else f"not crowned in `{round_id}`"
