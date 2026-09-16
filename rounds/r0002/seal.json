@@ -1,24 +1,7 @@
 {
- "schema": "sh-live-v2",
- "updated": 1789548516.6231024,
+ "schema": "sh-seal-v2",
  "round_id": "r0002",
- "stage": "evaluate",
- "started": 1789547707.977668,
- "phases": [
-  {
-   "stage": "start",
-   "t": 1789547707.977668
-  },
-  {
-   "stage": "mint",
-   "t": 1789548514.9284096
-  },
-  {
-   "stage": "seal",
-   "t": 1789548516.6178243
-  }
- ],
- "tasks": 8,
+ "sealed_at": 1789548516.6173472,
  "active": {
   "5FRefusalReader": {
    "pr": 106,
@@ -57,48 +40,5 @@
    "incumbent": false
   }
  },
- "rejected": {},
- "progress": {
-  "done": 0,
-  "total": 0,
-  "by_surface": {}
- },
- "scores": null,
- "history": [
-  {
-   "round_id": "s1",
-   "closed_at": 1789536780,
-   "episodes": 48,
-   "king": "5FGoodOperator",
-   "weights": {
-    "5FGoodOperator": 1.0,
-    "5FHastyRunner": 0.0
-   },
-   "commitments_ok": true,
-   "sft_rows": 39,
-   "dpo_pairs": 5,
-   "hf": null
-  },
-  {
-   "round_id": "r0001",
-   "closed_at": 1789547606.8317137,
-   "episodes": 64,
-   "king": null,
-   "weights": {
-    "5FCarefulOps": 0.0,
-    "5FGoodOperator": 0.0,
-    "5FHastyRunner": 0.0,
-    "5FMinimal": 0.0,
-    "5FPlanner": 0.0,
-    "5FRefusalReader": 0.0
-   },
-   "commitments_ok": true,
-   "sft_rows": 51,
-   "dpo_pairs": 7,
-   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0001"
-  }
- ],
- "repo": "gittensor-model-hub/Spark-Hermes",
- "branch": "sh/v2-pipeline",
- "hf_repo": "gittensor-model-hub/spark-hermes-rounds"
+ "rejected": {}
 }

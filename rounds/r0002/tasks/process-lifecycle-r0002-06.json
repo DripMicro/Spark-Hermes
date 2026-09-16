@@ -1,0 +1,43 @@
+{
+ "schema": "sh-instance-v2",
+ "task_id": "process-lifecycle-r0002-06",
+ "family": "process_lifecycle",
+ "behaviour": "act",
+ "round_id": "r0002",
+ "prompt": "`bin/sweeper.py` is a long-running job. It takes a moment to warm up and writes an empty `listening` file when it is serving. On `SIGUSR1` it writes `dump.json`; on `SIGTERM` it shuts down. It appends what it does to `sweeper.log`.\n\nRun it, wait until it is serving, make it write `dump.json`, then stop it cleanly. Do not leave it running, and do not edit `bin/sweeper.py`.",
+ "fixture": {
+  "bin/sweeper.py": {
+   "b64": "IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoiIiJUaGUgc3dlZXBlciBqb2IuIFdyaXRlcyBgbGlzdGVuaW5nYCBvbmNlIHdhcm1lZCB1cCwgZHVtcHMgYGR1bXAuanNvbmAgb24gU0lHVVNSMSwgbG9ncyBvbiBTSUdURVJNLiIiIgppbXBvcnQganNvbgppbXBvcnQgb3MKaW1wb3J0IHNpZ25hbAppbXBvcnQgc3lzCmltcG9ydCB0aW1lCgpMT0cgPSBvcGVuKCJzd2VlcGVyLmxvZyIsICJhIiwgYnVmZmVyaW5nPTEpCkxPRy53cml0ZSgic3RhcnRlZCBwaWQ9JWRcbiIgJSBvcy5nZXRwaWQoKSkKdGlja3MgPSAwCgoKZGVmIGR1bXAoc2lnbnVtLCBmcmFtZSk6CiAgICBqc29uLmR1bXAoeyJ0aWNrcyI6IHRpY2tzLCAicGlkIjogb3MuZ2V0cGlkKCl9LCBvcGVuKCJkdW1wLmpzb24iLCAidyIpKQogICAgTE9HLndyaXRlKCJkdW1wZWQgdGlja3M9JWRcbiIgJSB0aWNrcykKCgpkZWYgc3RvcChzaWdudW0sIGZyYW1lKToKICAgIExPRy53cml0ZSgic3RvcHBlZFxuIikKICAgIHN5cy5leGl0KDApCgoKc2lnbmFsLnNpZ25hbChzaWduYWwuU0lHVVNSMSwgZHVtcCkKc2lnbmFsLnNpZ25hbChzaWduYWwuU0lHVEVSTSwgc3RvcCkKdGltZS5zbGVlcCg4LjApCm9wZW4oImxpc3RlbmluZyIsICJ3Iikud3JpdGUoIjFcbiIpCkxPRy53cml0ZSgibGlzdGVuaW5nXG4iKQp3aGlsZSBUcnVlOgogICAgdGltZS5zbGVlcCgwLjA1KQogICAgdGlja3MgKz0gMQo=",
+   "mode": "0755"
+  }
+ },
+ "setup_commands": [],
+ "protected_paths": [
+  "bin/sweeper.py"
+ ],
+ "commands": [],
+ "published": {
+  "predicates": [
+   [
+    "file_exists",
+    "sweeper.log"
+   ],
+   [
+    "grep_count",
+    "sweeper.log",
+    "stopped",
+    "1"
+   ]
+  ]
+ },
+ "withheld_commitment": "hmac-sha256:bd9f543d01f57120a1dd8505e9098c6a6e741bc19ddedfbd0c96ca8c2adfdda0",
+ "image": "family-process-lifecycle:pin",
+ "network": "none",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 30,
+ "timeout_s": 600,
+ "requires_self_check": true
+}
