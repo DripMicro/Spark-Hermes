@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v2",
- "updated": 1789543788.1719651,
+ "updated": 1789543997.079555,
  "round_id": "r0001",
  "stage": "evaluate",
  "started": 1789540619.835445,
@@ -28,6 +28,14 @@
   {
    "stage": "evaluate_resume",
    "t": 1789543552.840111
+  },
+  {
+   "stage": "resume",
+   "t": 1789543943.021628
+  },
+  {
+   "stage": "evaluate_resume",
+   "t": 1789543950.4638362
   }
  ],
  "tasks": 8,
@@ -71,7 +79,7 @@
  },
  "rejected": {},
  "progress": {
-  "done": 24,
+  "done": 27,
   "total": 64,
   "by_surface": {
    "5FMinimal": {
@@ -79,8 +87,8 @@
     "verified": 4
    },
    "5FPlanner": {
-    "n": 0,
-    "verified": 0
+    "n": 3,
+    "verified": 3
    },
    "canon": {
     "n": 8,
@@ -92,6 +100,7 @@
    }
   }
  },
+ "scores": null,
  "history": [],
  "repo": "gittensor-model-hub/Spark-Hermes",
  "branch": "sh/v2-pipeline",
