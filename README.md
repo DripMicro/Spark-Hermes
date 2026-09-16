@@ -47,7 +47,7 @@ round opens at once. Payment pools the last 8 rounds. Details: [`submissions/REA
 
 ```sh
 uv sync --extra dev
-SH_SALT_SECRET=... python -m supply.queue --queue queue --plan terminal_task:8:1 --ahead 3       # in the private repo: mints rounds ahead
+SH_SALT_SECRET=... DOCKER_HOST=ssh://<worker> python -m supply.queue --queue queue --plan terminal_task:8:1 --ahead 3   # private repo: mints rounds ahead, images built on the worker
 HF_TOKEN=... uv run python -m sh.validator.orchestrate --queue ../Spark-Hermes-Withheld/queue       # forever; --once for one round
 uv run python -m sh.validator.orchestrate --help
 ```
