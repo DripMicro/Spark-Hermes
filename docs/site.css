@@ -133,3 +133,4 @@ tr.king td { background: rgba(251, 191, 36, .05); }
 
 .foot { max-width: 74rem; margin: 3rem auto 0; padding-top: 1.2rem; border-top: 1px solid var(--line);
         color: var(--muted); font-size: .8rem; display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; }
+.stat b .hk, .stat b span { font-size: inherit; text-transform: none; letter-spacing: 0; color: inherit; }
