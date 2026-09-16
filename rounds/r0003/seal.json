@@ -1,0 +1,50 @@
+{
+ "schema": "sh-seal-v3",
+ "round_id": "r0003",
+ "sealed_at": 1789563460.742396,
+ "active": {
+  "5FGoodOperator": {
+   "pr": null,
+   "head": "origin/main",
+   "bundle_sha256": "4c490c109f8ef2045de835184755a059087d91aa2e28df59c9139d7e4e850024",
+   "incumbent": true
+  },
+  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+   "pr": 107,
+   "head": "e96a35ecc8068437b2d0dc5784b4bee17c3792f9",
+   "bundle_sha256": "bd5d7d2ec04153083a48fde33c149df46b34d3a7ea15709f86dfa33eaf3d9dab",
+   "incumbent": false
+  },
+  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
+   "pr": 108,
+   "head": "ec02025018b5b1bf302b93b1b8651b550fdeff24",
+   "bundle_sha256": "4c490c109f8ef2045de835184755a059087d91aa2e28df59c9139d7e4e850024",
+   "incumbent": false
+  },
+  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+   "pr": 109,
+   "head": "c7565d3468f56a195b8184c6f77a9489d8c18752",
+   "bundle_sha256": "e26dcd4bddb12b77ac11a45f6435796fafdc24d418e718b11ac0dcf87154619b",
+   "incumbent": false
+  },
+  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+   "pr": 110,
+   "head": "40e33a9744d0ba736467188b7390aa4be6442865",
+   "bundle_sha256": "1931157ea1be3df1ba6f894851b3afa6c23d77f61223ba19b0bb24f3f04fa016",
+   "incumbent": false
+  },
+  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+   "pr": 111,
+   "head": "62156b9c75a149f4e79a552285473feee370b677",
+   "bundle_sha256": "d81aa18146c34c3eb540d98bd46f0218443881f248d6490c88c0051ca57a7782",
+   "incumbent": false
+  },
+  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+   "pr": 112,
+   "head": "0587d0ea6592b321f13a6c82fdf40354cb15e8ee",
+   "bundle_sha256": "8b8bbdbd45c5bb7c2dd08c44d75809e0d5213dd836c09bc043631ddd75b20986",
+   "incumbent": false
+  }
+ },
+ "rejected": {}
+}
