@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v2",
- "updated": 1789544563.248401,
+ "updated": 1789544774.2218983,
  "round_id": "r0001",
  "stage": "evaluate",
  "started": 1789540619.835445,
@@ -36,6 +36,14 @@
   {
    "stage": "evaluate_resume",
    "t": 1789543950.4638362
+  },
+  {
+   "stage": "resume",
+   "t": 1789544720.4456575
+  },
+  {
+   "stage": "evaluate_resume",
+   "t": 1789544727.619152
   }
  ],
  "tasks": 8,
@@ -79,20 +87,24 @@
  },
  "rejected": {},
  "progress": {
-  "done": 37,
+  "done": 40,
   "total": 64,
   "by_surface": {
+   "5FCarefulOps": {
+    "n": 0,
+    "verified": 0
+   },
    "5FMinimal": {
     "n": 8,
     "verified": 4
    },
    "5FPlanner": {
-    "n": 7,
+    "n": 8,
     "verified": 6
    },
    "5FRefusalReader": {
-    "n": 6,
-    "verified": 6
+    "n": 8,
+    "verified": 8
    },
    "canon": {
     "n": 8,
@@ -105,7 +117,22 @@
   }
  },
  "scores": null,
- "history": [],
+ "history": [
+  {
+   "round_id": "s1",
+   "closed_at": 1789536780,
+   "episodes": 48,
+   "king": "5FGoodOperator",
+   "weights": {
+    "5FGoodOperator": 1.0,
+    "5FHastyRunner": 0.0
+   },
+   "commitments_ok": true,
+   "sft_rows": 39,
+   "dpo_pairs": 5,
+   "hf": null
+  }
+ ],
  "repo": "gittensor-model-hub/Spark-Hermes",
  "branch": "sh/v2-pipeline",
  "hf_repo": "gittensor-model-hub/spark-hermes-rounds"
