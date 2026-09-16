@@ -103,7 +103,7 @@ def render(close: dict, meta: dict | None = None) -> str:
             "commitments",
         ),
     ]
-    strip = "".join(f"<div class='stat'><b>{v}</b><span>{k}</span></div>" for v, k in stats)
+    strip = "".join(f"<div class='stat'><b>{v}</b><span>{k}</span></div>" for v, k in stats)  # inside the round card
     links = [
         (f"{blob}/crown.json", "crown.json"),
         (f"{blob}/close.json", "close.json"),
@@ -125,19 +125,22 @@ def render(close: dict, meta: dict | None = None) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spark-Hermes {_e(rid)}</title>
 <meta name="description" content="Scores, weights and verification for round {_e(rid)} of the Spark-Hermes strategy competition.">
+<link rel="icon" href="../../assets/favicon.png">
 <link rel="stylesheet" href="../../site.css">
 </head>
 <body>
 <nav class="nav">
-  <a class="brand" href="../../">Spark-Hermes</a>
-  <a href="../../live/">Live</a>
+  <a class="brand" href="../../"><img src="../../assets/logo.png" alt="">Spark-Hermes</a>
+  <a href="../../live/"><span class="live-dot"></span>Live</a>
   <a href="../../live/#rounds" aria-current="page">Rounds</a>
   <a href="https://github.com/{_e(repo)}/blob/{_e(branch)}/submissions/README.md">Submit</a>
   <a href="https://github.com/{_e(repo)}">GitHub</a>
 </nav>
 <main>
-  <div class="head"><h1>Round {_e(rid)}</h1><span class="muted small">closed {_e(when) if when else "—"} · era {_e(close.get("era", ""))} · {_e(close.get("schema", ""))}</span></div>
-  <div class="strip">{strip}</div>
+  <section class="round">
+    <div class="head"><h1>Round <span class="grad">{_e(rid)}</span></h1><span class="phase closed">closed</span><span class="muted small">{_e(when) if when else ""} · era {_e(close.get("era", ""))}</span></div>
+    <div class="strip">{strip}</div>
+  </section>
   <section class="panel">
     <h2>This round <small>{_e(crowned.get("rule", "the crown is decided on this round's instances alone"))}</small></h2>
     <div class="wrap"><table>

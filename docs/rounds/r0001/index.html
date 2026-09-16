@@ -5,24 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spark-Hermes r0001</title>
 <meta name="description" content="Scores, weights and verification for round r0001 of the Spark-Hermes strategy competition.">
+<link rel="icon" href="../../assets/favicon.png">
 <link rel="stylesheet" href="../../site.css">
 </head>
 <body>
 <nav class="nav">
-  <a class="brand" href="../../">Spark-Hermes</a>
-  <a href="../../live/">Live</a>
+  <a class="brand" href="../../"><img src="../../assets/logo.png" alt="">Spark-Hermes</a>
+  <a href="../../live/"><span class="live-dot"></span>Live</a>
   <a href="../../live/#rounds" aria-current="page">Rounds</a>
   <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/submissions/README.md">Submit</a>
   <a href="https://github.com/gittensor-model-hub/Spark-Hermes">GitHub</a>
 </nav>
 <main>
-  <div class="head"><h1>Round r0001</h1><span class="muted small">closed 2026-09-16 08:33 UTC · era e0 · sh-round-close-v2</span></div>
-  <div class="strip"><div class='stat'><b>64</b><span>episodes</span></div><div class='stat'><b>8</b><span>instances</span></div><div class='stat'><b><span class="zero">none</span></b><span>king</span></div><div class='stat'><b>51</b><span>SFT rows</span></div><div class='stat'><b>7</b><span>DPO pairs</span></div><div class='stat'><b><span class="pos">8/8 match</span></b><span>commitments</span></div></div>
+  <section class="round">
+    <div class="head"><h1>Round <span class="grad">r0001</span></h1><span class="phase closed">closed</span><span class="muted small">2026-09-16 08:33 UTC · era e0</span></div>
+    <div class="strip"><div class='stat'><b>64</b><span>episodes</span></div><div class='stat'><b>8</b><span>instances</span></div><div class='stat'><b><span class="zero">none</span></b><span>king</span></div><div class='stat'><b>51</b><span>SFT rows</span></div><div class='stat'><b>7</b><span>DPO pairs</span></div><div class='stat'><b><span class="pos">8/8 match</span></b><span>commitments</span></div></div>
+  </section>
   <section class="panel">
-    <h2>Scores <small>Δc, the one-sided 90% lower bound of Δ vs baseline, is what pays</small></h2>
+    <h2>This round <small>the crown is decided on this round&#x27;s instances alone</small></h2>
+    <div class="wrap"><table>
+      <thead><tr><th class="l">strategy</th><th>rank</th><th title="instances shared with the baseline this round">paired</th><th>verified</th><th title="mean of (pass − baseline pass) per instance, this round">Δ vs baseline</th></tr></thead>
+      <tbody><tr><td class="empty" colspan="5">no crown standings for this round</td></tr></tbody>
+    </table></div>
+  </section>
+  <section class="panel">
+    <h2>Payment <small>pooled over the window — Δc, the one-sided 90% lower bound of Δ vs baseline, is what pays</small></h2>
     <div class="wrap"><table>
       <thead><tr><th class="l">strategy</th><th>#</th><th>episodes</th><th title="mean of (miner pass − baseline pass) per instance">Δ vs baseline</th><th title="one-sided 90% lower bound of Δ vs baseline">Δc</th><th title="efficiency term admitted">gate</th><th title="passed the published check while failing the withheld one">overfit</th><th title="disqualified episodes">dq</th><th>score</th><th>weight</th></tr></thead>
-      <tbody><tr><td class="l"><span class="hk">5FCarefulOps</span></td><td>1</td><td>8</td><td class="neg">-0.125</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk">5FGoodOperator</span></td><td>2</td><td>8</td><td class="pos">+0.125</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk">5FHastyRunner</span></td><td>3</td><td>8</td><td class="neg">-0.250</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk">5FMinimal</span></td><td>4</td><td>8</td><td class="neg">-0.375</td><td>0.000</td><td>no</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk">5FPlanner</span></td><td>5</td><td>8</td><td class="neg">-0.125</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk">5FRefusalReader</span></td><td>6</td><td>8</td><td class="pos">+0.125</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr></tbody>
+      <tbody><tr><td class="l"><span class="hk" title="5FCarefulOps">5FCarefulOps</span></td><td>1</td><td>8</td><td class="neg">-0.125</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk" title="5FGoodOperator">5FGoodOperator</span></td><td>2</td><td>8</td><td class="pos">+0.125</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk" title="5FHastyRunner">5FHastyRunner</span></td><td>3</td><td>8</td><td class="neg">-0.250</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk" title="5FMinimal">5FMinimal</span></td><td>4</td><td>8</td><td class="neg">-0.375</td><td>0.000</td><td>no</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk" title="5FPlanner">5FPlanner</span></td><td>5</td><td>8</td><td class="neg">-0.125</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr><tr><td class="l"><span class="hk" title="5FRefusalReader">5FRefusalReader</span></td><td>6</td><td>8</td><td class="pos">+0.125</td><td>0.000</td><td>yes</td><td>0.00</td><td>0</td><td>0.0000</td><td class="zero">0.000</td></tr></tbody>
     </table></div>
   </section>
   <section class="panel">

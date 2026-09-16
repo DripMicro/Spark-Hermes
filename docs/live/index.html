@@ -5,21 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spark-Hermes Live</title>
 <meta name="description" content="The current round of the Spark-Hermes strategy competition: its submission window, evaluation, crown and scores, and every round that has closed.">
+<link rel="icon" href="../assets/favicon.png">
 <link rel="stylesheet" href="../site.css">
-<style>
-  .countdown { font-family: var(--mono); font-size: 1.6rem; font-weight: 500; letter-spacing: -.02em; }
-  .phase { display: inline-block; padding: .15rem .55rem; border-radius: 4px; font-size: .78rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
-  .phase.window { background: var(--good); color: var(--bg); }
-  .phase.evaluate { background: var(--accent); color: var(--bg); }
-  .phase.closed { background: var(--soft); color: var(--muted); }
-  .queue { display: flex; flex-wrap: wrap; gap: .4rem; }
-  .queue span { font-family: var(--mono); font-size: .78rem; border: 1px dashed var(--line); border-radius: 4px; padding: .15rem .5rem; color: var(--muted); }
-</style>
 </head>
 <body>
 <nav class="nav">
-  <a class="brand" href="../">Spark-Hermes</a>
-  <a href="./" aria-current="page">Live</a>
+  <a class="brand" href="../"><img src="../assets/logo.png" alt="">Spark-Hermes</a>
+  <a href="./" aria-current="page"><span class="live-dot"></span>Live</a>
   <a href="#rounds">Rounds</a>
   <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/sh/v2-pipeline/submissions/README.md">Submit</a>
   <a id="nav-hf" href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Dataset</a>
@@ -27,25 +19,24 @@
 </nav>
 
 <main>
-  <div class="head">
-    <h1>Round <span id="round">—</span></h1>
-    <span id="phase" class="phase closed">—</span>
-    <span id="status" class="muted small"><span class="pulse"></span>connecting…</span>
-  </div>
+  <section class="round">
+    <div class="head">
+      <h1>Round <span id="round" class="grad">—</span></h1>
+      <span id="phase" class="phase closed">—</span>
+      <span id="status" class="muted small"><span class="pulse"></span>connecting…</span>
+    </div>
+    <div class="barrow"><span class="label">submission window</span><div class="bar window"><i id="wbar"></i></div><span class="value" id="wleft">—</span></div>
+    <div class="barrow"><span class="label">evaluation</span><div class="bar"><i id="ebar"></i></div><span class="value" id="episodes">—</span></div>
+    <div class="stages" id="stages"></div>
+    <p class="small muted" id="window-line"></p>
+  </section>
 
   <div class="strip">
-    <div class="stat"><b id="countdown" class="countdown">—</b><span id="countdown-label">submission window</span></div>
     <div class="stat"><b id="submissions">—</b><span>submissions</span></div>
-    <div class="stat"><b id="episodes">0 / 0</b><span>episodes graded</span></div>
     <div class="stat"><b id="ntasks">0</b><span id="tasks-label">tasks</span></div>
+    <div class="stat"><b id="sealed">—</b><span>strategies sealed</span></div>
     <div class="stat"><b id="king-now">—</b><span>king</span></div>
   </div>
-
-  <section class="panel">
-    <div class="stages" id="stages"></div>
-    <div class="bar" style="margin-top:.8rem"><i id="bar"></i></div>
-    <p class="small muted" id="window-line" style="margin-top:.6rem"></p>
-  </section>
 
   <section class="panel">
     <h2 id="board-title">Board <small id="board-sub"></small></h2>
@@ -56,18 +47,19 @@
     <p class="small muted" id="rejected" hidden style="margin-top:.6rem"></p>
   </section>
 
-  <section class="panel">
-    <h2>Queue <small>rounds minted ahead — published as digests, unread until they open</small></h2>
-    <div class="queue" id="queue"><span>—</span></div>
-  </section>
-
-  <section class="panel" id="rounds">
-    <h2>Closed rounds</h2>
-    <div class="wrap"><table>
-      <thead><tr><th class="l">round</th><th class="l">king</th><th class="l">weights</th><th>episodes</th><th>SFT</th><th>DPO</th><th class="l">commitments</th><th>closed</th></tr></thead>
-      <tbody id="history"><tr><td class="empty" colspan="8">none yet</td></tr></tbody>
-    </table></div>
-  </section>
+  <div class="two">
+    <section class="panel">
+      <h2>Queue <small>minted ahead, unread until they open</small></h2>
+      <div class="queue" id="queue"><span>—</span></div>
+    </section>
+    <section class="panel" id="rounds">
+      <h2>Closed rounds</h2>
+      <div class="wrap"><table>
+        <thead><tr><th class="l">round</th><th class="l">king</th><th>episodes</th><th>SFT</th><th>DPO</th><th class="l">commitments</th><th>closed</th></tr></thead>
+        <tbody id="history"><tr><td class="empty" colspan="7">none yet</td></tr></tbody>
+      </table></div>
+    </section>
+  </div>
 </main>
 
 <footer class="foot">
@@ -80,6 +72,7 @@
   const $ = (id) => document.getElementById(id);
   const LABEL = { open: "open", window: "window", seal: "seal", evaluate: "evaluate", close: "score", crown: "crown",
                   announce: "verdict", export: "export", publish_close: "publish", done: "done", waiting: "waiting for tasks" };
+  const PHASE = { window: ["window", "submissions open"], done: ["closed", "closed"], waiting: ["closed", "waiting for the next round's tasks"] };
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const clock = (t) => new Date(t * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const hhmm = (t) => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -156,19 +149,16 @@
     }).join("") : '<tr><td class="empty" colspan="5">' + (live.stage === "window" ? "submissions are open — the seal happens when the window closes" : "waiting for the seal") + "</td></tr>";
   }
 
-  function tickClock() {
+  function paint() {
     if (!current) return;
-    const w = current.window, stage = current.stage;
-    if (stage === "window" && w) {
-      const left = w.closes_at - Date.now() / 1000;
-      $("countdown").textContent = left > 0 ? span(left) : "closing…";
-      $("countdown-label").textContent = "until the window closes";
-    } else if (w) {
-      $("countdown").textContent = "closed";
-      $("countdown-label").textContent = "window closed " + hhmm(w.closes_at);
+    const w = current.window, now = Date.now() / 1000, stage = current.stage;
+    if (w) {
+      const frac = Math.min(1, Math.max(0, (now - w.opens_at) / w.seconds));
+      $("wbar").style.width = Math.round(100 * (stage === "window" ? frac : 1)) + "%";
+      $("wleft").textContent = stage === "window" ? (w.closes_at > now ? span(w.closes_at - now) + " left" : "closing…") : "closed " + hhmm(w.closes_at);
     } else {
-      $("countdown").textContent = "—";
-      $("countdown-label").textContent = "submission window";
+      $("wbar").style.width = "0%";
+      $("wleft").textContent = "—";
     }
   }
 
@@ -179,7 +169,7 @@
     const king = live.crown && live.crown.king;
     $("round").textContent = live.round_id;
     $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale · " : "") + "updated " + ago(live.updated);
-    const ph = live.stage === "window" ? ["window", "submissions open"] : live.stage === "done" ? ["closed", "closed"] : live.stage === "waiting" ? ["closed", "waiting for the next round's tasks"] : ["evaluate", LABEL[live.stage] || live.stage];
+    const ph = PHASE[live.stage] || ["evaluate", LABEL[live.stage] || live.stage];
     $("phase").className = "phase " + ph[0];
     $("phase").textContent = ph[1];
 
@@ -192,13 +182,15 @@
     $("window-line").textContent = w ? "Window " + clock(w.opens_at) + " → " + clock(w.closes_at) + " (" + Math.round(w.seconds / 60) + " min). Submissions after the close are not sealed." : "";
 
     const p = live.progress || {}, done = p.done || 0, total = p.total || 0;
-    $("episodes").textContent = done + " / " + total;
-    $("bar").style.width = (total ? Math.round(100 * done / total) : 0) + "%";
+    $("ebar").style.width = (total ? Math.round(100 * done / total) : live.stage === "done" ? 100 : 0) + "%";
+    $("episodes").textContent = total ? done + " / " + total : "—";
     $("submissions").textContent = live.submissions == null ? Object.keys(live.active || {}).filter((h) => live.active[h].pr).length || "—" : live.submissions;
     $("ntasks").textContent = live.tasks || 0;
     $("tasks-label").innerHTML = live.tasks ? '<a href="https://github.com/' + esc(live.repo) + "/tree/" + esc(live.branch) + "/rounds/" + esc(live.round_id) + '/tasks">tasks</a>' : "tasks";
-    $("king-now").innerHTML = king ? "👑 " + hk(king) : (live.history || []).slice(-1)[0] && (live.history || []).slice(-1)[0].king ? '<span class="muted small">last:</span> ' + hk((live.history || []).slice(-1)[0].king) : "—";
-    tickClock();
+    $("sealed").textContent = Object.keys(live.active || {}).length || "—";
+    const last = (live.history || []).slice(-1)[0];
+    $("king-now").innerHTML = king ? "👑 " + hk(king) : last && last.king ? '<span class="muted small">last</span> ' + hk(last.king) : "—";
+    paint();
     board(live);
 
     const rej = Object.entries(live.rejected || {});
@@ -209,15 +201,12 @@
     $("queue").innerHTML = q.length ? q.map((r) => "<span title='tasks digest " + esc(r.tasks_sha256) + "'>" + esc(r.round_id) + " · " + r.tasks + " tasks · " + esc(String(r.tasks_sha256).slice(0, 10)) + "…</span>").join("") : "<span>empty — the daemon is minting</span>";
 
     const hist = (live.history || []).slice().reverse();
-    $("history").innerHTML = hist.length ? hist.map((h) => {
-      const w = Object.entries(h.weights || {}).sort((a, b) => b[1] - a[1])
-        .map(([k, v]) => "<span class='" + (v === 0 ? "zero" : "") + "'>" + hk(k) + " " + v.toFixed(2) + "</span>").join("<br>");
-      return "<tr><td class='l'><a href='../rounds/" + esc(h.round_id) + "/'>" + esc(h.round_id) + "</a></td>" +
-        "<td class='l'>" + (h.king ? "<span class='crown'>👑</span> " + hk(h.king) : "<span class='zero'>none</span>") + "</td>" +
-        "<td class='l'>" + (w || "—") + "</td><td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
-        "<td class='l'>" + (h.commitments_ok ? "<span class='pos'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td>" +
-        "<td>" + clock(h.closed_at) + "</td></tr>";
-    }).join("") : '<tr><td class="empty" colspan="8">none yet</td></tr>';
+    $("history").innerHTML = hist.length ? hist.map((h) =>
+      "<tr><td class='l'><a href='../rounds/" + esc(h.round_id) + "/'>" + esc(h.round_id) + "</a></td>" +
+      "<td class='l'>" + (h.king ? "<span class='crown'>👑</span> " + hk(h.king) : "<span class='zero'>none</span>") + "</td>" +
+      "<td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
+      "<td class='l'>" + (h.commitments_ok ? "<span class='pos'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td>" +
+      "<td>" + clock(h.closed_at) + "</td></tr>").join("") : '<tr><td class="empty" colspan="7">none yet</td></tr>';
 
     if (live.repo) $("nav-repo").href = "https://github.com/" + live.repo;
     if (live.hf_repo) $("nav-hf").href = "https://huggingface.co/datasets/" + live.hf_repo;
@@ -233,9 +222,7 @@
       $("status").innerHTML = '<span class="pulse bad"></span>unreachable';
     }
   }
-  tick();
-  setInterval(tick, 15000);
-  setInterval(tickClock, 1000);
+  tick(); setInterval(tick, 15000); setInterval(paint, 1000);
 })();
 </script>
 </body>
