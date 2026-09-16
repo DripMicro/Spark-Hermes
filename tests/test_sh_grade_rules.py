@@ -169,3 +169,12 @@ def test_an_ordinary_failure_is_not_void(monkeypatch, tmp_path):
     monkeypatch.setattr(g, "grade_in_container", lambda *a, **k: {"published_pass": False, "protected_modified": []})
     rec = g.grade(tmp_path, {"task_id": "t-1", "published": {"predicates": []}}, None, "img")
     assert not rec["void"] and not rec["verified_success"]
+
+
+def test_an_image_defined_workdir_is_the_workspace():
+    """Family terminal_task works in the image's own tree: an absolute write there is inside the workspace, and
+    the same path on a fixture-defined task is not."""
+    task = {**TASK, "workdir": "/task_file"}
+    call = ("write_file", {"path": "/task_file/output/report.json", "content": "{}"}, '{"bytes_written": 2}')
+    assert trajectory_rules(list(_msgs(call)), [], None, task, None)[0] == []
+    assert "wrote_outside_workspace" in _signals(call)

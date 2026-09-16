@@ -179,12 +179,13 @@ def trajectory_rules(
     # HERMES_HOME is the agent's own scratch (logs, sessions, caches) and is never a DQ. What is: touching
     # anything under /ep outside the workspace (task.json, bundle/, the runner's outputs), or an absolute
     # write target outside /ep/ws.
+    allowed = (*ALLOWED_WRITE_PREFIXES, *([task["workdir"]] if task.get("workdir") else []))  # the image's own tree
     abs_writes = [
         p
         for i, (_, n, _, cid) in enumerate(calls)
         if n in MUTATING and not _failed(results.get(cid, ""))
         for p in reaching[i][0]
-        if p.startswith("/") and not any(p == a or p.startswith(a + "/") for a in ALLOWED_WRITE_PREFIXES)
+        if p.startswith("/") and not any(p == a or p.startswith(a + "/") for a in allowed)
     ]
     if ep_writes or abs_writes:
         signals.append("wrote_outside_workspace")
