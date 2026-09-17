@@ -460,3 +460,22 @@ def test_reclaim_strips_heavy_files_from_old_done_rounds_but_keeps_recent_and_re
     assert (cfg.rounds / "r0003" / "episodes" / "null" / "t0" / "episode.json").exists()
     assert (cfg.rounds / "r0004" / "episodes" / "null" / "t0" / "snapshot.tar").exists()
     assert (cfg.rounds / "r0005" / "episodes" / "null" / "t0" / "trajectory.json").exists()
+
+
+def test_live_json_carries_a_hotkey_to_github_map_accumulated_across_rounds(tmp_path, monkeypatch):
+    import sh.validator.orchestrate as o
+
+    cfg = _cfg(tmp_path)
+    rd = cfg.rounds / "r0006"
+    rd.mkdir(parents=True)
+    (rd / "window.json").write_text(json.dumps({"opens_at": 1.0, "closes_at": 2.0, "seconds": 1}))
+    (rd / "seal.json").write_text(json.dumps({"active": {"5B": {"pr": 8, "github": "octocat"}}}))
+    (cfg.repo).mkdir(parents=True, exist_ok=True)
+    (cfg.repo / "docs" / "live").mkdir(parents=True)
+    (cfg.repo / "docs" / "live" / "live.json").write_text(
+        json.dumps({"round_id": "r0006", "github": {"5A": "torvalds"}})
+    )
+    monkeypatch.setattr(o, "_commit", lambda *a, **k: None)
+    o.live(cfg, rd, "window", submissions=[{"hotkey": "5C", "pr": 9, "github": "gvanrossum"}], push=False)
+    live = json.loads((cfg.repo / "docs" / "live" / "live.json").read_text())
+    assert live["github"] == {"5A": "torvalds", "5B": "octocat", "5C": "gvanrossum"}  # prev + seal + submissions

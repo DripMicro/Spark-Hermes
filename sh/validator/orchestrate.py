@@ -207,6 +207,13 @@ def live(
         progress = prev.get("progress") if same else None
     if submissions is None and same:
         submissions = prev.get("submissions")
+    github = dict(prev.get("github") or {})  # who each hotkey is on GitHub, accumulated across rounds
+    for row in submissions or []:
+        if row.get("hotkey") and row.get("github"):
+            github[row["hotkey"]] = row["github"]
+    for hk, info in sealed.get("active", {}).items():
+        if info.get("github"):
+            github[hk] = info["github"]
     last = history[-1] if history else None
     scores = None
     if closed:
@@ -243,6 +250,7 @@ def live(
         "phases": [{"stage": p["stage"], "t": p["t"]} for p in phases],
         "window": _read(rd / "window.json"),
         "submissions": submissions or [],
+        "github": github,  # hotkey -> GitHub login; the board shows the avatar and name beside the hotkey
         "standings": (last or {}).get("scores") or {},  # the pooled standing after the last close: what pays now
         "last_round": (last or {}).get("round_id"),
         "tasks": len(list(shown(rd).glob("*.json"))) if (rd / "tasks").exists() else 0,
@@ -365,6 +373,7 @@ def _submissions(cfg: Config) -> list[dict]:
             "created_at": p.get("createdAt"),
             "updated_at": p.get("updatedAt"),
             "url": p.get("url"),
+            "github": (p.get("author") or {}).get("login"),
         }
         for p in _strategy_prs(cfg, f"origin/{BRANCH}")
         if pr_role(p["changed"]) == "strategy"
@@ -465,7 +474,7 @@ def _strategy_prs(cfg: Config, tip: str) -> list[dict]:
             "--state",
             "open",
             "--json",
-            "number,headRefOid,headRefName,title,labels,createdAt,updatedAt,url",
+            "number,headRefOid,headRefName,title,labels,createdAt,updatedAt,url,author",
             "--limit",
             "100",
         )
@@ -568,6 +577,7 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
             "bundle_sha256": pr["digest"],
             "incumbent": False,
             "was_incumbent": was_incumbent,
+            "github": (pr.get("author") or {}).get("login"),
         }
     for staged in bundles.glob(".pr*"):
         shutil.rmtree(staged, ignore_errors=True)
