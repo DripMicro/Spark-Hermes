@@ -761,17 +761,28 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
 
 
 def window_archive(cfg: Config, round_id: str) -> Path:
-    """The last W rounds' episodes, pooled: what the scorer sees. Each round's episodes are archived once,
-    under the round they belong to, so a re-run of the loop never double-counts."""
+    """The last W rounds' episode *records*, pooled: what the scorer sees. Only `episode.json` is archived — the
+    scorer reads nothing else, and a round's snapshots and trajectories are gigabytes (r0004: 2.9 GB) that stored
+    twice and re-copied every close would fill the disk in ~15 rounds. Each round is archived once (a temp dir
+    renamed into place, so a kill never leaves a partial archive a later run would skip)."""
     archive = cfg.state / "archive"
     archive.mkdir(exist_ok=True)
     src = cfg.rounds / round_id / "episodes"
     dst = archive / round_id
     if src.exists() and not dst.exists():
-        shutil.copytree(src, dst)
+        tmp = archive / f".{round_id}.partial"
+        shutil.rmtree(tmp, ignore_errors=True)
+        for ej in src.rglob("episode.json"):
+            out = tmp / ej.relative_to(src)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(ej, out)
+        tmp.mkdir(exist_ok=True)  # a round with no episode.json at all still archives (empty), never re-copied
+        tmp.rename(dst)
     # The round being closed is always in its own window, even one scored before the window's start (r0003).
     rounds = sorted(
-        p.name for p in archive.iterdir() if p.is_dir() and (p.name >= cfg.window_from or p.name == round_id)
+        p.name
+        for p in archive.iterdir()
+        if p.is_dir() and not p.name.startswith(".") and (p.name >= cfg.window_from or p.name == round_id)
     )
     rounds = rounds[-cfg.window :]
     pooled = cfg.state / "window"
@@ -781,6 +792,18 @@ def window_archive(cfg: Config, round_id: str) -> Path:
         shutil.copytree(archive / r, pooled / r)
     (pooled / "rounds.json").write_text(json.dumps(rounds))
     return pooled
+
+
+def _reclaim_disk(cfg: Config, keep_recent: int = 2) -> None:
+    """After a round is done its heavy episode files are dead weight: the king's trajectories are on Hugging Face,
+    the scorer keeps only episode.json (archived), and a done round is never resumed. Strip snapshots, trajectories,
+    result blobs and container logs from all but the last `keep_recent` closed rounds; episode.json stays for audit."""
+    heavy = ("snapshot.tar", "trajectory.json", "result.json", "container.log")
+    closed = sorted(p for p in cfg.rounds.glob("r*") if (p / "DONE").exists())
+    for rd in closed[:-keep_recent] if keep_recent else closed:
+        for name in heavy:
+            for f in (rd / "episodes").rglob(name):
+                f.unlink(missing_ok=True)
 
 
 def close(cfg: Config, round_id: str, rd: Path) -> dict:
@@ -1108,6 +1131,7 @@ def run_round(cfg: Config, mock: tuple[Path, Path] | None = None, resume: Path |
     exported = export_and_upload(cfg, round_id, rd, king)
     publish_close(cfg, round_id, rd, record, crowned, exported)
     (rd / "DONE").write_text(json.dumps({"king": king, "weights": record["weights"]}))
+    _reclaim_disk(cfg)  # the round is done: its snapshots and trajectories are no longer needed on this disk
     log(rd, "done", king=king)
     return {"round_id": round_id, "king": king, "weights": record["weights"]}
 
