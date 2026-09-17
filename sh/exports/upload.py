@@ -21,10 +21,23 @@ import os
 import sys
 from pathlib import Path
 
+# The `configs` block is what makes the dataset viewer work. Without it the viewer globs every file into one split
+# — sft.jsonl, dpo.jsonl, manifest.json and index.json all at once — and the incompatible schemas raise a CastError,
+# which switches the viewer off for the whole repository. Two configs, each naming only its own rows.
 CARD = """---
 license: mit
 pretty_name: Spark-Hermes rounds
 tags: [agent, hermes, trajectories, sft, dpo, swe-bench]
+configs:
+  - config_name: sft
+    default: true
+    data_files:
+      - split: train
+        path: rounds/*/sft.jsonl
+  - config_name: dpo
+    data_files:
+      - split: train
+        path: rounds/*/dpo.jsonl
 ---
 
 # Spark-Hermes rounds
@@ -38,9 +51,19 @@ verified fully. **DPO** pairs a higher-credit episode (chosen, ≥ 0.8 of the te
 the same task — chosen rows are strong, not necessarily perfect. Grading criteria were committed to before
 submissions opened and revealed at close.
 
-Layout: `rounds/<round_id>/{sft.jsonl,dpo.jsonl,manifest.json}` and `index.json` listing every round. The public
-round artefacts (tasks, revealed withheld halves, scores, leaderboard) live in the subnet's GitHub repository
-under `rounds/<round_id>/`. Upstream repositories keep their own licenses; see each row's `source`.
+Two configs: **`sft`** (`conversations`, `tools`, `verified_success`, …) and **`dpo`** (`prompt`, `chosen`,
+`rejected`, …). Load one at a time:
+
+```python
+from datasets import load_dataset
+sft = load_dataset("gittensor-model-hub/spark-hermes-rounds", "sft", split="train")
+dpo = load_dataset("gittensor-model-hub/spark-hermes-rounds", "dpo", split="train")
+```
+
+Layout: `rounds/<round_id>/{sft.jsonl,dpo.jsonl,manifest.json}` and `index.json` listing every round (the two JSON
+files are metadata, outside both configs). The public round artefacts (tasks, revealed withheld halves, scores,
+leaderboard) live in the subnet's GitHub repository under `rounds/<round_id>/`. Upstream repositories keep their
+own licenses; see each row's `source`.
 """
 
 
