@@ -12,6 +12,8 @@ the baseline crowns nobody.
 
 from __future__ import annotations
 
+import hashlib
+
 from sh.scoring.v2 import credit
 
 BASELINE = "null"
@@ -23,6 +25,7 @@ def standings(episodes: list[dict], hotkeys: set[str], *, round_id: str) -> dict
     null: dict[str, float] = {}
     mine: dict[str, dict[str, float]] = {h: {} for h in hotkeys}
     full: dict[str, int] = {h: 0 for h in hotkeys}
+    dq: dict[str, int] = {h: 0 for h in hotkeys}
     for e in episodes:
         if e.get("round_id") != round_id or e.get("void"):
             continue
@@ -32,6 +35,7 @@ def standings(episodes: list[dict], hotkeys: set[str], *, round_id: str) -> dict
         elif s in mine:
             mine[s][t] = credit(e)
             full[s] += bool(e.get("verified_success"))
+            dq[s] += bool(e.get("disqualified"))
     out = {}
     for h in sorted(hotkeys):
         paired = [t for t in mine[h] if t in null]
@@ -41,19 +45,40 @@ def standings(episodes: list[dict], hotkeys: set[str], *, round_id: str) -> dict
         out[h] = {
             "n": n,
             "verified": full[h],
+            "dq": dq[h],
             "credit": None if mean is None else round(mean, 6),
             "delta": None if delta is None else round(delta, 6),
         }
     return out
 
 
+def _tiebreak(round_id: str, hotkey: str) -> str:
+    """A total order on tied strategies that a miner cannot grind toward: a hash of the round and the hotkey, not
+    the hotkey itself (an ss58 that sorts first would win every tie). Recomputable by anyone."""
+    return hashlib.sha256(f"{round_id}:{hotkey}".encode()).hexdigest()
+
+
 def crown(
-    episodes: list[dict], hotkeys: set[str], *, round_id: str, pooled_delta_c: dict[str, float], min_paired: int = 4
+    episodes: list[dict],
+    hotkeys: set[str],
+    *,
+    round_id: str,
+    pooled_delta_c: dict[str, float],
+    min_paired: int = 4,
+    incumbent: str | None = None,
 ) -> dict:
-    """The king of this round, with the standings that decided it."""
+    """The king of this round, with the standings that decided it. A tie does not dethrone: the incumbent keeps the
+    crown unless a challenger *strictly* beats it, and among challengers a tie falls to a hash of the round and the
+    hotkey. A strategy disqualified on any of this round's instances cannot be crowned."""
     st = standings(episodes, hotkeys, round_id=round_id)
-    candidates = [h for h, s in st.items() if s["n"] >= min_paired and s["delta"] is not None and s["delta"] > 0]
-    ranked = sorted(candidates, key=lambda h: (-st[h]["delta"], -pooled_delta_c.get(h, 0.0), h))
+    eligible = [
+        h for h, s in st.items() if s["n"] >= min_paired and s["delta"] is not None and s["delta"] > 0 and not s["dq"]
+    ]
+    # the incumbent wins ties: sort it ahead of any challenger with the same delta (a lower rank key)
+    ranked = sorted(
+        eligible,
+        key=lambda h: (-st[h]["delta"], -pooled_delta_c.get(h, 0.0), h != incumbent, _tiebreak(round_id, h)),
+    )
     for i, h in enumerate(ranked, 1):
         st[h]["rank"] = i
     return {
@@ -61,6 +86,6 @@ def crown(
         "round_id": round_id,
         "king": ranked[0] if ranked else None,
         "standings": st,
-        "rule": f"highest paired delta vs baseline on this round's instances, > 0, ≥ {min_paired} paired; "
-        "ties by pooled Δc",
+        "rule": f"highest paired delta vs baseline on this round's instances, > 0, ≥ {min_paired} paired, not "
+        "disqualified; a tie does not dethrone the incumbent; other ties by pooled Δc then a round-keyed hash",
     }

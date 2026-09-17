@@ -153,7 +153,8 @@ def test_credit_is_scored_against_the_baseline_s_mean_credit():
         "B", [{"family": "f", "task_id": f"t{i}", "credit": 0.40, "verified_success": False} for i in range(16)]
     )
     s_good, s_flat = score(good, {"f": ref}), score(flat, {"f": ref})
-    assert s_good["delta_c"] > 0.3 and s_good["score"] > 0
+    # the reference-variance floor makes 8 tightly-clustered null samples less than certain, so Δc is conservative
+    assert s_good["delta_c"] > 0.25 and s_good["score"] == s_good["delta_c"]  # efficiency is off: score is Δc alone
     assert s_flat["delta_c"] == 0.0 and s_flat["score"] == 0.0
     assert credit({"verified_success": True}) == 1.0 and credit({"credit": 0.25, "verified_success": True}) == 0.25
 

@@ -29,17 +29,30 @@ def test_nobody_is_crowned_when_nobody_beat_the_baseline():
     assert crown(eps, {"A", "B"}, round_id="r0002", pooled_delta_c={"A": 0.5})["king"] is None
 
 
-def test_ties_fall_to_the_pooled_lower_bound():
+def test_ties_fall_to_the_pooled_lower_bound_then_a_hash_and_the_incumbent_keeps_the_crown():
     eps = _round("11110000", {"A": "11111000", "B": "11111000"})
     assert crown(eps, {"A", "B"}, round_id="r0002", pooled_delta_c={"A": 0.0, "B": 0.1})["king"] == "B"
-    assert crown(eps, {"A", "B"}, round_id="r0002", pooled_delta_c={})["king"] == "A"  # then the name
+    # no pooled edge: a round-keyed hash decides, not the name (so a low-sorting ss58 cannot grind ties)
+    import hashlib
+
+    hashed = min(("A", "B"), key=lambda h: hashlib.sha256(f"r0002:{h}".encode()).hexdigest())
+    assert crown(eps, {"A", "B"}, round_id="r0002", pooled_delta_c={})["king"] == hashed
+    # a tie does not dethrone: the incumbent keeps the crown over an equal challenger
+    assert crown(eps, {"A", "B"}, round_id="r0002", pooled_delta_c={}, incumbent="A")["king"] == "A"
+    assert crown(eps, {"A", "B"}, round_id="r0002", pooled_delta_c={}, incumbent="B")["king"] == "B"
+
+
+def test_a_strategy_disqualified_this_round_cannot_be_crowned():
+    eps = _round("00000000", {"A": "11111111"})
+    eps.append(_ep("A", "t0", True, disqualified=True))  # tampered on one instance
+    assert crown(eps, {"A"}, round_id="r0002", pooled_delta_c={})["king"] is None
 
 
 def test_only_this_rounds_instances_count_and_void_episodes_do_not():
     eps = _round("11110000", {"A": "11110000"}) + _round("00000000", {"A": "11111111"}, round_id="r0001")
     eps.append(_ep("A", "t7", True, void=True))  # a provider outage is not a pass
     st = standings(eps, {"A"}, round_id="r0002")
-    assert st["A"] == {"n": 8, "verified": 4, "credit": 0.5, "delta": 0.0}
+    assert st["A"] == {"n": 8, "verified": 4, "dq": 0, "credit": 0.5, "delta": 0.0}
 
 
 def test_a_hotkey_with_too_few_paired_instances_is_not_a_candidate():

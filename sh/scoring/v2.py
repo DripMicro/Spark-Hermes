@@ -46,8 +46,12 @@ class Params:
     min_null_successes: int = 4  # fewer than this and the family's efficiency reference is not a measurement
     min_metric_samples: int = 4
     metrics: tuple[str, ...] = ("api_calls", "tool_calls")
-    w_c: float = 0.8
-    w_e: float = 0.2
+    w_c: float = 1.0
+    # The efficiency term is off (w_e = 0) from 2026-09-17: on the review's simulations it subtracted a negative
+    # lower bound from honest improvers' pay and paid strategies slightly worse than the baseline for using fewer
+    # calls, and calls are not what the token budget limits. Correctness (Δc) is the whole score until an
+    # efficiency measure that compares paired, budget-aware token cost is designed.
+    w_e: float = 0.0
     w_m: dict = field(default_factory=lambda: {"api_calls": 0.5, "tool_calls": 0.5})
     overfit_cutoff: float = 0.25
     copy_penalty: float = 0.5
@@ -78,7 +82,17 @@ class FamilyReference:
 
     @property
     def var(self) -> float:
-        return self.var_credit if self.var_credit is not None else self.p * (1 - self.p)
+        # Floor the variance with the max-entropy variance for the measured credit rate, Laplace-smoothed on n. A
+        # null arm that landed on a handful of identical credits (all 0, all 1, or a hand-tight cluster) has a
+        # plug-in variance near 0, which would drop the reference-error term and make the baseline look certain from
+        # a few samples; where the sample genuinely spreads, its own variance is larger and the floor is irrelevant.
+        # a small floor, the max-entropy variance for the measured rate divided by n: it lifts an implausibly-zero
+        # variance (all-identical null credits on few samples) off the floor without imposing worst-case spread on a
+        # reference whose sample genuinely varies. Power at few tasks stays limited — that is a throughput question.
+        p_tilde = (self.p * self.n + 1) / (self.n + 2) if self.n else 0.5
+        floor = p_tilde * (1 - p_tilde) / self.n if self.n else p_tilde * (1 - p_tilde)
+        raw = self.var_credit if self.var_credit is not None else self.p * (1 - self.p)
+        return max(raw, floor)
 
 
 def stat(episode: dict, reference: FamilyReference, params: Params = PARAMS_V2) -> tuple[float, dict]:
