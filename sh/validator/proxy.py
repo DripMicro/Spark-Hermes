@@ -227,7 +227,7 @@ def make_handler(upstream: str, tokens: Tokens, usage_dir: Path, sampling: dict)
             self._forward(raw, episode)
 
         def _forward(self, raw: bytes, episode: str):
-            t0, pause = time.time(), 2.0
+            t0, pause, data = time.time(), 2.0, b""
             while True:
                 req = urllib.request.Request(
                     upstream + self.path,
