@@ -1,0 +1,30 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0004-p01",
+ "round_id": "r0004",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nC source generation produces incorrect signal choice constants\n\n#### Description\n\nWhen generating C source code from DBC files, the signal choice constants are not being generated correctly. The generated header file is missing expected choice definitions that should be present.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\nimport tempfile\nfrom pathlib import Path\n\n# Load a DBC file with signal choices\ndb = cantools.database.load_file('tests/files/dbc/motohawk.dbc')\n\n# Generate C source\nwith tempfile.TemporaryDirectory() as tmpdir:\n    cantools.database.can.Database.as_c_source(\n        db, \n        tmpdir, \n        'motohawk'\n    )\n    \n    # Check the generated header file\n    with open(Path(tmpdir) / 'motohawk.h', 'r') as f:\n        content = f.read()\n        print(content)\n```\n\nThe generated header should include signal choice constants like:\n```c\n#define MOTOHAWK_EXAMPLE_MESSAGE_ENABLE_DISABLED_CHOICE (0u)\n#define MOTOHAWK_EXAMPLE_MESSAGE_ENABLE_ENABLED_CHOICE (1u)\n```\n\nBut these definitions are missing from the output, making it difficult to use the generated code with proper signal choice values.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 30,
+ "timeout_s": 600,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__ypqmr3ny",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_bit_fields",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_database_name",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_no_signal_encode_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node_no_signal_encode_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_working_directory"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

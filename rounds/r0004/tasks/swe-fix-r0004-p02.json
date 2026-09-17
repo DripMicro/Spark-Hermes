@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0004-p02",
+ "round_id": "r0004",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPlaceholder shape orientation returns \"unknown\" instead of actual value\n\n#### Description\n\nWhen accessing the `orient` property on placeholder shapes, it always returns \"unknown\" instead of the actual orientation value. Additionally, the property now raises ValueError for all shapes instead of only non-placeholder shapes.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx import Presentation\n\n# Create a presentation with placeholder shapes\nprs = Presentation()\nslide = prs.slides.add_slide(prs.slide_layouts[0])\n\n# Try to get orientation of a placeholder shape\nplaceholder = slide.placeholders[0]\nprint(f\"Expected: actual orientation value\")\nprint(f\"Actual: {placeholder.orient}\")\n\n# This should work for placeholder shapes but now raises ValueError\ntry:\n    orient_value = placeholder.orient\n    print(f\"Orientation: {orient_value}\")\nexcept ValueError as e:\n    print(f\"Error: {e}\")\n```\n\nThe orientation property should return the actual orientation value for placeholder shapes, but instead always returns \"unknown\". Also, accessing orient on any shape now incorrectly raises ValueError.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 30,
+ "timeout_s": 600,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.func_basic__7ti51to2",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/shapes/test_placeholder.py::DescribeBasePlaceholder::it_knows_its_orient_value[orient_fixture0]",
+   "tests/shapes/test_placeholder.py::DescribeBasePlaceholder::it_knows_its_orient_value[orient_fixture1]",
+   "tests/shapes/test_placeholder.py::DescribeBasePlaceholder::it_raises_on_ph_orient_when_not_a_placeholder",
+   "tests/shapes/test_shapetree.py::Describe_BaseShapes::it_can_clone_a_placeholder"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

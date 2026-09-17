@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0004-p00",
+ "round_id": "r0004",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nnew_placeholder_sp method returns incomplete placeholder shapes\n\n#### Description\n\nWhen creating new placeholder shapes using `CT_Shape.new_placeholder_sp()`, the method returns shapes that are missing essential placeholder properties and may have unreachable code.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx.oxml.shapes.autoshape import CT_Shape\nfrom pptx.enum.shapes import PP_PLACEHOLDER\n\n# Try to create a new placeholder shape\nsp = CT_Shape.new_placeholder_sp(\n    id_=1, \n    name=\"Title 1\", \n    ph_type=PP_PLACEHOLDER.TITLE, \n    orient=\"horz\", \n    sz=\"full\", \n    idx=0\n)\n\n# The resulting shape will be missing placeholder configuration\nprint(sp.xml)  # Missing expected placeholder properties\n```\n\nThe method appears to have structural issues where placeholder properties like `type`, `idx`, `orient`, and `sz` are not being properly set on the placeholder element, and some code may be unreachable due to early return statements.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 30,
+ "timeout_s": 600,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.func_pm_ctrl_shuffle__t11tjo6y",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/oxml/shapes/test_autoshape.py::DescribeCT_Shape::it_knows_how_to_create_a_new_placeholder_sp[new_ph_sp_fixture0]",
+   "tests/oxml/shapes/test_autoshape.py::DescribeCT_Shape::it_knows_how_to_create_a_new_placeholder_sp[new_ph_sp_fixture1]",
+   "tests/oxml/shapes/test_autoshape.py::DescribeCT_Shape::it_knows_how_to_create_a_new_placeholder_sp[new_ph_sp_fixture2]",
+   "tests/oxml/shapes/test_autoshape.py::DescribeCT_Shape::it_knows_how_to_create_a_new_placeholder_sp[new_ph_sp_fixture3]",
+   "tests/oxml/shapes/test_autoshape.py::DescribeCT_Shape::it_knows_how_to_create_a_new_placeholder_sp[new_ph_sp_fixture4]",
+   "tests/oxml/shapes/test_autoshape.py::DescribeCT_Shape::it_knows_how_to_create_a_new_placeholder_sp[new_ph_sp_fixture5]",
+   "tests/oxml/shapes/test_autoshape.py::DescribeCT_Shape::it_knows_how_to_create_a_new_placeholder_sp[new_ph_sp_fixture6]",
+   "tests/shapes/test_shapetree.py::Describe_BaseShapes::it_can_clone_a_placeholder"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

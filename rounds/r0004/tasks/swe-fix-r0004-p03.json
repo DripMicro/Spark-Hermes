@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0004-p03",
+ "round_id": "r0004",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nConditional simplification not working for IF and CASE expressions\n\n#### Description\n\nThe optimizer's conditional simplification appears to have stopped working. IF and CASE expressions with statically known conditions are no longer being simplified to their appropriate branches.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimize\n\n# Test IF expression with always true condition\nsql = \"SELECT IF(TRUE, 'yes', 'no')\"\nresult = optimize(sql)\nprint(f\"Input:  {sql}\")\nprint(f\"Output: {result}\")\n# Expected: SELECT 'yes'\n# Actual: SELECT IF(TRUE, 'yes', 'no')\n\n# Test CASE expression with always true condition  \nsql = \"SELECT CASE WHEN TRUE THEN 'yes' ELSE 'no' END\"\nresult = optimize(sql)\nprint(f\"Input:  {sql}\")\nprint(f\"Output: {result}\")\n# Expected: SELECT 'yes'\n# Actual: SELECT CASE WHEN TRUE THEN 'yes' ELSE 'no' END\n\n# Test IF expression with always false condition\nsql = \"SELECT IF(FALSE, 'yes', 'no')\"\nresult = optimize(sql)\nprint(f\"Input:  {sql}\")\nprint(f\"Output: {result}\")\n# Expected: SELECT 'no'\n# Actual: SELECT IF(FALSE, 'yes', 'no')\n```\n\nThe conditional expressions are not being simplified even when their conditions can be statically determined to be always true or always false.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 30,
+ "timeout_s": 600,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_cond__2nt6fq6w",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_simplify",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
