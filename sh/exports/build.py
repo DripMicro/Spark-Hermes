@@ -99,13 +99,16 @@ def build(
     secrets = _secrets(json.loads(reveal.read_text())) if reveal.exists() else set()
 
     sft, by_task = [], {}
-    gates = {"not_king": 0, "no_trajectory": 0, "not_verified": 0, "disqualified": 0, "leaked": 0}
+    gates = {"not_king": 0, "void": 0, "no_trajectory": 0, "not_verified": 0, "disqualified": 0, "leaked": 0}
     for episode_json in sorted(episodes_dir.rglob("episode.json")):
         episode = json.loads(episode_json.read_text())
         task = tasks.get(str(episode.get("task_id")), {})
         by_task.setdefault(episode.get("task_id"), []).append((episode, episode_json.parent))
         if king is None or episode.get("surface") != king:
             gates["not_king"] += 1
+            continue
+        if episode.get("void"):  # a provider outage is not a solved task, whatever its recorded flags
+            gates["void"] = gates.get("void", 0) + 1
             continue
         if episode.get("disqualified"):
             gates["disqualified"] += 1
@@ -157,6 +160,12 @@ def build(
             )
             rejected = next((row for _, e, d in losers if (row := _rows_for(d, e, task, prompt)) is not None), None)
         if chosen and rejected:
+            # both sides carry the king's system turn and the same task, so the preference is over the trajectory
+            # alone and not over which strategy prompt produced it
+            rejected_turns = [
+                chosen["conversations"][0],
+                *[t for t in rejected["conversations"] if t.get("from") != "system"],
+            ]
             dpo.append(
                 {
                     "schema": SCHEMA_DPO,
@@ -165,7 +174,7 @@ def build(
                     "round_id": chosen["round_id"],
                     "prompt": task.get("prompt"),
                     "chosen": chosen["conversations"],
-                    "rejected": rejected["conversations"],
+                    "rejected": rejected_turns,
                     "chosen_surface": chosen["surface"],
                     "rejected_surface": rejected["surface"],
                 }

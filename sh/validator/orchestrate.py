@@ -151,7 +151,9 @@ def _commit(cfg: Config, message: str, paths: tuple[str, ...] = ("rounds", "docs
     sh(["git", "add", *paths], cwd=cfg.repo)
     if sh(["git", "status", "--porcelain", *paths], cwd=cfg.repo).strip():
         sh(["git", "commit", "-q", "-m", message, "--", *paths], cwd=cfg.repo)  # only these paths
-        if sh(["git", "pull", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False, want_err=True).strip():
+        if sh(
+            ["git", "pull", "--rebase", "--autostash", "origin", BRANCH], cwd=cfg.repo, check=False, want_err=True
+        ).strip():
             # a rebase that could not apply cleanly (a conflict on live.json) leaves the tree mid-rebase and every
             # later parse of it fails: abort, so the next commit retries from a clean HEAD ahead of origin
             if (cfg.repo / ".git" / "rebase-merge").exists() or (cfg.repo / ".git" / "rebase-apply").exists():
@@ -557,6 +559,7 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
     keep, superseded = one_per_hotkey(valid)
     rejected.update({str(n): why for n, why in superseded.items()})
     for hotkey, pr in keep.items():
+        was_incumbent = (bundles / hotkey).is_dir()  # its old bundle is in submissions/; it must still be dethroned
         shutil.rmtree(bundles / hotkey, ignore_errors=True)  # a challenger supersedes the hotkey's incumbent
         (bundles / f".pr{pr['number']}").rename(bundles / hotkey)
         active[hotkey] = {
@@ -564,6 +567,7 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
             "head": pr["headRefOid"],
             "bundle_sha256": pr["digest"],
             "incumbent": False,
+            "was_incumbent": was_incumbent,
         }
     for staged in bundles.glob(".pr*"):
         shutil.rmtree(staged, ignore_errors=True)
@@ -825,9 +829,12 @@ def outcome(sealed: dict, king: str | None) -> dict:
 
 
 def dethroned(sealed: dict, king: str | None) -> list[str]:
-    """Incumbents that are not this round's king. `submissions/` carries exactly the current king: a strategy
-    that lost the crown does not keep competing for free, round after round, at the validator's expense. Pure."""
-    return sorted(h for h, info in sealed["active"].items() if info.get("incumbent") and h != king)
+    """Every hotkey whose bundle is in `submissions/` and is not this round's king — an incumbent, or one whose
+    incumbent bundle a challenger PR replaced this round (`was_incumbent`). `submissions/` carries exactly the
+    current king: a strategy that lost the crown does not keep competing for free at the validator's expense. Pure."""
+    return sorted(
+        h for h, info in sealed["active"].items() if (info.get("incumbent") or info.get("was_incumbent")) and h != king
+    )
 
 
 def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, crowned: dict) -> str | None:
@@ -909,7 +916,7 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
     elif king:
         log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown")
     if gone := dethroned(sealed, king):  # after the merge, so the tree the removal commits onto is current
-        sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)
+        sh(["git", "pull", "-q", "--rebase", "--autostash", "origin", BRANCH], cwd=cfg.repo, check=False)
         for hotkey in gone:
             sh(["git", "rm", "-r", "-q", f"submissions/{hotkey}"], cwd=cfg.repo, check=False)
         if sh(["git", "status", "--porcelain", "submissions"], cwd=cfg.repo).strip():
@@ -971,7 +978,11 @@ def export_and_upload(cfg: Config, round_id: str, rd: Path, king: str | None) ->
             rd, "export", sft=manifest["sft_rows"], dpo=manifest["dpo_pairs"], uploaded=False, reason="HF_TOKEN not set"
         )
         return {"manifest": manifest, "upload": {"uploaded": False, "reason": "HF_TOKEN not set"}}
-    result = upload_exports(rd / "export", HF_REPO, token, round_id=round_id)
+    try:
+        result = upload_exports(rd / "export", HF_REPO, token, round_id=round_id)
+    except Exception as exc:  # an HF outage or a bad token must not stall the round; the rows stay on disk to retry
+        log(rd, "export", sft=manifest["sft_rows"], dpo=manifest["dpo_pairs"], uploaded=False, reason=repr(exc)[:200])
+        return {"manifest": manifest, "upload": {"uploaded": False, "reason": repr(exc)[:200]}}
     log(
         rd,
         "export",
@@ -985,7 +996,9 @@ def export_and_upload(cfg: Config, round_id: str, rd: Path, king: str | None) ->
 
 def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: dict, exported: dict) -> None:
     """Everything a miner needs to check the round, in the repository, under the round."""
-    sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)  # the merge just landed
+    sh(
+        ["git", "pull", "-q", "--rebase", "--autostash", "origin", BRANCH], cwd=cfg.repo, check=False
+    )  # the merge just landed
     king = crowned["king"]
     dest = cfg.repo / "rounds" / round_id
     dest.mkdir(parents=True, exist_ok=True)

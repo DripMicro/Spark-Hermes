@@ -404,3 +404,21 @@ def test_an_episode_records_the_withheld_half_and_the_pins_it_was_graded_under(m
     rec = g.grade(tmp_path, task, w, "img")
     assert len(rec["withheld_sha256"]) == 64 and rec["pins_sha256"] == g.pins_digest(task)
     assert g.pins_digest({**task, "token_budget": None}) != rec["pins_sha256"]
+
+
+def test_a_committed_task_with_no_reveal_fails_the_commitment_check(tmp_path):
+    from sh.validator.round import close
+
+    rd = tmp_path / "round"
+    for sub in ("tasks", "withheld", "episodes"):
+        (rd / sub).mkdir(parents=True)
+    (rd / "tasks" / "t0.json").write_text(
+        json.dumps({"task_id": "t0", "round_id": "r0009", "withheld_commitment": "hmac-sha256:deadbeef"})
+    )  # committed, but no withheld/t0.json to reveal
+    ep = rd / "episodes" / "null" / "t0"
+    ep.mkdir(parents=True)
+    (ep / "episode.json").write_text(
+        json.dumps({"task_id": "t0", "surface": "null", "round_id": "r0009", "credit": 0.0})
+    )
+    record = close(rd, rd / "episodes", rd / "out", reveal_dir=rd / "withheld")
+    assert record["commitments_ok"] is False and record["commitments_verified"]["t0"] is False
