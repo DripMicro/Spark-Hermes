@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789618580.09337,
+ "updated": 1789618614.1500752,
  "round_id": "r0003",
- "stage": "close",
+ "stage": "done",
  "stages": [
   "open",
   "window",
@@ -900,6 +900,26 @@
   {
    "stage": "evaluate",
    "t": 1789618580.084876
+  },
+  {
+   "stage": "close",
+   "t": 1789618583.1272516
+  },
+  {
+   "stage": "crown",
+   "t": 1789618583.141271
+  },
+  {
+   "stage": "dethroned",
+   "t": 1789618602.848704
+  },
+  {
+   "stage": "announce",
+   "t": 1789618614.064922
+  },
+  {
+   "stage": "export",
+   "t": 1789618614.089934
   }
  ],
  "window": {
@@ -952,50 +972,57 @@
   }
  ],
  "standings": {
-  "5FCarefulOps": {
+  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
    "score": 0.0,
    "weight": 0.0,
-   "mean_d": 0.25,
-   "delta_c": 0.06040393815622999,
-   "n": 16
+   "mean_d": 0.0,
+   "delta_c": 0.0,
+   "n": 8
+  },
+  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+   "score": 0.0,
+   "weight": 0.0,
+   "mean_d": 0.0,
+   "delta_c": 0.0,
+   "n": 8
+  },
+  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+   "score": 0.0,
+   "weight": 0.0,
+   "mean_d": -0.125,
+   "delta_c": 0.0,
+   "n": 8
   },
   "5FGoodOperator": {
-   "score": 0.036563534230614814,
-   "weight": 0.7668486928263454,
-   "mean_d": 0.375,
-   "delta_c": 0.22008066615170332,
-   "n": 16
-  },
-  "5FHastyRunner": {
    "score": 0.0,
    "weight": 0.0,
-   "mean_d": 0.125,
+   "mean_d": -0.125,
    "delta_c": 0.0,
-   "n": 16
+   "n": 8
   },
-  "5FMinimal": {
+  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
    "score": 0.0,
    "weight": 0.0,
-   "mean_d": 0.0625,
+   "mean_d": -0.125,
    "delta_c": 0.0,
-   "n": 16
+   "n": 8
   },
-  "5FPlanner": {
+  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
    "score": 0.0,
    "weight": 0.0,
-   "mean_d": 0.1875,
+   "mean_d": -0.125,
    "delta_c": 0.0,
-   "n": 16
+   "n": 8
   },
-  "5FRefusalReader": {
-   "score": 0.011116711654468425,
-   "weight": 0.23315130717365465,
-   "mean_d": 0.3125,
-   "delta_c": 0.13814404225837304,
-   "n": 16
+  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+   "score": 0.0,
+   "weight": 0.0,
+   "mean_d": -0.125,
+   "delta_c": 0.0,
+   "n": 8
   }
  },
- "last_round": "r0002",
+ "last_round": "r0003",
  "tasks": 8,
  "active": {
   "5FGoodOperator": {
@@ -1093,8 +1120,157 @@
    }
   }
  },
- "crown": null,
- "scores": null,
+ "crown": {
+  "schema": "sh-crown-v1",
+  "round_id": "r0003",
+  "king": null,
+  "standings": {
+   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+    "n": 8,
+    "verified": 0,
+    "credit": 0.125,
+    "delta": 0.0
+   },
+   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+    "n": 8,
+    "verified": 0,
+    "credit": 0.125,
+    "delta": 0.0
+   },
+   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+    "n": 8,
+    "verified": 0,
+    "credit": 0.0,
+    "delta": -0.125
+   },
+   "5FGoodOperator": {
+    "n": 8,
+    "verified": 0,
+    "credit": 0.0,
+    "delta": -0.125
+   },
+   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+    "n": 8,
+    "verified": 0,
+    "credit": 0.0,
+    "delta": -0.125
+   },
+   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
+    "n": 8,
+    "verified": 0,
+    "credit": 0.0,
+    "delta": -0.125
+   },
+   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+    "n": 8,
+    "verified": 0,
+    "credit": 0.0,
+    "delta": -0.125
+   }
+  },
+  "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired; ties by pooled \u0394c"
+ },
+ "scores": {
+  "weights": {
+   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": 0.0,
+   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": 0.0,
+   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": 0.0,
+   "5FGoodOperator": 0.0,
+   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": 0.0,
+   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": 0.0,
+   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": 0.0
+  },
+  "king": null,
+  "per_hotkey": {
+   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": 0.0,
+    "se": 0.171163,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": "\u0394 +0.000 \u00b1 0.171 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
+   },
+   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": 0.0,
+    "se": 0.171163,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": "\u0394 +0.000 \u00b1 0.171 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
+   },
+   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": -0.125,
+    "se": 0.116927,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": "\u0394 -0.125 \u00b1 0.117 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
+   },
+   "5FGoodOperator": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": -0.125,
+    "se": 0.116927,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": "\u0394 -0.125 \u00b1 0.117 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
+   },
+   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": -0.125,
+    "se": 0.116927,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": "\u0394 -0.125 \u00b1 0.117 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
+   },
+   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": -0.125,
+    "se": 0.116927,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 0,
+    "reason": "\u0394 -0.125 \u00b1 0.117 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
+   },
+   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+    "n": 8,
+    "score": 0.0,
+    "mean_d": -0.125,
+    "se": 0.116927,
+    "delta_c": 0.0,
+    "gate": true,
+    "overfit_rate": 0.0,
+    "dq": 1,
+    "reason": "\u0394 -0.125 \u00b1 0.117 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
+   }
+  },
+  "family_stats": {
+   "terminal_task": {
+    "null_p": 0.0,
+    "canon_p": 0.0,
+    "null_credit": 0.125,
+    "canon_credit": 0.0,
+    "label": "frontier"
+   }
+  },
+  "commitments_ok": true
+ },
  "queue": [],
  "history": [
   {
@@ -1291,6 +1467,82 @@
      "rank": 3
     }
    }
+  },
+  {
+   "round_id": "r0003",
+   "closed_at": 1789618614.1183062,
+   "window": {
+    "opens_at": 1789555341.452619,
+    "closes_at": 1789563441.452619,
+    "seconds": 8100
+   },
+   "episodes": 72,
+   "king": null,
+   "weights": {
+    "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": 0.0,
+    "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": 0.0,
+    "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": 0.0,
+    "5FGoodOperator": 0.0,
+    "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": 0.0,
+    "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": 0.0,
+    "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": 0.0
+   },
+   "scores": {
+    "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": 0.0,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": 0.0,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.125,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5FGoodOperator": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.125,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.125,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.125,
+     "delta_c": 0.0,
+     "n": 8
+    },
+    "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.125,
+     "delta_c": 0.0,
+     "n": 8
+    }
+   },
+   "crown": {},
+   "commitments_ok": true,
+   "sft_rows": 0,
+   "dpo_pairs": 0,
+   "hf": null
   }
  ],
  "repo": "gittensor-model-hub/Spark-Hermes",

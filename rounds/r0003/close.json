@@ -1,0 +1,169 @@
+{
+ "schema": "sh-round-close-v3",
+ "scoring": "sh-scoring-v3 (credit)",
+ "round_id": "r0003",
+ "era": "e0",
+ "tasks": [
+  "terminal-task-r0003-00",
+  "terminal-task-r0003-03",
+  "terminal-task-r0003-05",
+  "terminal-task-r0003-07",
+  "terminal-task-r0003-08",
+  "terminal-task-r0003-09",
+  "terminal-task-r0003-10",
+  "terminal-task-r0003-12"
+ ],
+ "episodes": 72,
+ "family_stats": {
+  "terminal_task": {
+   "schema": "sh-family-stats-v2",
+   "family": "terminal_task",
+   "era": "e0",
+   "window": [
+    "r0003"
+   ],
+   "null": {
+    "n": 8,
+    "successes": 0,
+    "p": 0.0,
+    "mean_credit": 0.125,
+    "wilson": [
+     0.0,
+     0.3244
+    ],
+    "efficiency": {}
+   },
+   "canon": {
+    "n": 8,
+    "successes": 0,
+    "p": 0.0,
+    "mean_credit": 0.0,
+    "wilson": [
+     0.0,
+     0.3244
+    ],
+    "efficiency": {},
+    "delta_c": -0.125,
+    "delta_e": {},
+    "delta_e_paired_instances": 0
+   },
+   "label": "frontier",
+   "partial_rate": 0.25,
+   "in_rotation": false,
+   "retirement": "CANON no longer beats NULL \u2014 prose has stopped helping (FR-BL-5)"
+  }
+ },
+ "scores": {
+  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+   "hotkey": "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.171163,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 +0.000 \u00b1 0.171 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": 0.0
+  },
+  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+   "hotkey": "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.171163,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 +0.000 \u00b1 0.171 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": 0.0
+  },
+  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+   "hotkey": "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.116927,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.125 \u00b1 0.117 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.125
+  },
+  "5FGoodOperator": {
+   "hotkey": "5FGoodOperator",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.116927,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.125 \u00b1 0.117 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.125
+  },
+  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+   "hotkey": "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.116927,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.125 \u00b1 0.117 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.125
+  },
+  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
+   "hotkey": "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.116927,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.125 \u00b1 0.117 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.125
+  },
+  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+   "hotkey": "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8",
+   "n": 8,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.116927,
+   "overfit_rate": 0.0,
+   "dq": 1,
+   "reason": "\u0394 -0.125 \u00b1 0.117 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.125
+  }
+ },
+ "weights": {
+  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": 0.0,
+  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": 0.0,
+  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": 0.0,
+  "5FGoodOperator": 0.0,
+  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": 0.0,
+  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": 0.0,
+  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": 0.0
+ },
+ "commitments_verified": {
+  "terminal-task-r0003-00": true,
+  "terminal-task-r0003-03": true,
+  "terminal-task-r0003-05": true,
+  "terminal-task-r0003-07": true,
+  "terminal-task-r0003-08": true,
+  "terminal-task-r0003-09": true,
+  "terminal-task-r0003-10": true,
+  "terminal-task-r0003-12": true
+ },
+ "commitments_ok": true
+}
