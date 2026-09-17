@@ -78,9 +78,9 @@ def load(round_dir: Path) -> References:
     answers: list[str] = []
     for p in sorted((round_dir / "private").glob("*.json")) if (round_dir / "private").is_dir() else []:
         sol = json.loads(p.read_text()).get("solutions", {})
-        if sol.get("answer"):  # the correct code as a miner would paste it (swe_fix: the lines its bug replaced) —
-            answers.append(sol["answer"])  # its reference is a diff whose context is the repository's own code
-        else:
+        if "answer" in sol:  # the correct code as a miner would paste it (swe_fix: the lines its bug replaced);
+            answers.append(sol["answer"] or "")  # empty for a bug that only added code — then nothing to match,
+        else:  # never the reference: it is a diff whose context is the repository's own code
             answers += [sol.get("reference") or "", *(sol.get("alternates") or [])]
     for p in sorted((round_dir / "withheld").glob("*.json")) if (round_dir / "withheld").is_dir() else []:
         record = json.loads(p.read_text())

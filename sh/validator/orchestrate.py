@@ -631,7 +631,16 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
         f"--tokens {cfg.worker_root}/state/tokens --usage-dir {cfg.worker_root}/state/usage "
         f">> {remote}/batch.log 2>&1 < /dev/null & echo started"
     )
-    running = lambda: _worker(cfg, f"pgrep -f '[b]atch --round {remote}' | wc -l").strip() not in ("", "0")  # noqa: E731
+
+    def running() -> bool:
+        return _worker(cfg, f"pgrep -f '[b]atch --round {remote}' | wc -l").strip() not in ("", "0")
+
+    def screening() -> bool:
+        # The daemon's baseline screen holds one of the engine's two long-context slots; launching beside it makes
+        # three and the engine refuses everyone. The screen never starts while a batch runs (supply.baseline);
+        # this is the other direction.
+        return _worker(cfg, f"pgrep -f '[b]atch --round {cfg.worker_root}/screen/' | wc -l").strip() not in ("", "0")
+
     # Resume-safe: a restarted control plane finds the batch still running and polls it rather than launching a
     # second one; if it is not running, launching is safe — `batch` resumes on its own episode records. A batch
     # that ends short (episodes the provider voided past its own retries) is launched again, a bounded number of
@@ -640,6 +649,10 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
     if running():
         log(rd, "evaluate_resume", note="batch already running on the worker; polling")
     else:
+        if screening():
+            log(rd, "evaluate_wait", note="a baseline screen holds the engine; launching when it ends")
+            while screening():
+                time.sleep(30)
         _worker_launch(cfg, launch)
         launches = 1
     last_push = 0.0
