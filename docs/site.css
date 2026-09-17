@@ -143,23 +143,33 @@ tr.king td { background: rgba(251, 191, 36, .05); }
 .gh-av.gh-none { display: inline-block; }
 /* the king wears the crown: a small badge on the corner of its avatar, rather than a 👑 floating in the row. */
 .gh-av-wrap { position: relative; display: inline-flex; flex: 0 0 auto; }
-.crown-badge { position: absolute; top: -.45rem; right: -.4rem; font-size: .8rem; line-height: 1; pointer-events: none; filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, .6)); }
+.crown-badge { position: absolute; bottom: -.3rem; right: -.3rem; width: 1.05rem; height: 1.05rem; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center; background: var(--panel); border: 1px solid var(--line);
+  font-size: .6rem; line-height: 1; pointer-events: none; box-shadow: 0 1px 3px rgba(0, 0, 0, .5); }
 .ident-txt { display: inline-flex; flex-direction: column; line-height: 1.2; min-width: 0; }
 .gh-name { font-weight: 600; text-decoration: none; color: var(--ink); }
 .gh-name:hover { text-decoration: underline; }
 .gh-name.gh-anon { color: var(--muted); font-weight: 400; font-style: italic; }
 .ident .hk { color: var(--muted); }
-@media (max-width: 520px) { .gh-av { width: 1.6rem; height: 1.6rem; } .crown-badge { font-size: .65rem; top: -.35rem; right: -.3rem; } }
+@media (max-width: 520px) { .gh-av { width: 1.6rem; height: 1.6rem; } .crown-badge { width: .9rem; height: .9rem; font-size: .52rem; bottom: -.25rem; right: -.25rem; } }
 
 /* Round detail as a modal over the board, not a separate page. Reuses .head/.strip/.stat/.wrap/table. */
 .round-link { cursor: pointer; }
 .modal[hidden] { display: none; }
-.modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-start; justify-content: center; padding: 4rem 1rem; overflow-y: auto; }
+.modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; }
+body.modal-open { overflow: hidden; }
 .modal-back { position: fixed; inset: 0; background: rgba(5, 5, 10, .72); backdrop-filter: blur(3px); }
-.modal-card { position: relative; z-index: 1; width: min(58rem, 100%); margin: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--glow); padding: 1.5rem 1.6rem; }
+.modal-card { position: relative; z-index: 1; width: min(58rem, 100%); max-height: calc(100dvh - 3rem); display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--glow); padding: 1.5rem 1.6rem; }
 .modal-card .head { margin-bottom: .5rem; }
 .modal-card .strip { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
 .modal-card .stat b { font-size: 1.15rem; }
+#rm-body { display: flex; flex-direction: column; min-width: 0; min-height: 0; }   /* shrink to the card; never widen it */
+#rm-body > .wrap { min-height: 0; overflow: auto; }           /* a wide or many-strategy round scrolls the table, never the modal */
 .modal-x { position: absolute; top: .7rem; right: .9rem; background: none; border: none; color: var(--muted); font-size: 1.7rem; line-height: 1; cursor: pointer; padding: .1rem .45rem; border-radius: 8px; }
 .modal-x:hover { color: var(--ink); background: var(--soft); }
+/* a king cell is an identity in a big-number slot: keep it in its box (smaller face, smaller avatar). */
+.stat .ident { font-size: .9rem; }
+.stat .ident .hk { font-size: .72rem; }
+.stat .gh-av { width: 1.7rem; height: 1.7rem; }
 @media (max-width: 520px) { .modal { padding: 1rem .5rem; } .modal-card { padding: 1.1rem 1rem; } }
