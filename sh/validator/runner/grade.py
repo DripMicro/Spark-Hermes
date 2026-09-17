@@ -22,13 +22,18 @@ WS = EP / "ws"
 OUT = EP / "out"
 
 
+SKIPPED: list[str] = []
+
+
 def _workspace_member(member: tarfile.TarInfo, path: str) -> tarfile.TarInfo | None:
     """The snapshot is agent-authored: the `data` filter refuses absolute paths and links that leave the tree.
     A link the filter refuses is *skipped*, not fatal — `python -m venv .venv` leaves `.venv/bin/python -> /usr/…`
-    in any real repository, and an episode is not lost over it. The tree graded is everything else."""
+    in any real repository, and an episode is not lost over it. The tree graded is everything else; what was
+    skipped is recorded beside the grade."""
     try:
         return tarfile.data_filter(member, path)
     except tarfile.FilterError:
+        SKIPPED.append(member.name)
         return None
 
 
@@ -80,6 +85,7 @@ def main() -> int:
     g["protected_modified"] = (
         None if before is None else [rel for rel, h in g["protected_after"].items() if before.get(rel) != h]
     )
+    g["skipped_members"] = SKIPPED[:50]
     (OUT / "grade.json").write_text(json.dumps(g, indent=1))
     return 0
 

@@ -35,7 +35,7 @@ def render(close: dict, hotkey: str, reveal: dict | None = None) -> str:
         "| | |",
         "|---|---|",
         f"| episodes | {score['n']} |",
-        f"| mean d (your share of checks passed − the baseline's, same instances) | {score.get('mean_d', 0) or 0:+.4f} |",
+        f"| mean d (your share of checks passed − the baseline's, same instances) | {'—' if score.get('mean_d') is None else f'{score["mean_d"]:+.4f}'} |",
         f"| standard error (incl. reference term) | {score.get('se') if score.get('se') is not None else '—'} |",
         f"| Δc (one-sided 90 % lower bound — what pays) | {score['delta_c']:.4f} |",
         f"| correctness gate | {'passed' if score['gate'] else 'not passed'} |",
@@ -59,14 +59,15 @@ def render(close: dict, hotkey: str, reveal: dict | None = None) -> str:
             "",
             "### The baseline you were measured against",
             "",
-            "| family | null n | null p | canon p | Δc canon | label |",
+            "| family | null n | null credit | canon credit | Δc canon | label |",
             "|---|---|---|---|---|---|",
         ]
         for name, record in sorted(families.items()):
             null, canon = record["null"], record["canon"]
             fmt = lambda v: "—" if v is None else f"{v:.2f}"  # noqa: E731
+            cred = lambda arm: arm.get("mean_credit") if arm.get("mean_credit") is not None else arm.get("p")  # noqa: E731
             lines.append(
-                f"| `{name}` | {null['n']} | {fmt(null['p'])} | {fmt(canon['p'])} | "
+                f"| `{name}` | {null['n']} | {fmt(cred(null))} | {fmt(cred(canon))} | "
                 f"{canon.get('delta_c') if canon.get('delta_c') is not None else '—'} | {record['label']} |"
             )
 
@@ -82,9 +83,11 @@ def render(close: dict, hotkey: str, reveal: dict | None = None) -> str:
             f"close: **{'all match' if ok else 'MISMATCH — do not trust this round'}**.",
             "",
             "Each instance's withheld half was committed to *before* submissions opened, as "
-            "`hmac-sha256(salt, canonical_json(withheld))`, and the commitment was published with the task. The "
-            "salt and the half itself are published now, in `reveal.json`. Recompute it and confirm the "
-            "criteria you were graded against are the ones that were fixed in advance:",
+            "`hmac-sha256(salt, canonical_json(withheld))`. The commitment is in the task record — under "
+            "`rounds/<id>/tasks/` when you were shown the scored tasks, under `rounds/<id>/evaluated/` when you "
+            "were shown previews — and `rounds/queue.json` carried the digest of those records before the round "
+            "opened. The salt and the half itself are published now, in `reveal.json`. Recompute it and confirm "
+            "the criteria you were graded against are the ones that were fixed in advance:",
             "",
             "```python",
             "import hashlib, hmac, json",
@@ -96,14 +99,17 @@ def render(close: dict, hotkey: str, reveal: dict | None = None) -> str:
         if reveal:
             lines += [
                 "",
-                f"<details><summary>Revealed withheld halves ({len(reveal)})</summary>",
+                f"<details><summary>Revealed withheld halves ({len(reveal)}) — full record in `reveal.json`</summary>",
                 "",
-                "```json",
-                json.dumps(reveal, indent=1)[:4000],
-                "```",
-                "",
-                "</details>",
             ]
+            lines += ["| task | withheld checks | salt | source |", "|---|---|---|---|"]
+            for task_id, entry in sorted(reveal.items()):
+                src = entry.get("source") or {}
+                lines.append(
+                    f"| `{task_id}` | {len(entry.get('withheld', {}).get('predicates', []))} | `{entry.get('salt', '')[:16]}…` "
+                    f"| {src.get('instance_id', '—')} |"
+                )
+            lines += ["", "</details>"]
     return "\n".join(lines)
 
 

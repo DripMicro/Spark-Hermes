@@ -57,6 +57,9 @@ def _rows_for(episode_dir: Path, episode: dict, task: dict, system_prompt: str) 
     trajectory = episode_dir / "trajectory.json"
     if not trajectory.exists():
         return None
+    captured = episode_dir / "system_prompt.txt"  # what the episode actually ran under: the runner records it
+    if captured.is_file():
+        system_prompt = captured.read_text()
     turns = json.loads(trajectory.read_text())
     if not isinstance(turns, list) or not turns:
         return None

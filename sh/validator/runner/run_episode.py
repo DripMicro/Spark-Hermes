@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tarfile
@@ -66,10 +67,31 @@ def sh(cmd: str, cwd: Path, timeout: int) -> tuple[int, str]:
         return 124, "timed out"
 
 
+def _reset_out() -> list[str]:
+    """OUT as an empty directory the runner alone has written to. The agent runs as this uid and can reach /ep:
+    a link planted at `/ep/out/before.json`, or `/ep/out` itself replaced, would otherwise steer or swallow what
+    is written next. Whatever was there is returned — it is something the agent wrote outside its workspace."""
+    stray: list[str] = []
+    if OUT.is_symlink() or OUT.is_file():
+        stray.append(str(OUT))
+        OUT.unlink()
+    elif OUT.is_dir():
+        stray += [str(p) for p in OUT.iterdir() if p.name != "system_prompt.txt"]
+
+        def _writable(func, path, _exc):  # a directory the agent made unreadable is still ours to remove
+            os.chmod(path, 0o700)
+            func(path)
+
+        shutil.rmtree(OUT, onerror=_writable)
+    OUT.mkdir(parents=True)
+    return stray
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     finish = {"started": time.time(), "stage": "init"}
     before, ep_before, home_before = {}, {}, {}
+    system_prompt = ""
     try:
         task = json.loads((EP / "task.json").read_text())
         global WS
@@ -137,8 +159,8 @@ def main() -> int:
             platform="batch",
             max_tokens=8192,
         )
-        sp = agent._build_system_prompt()
-        (OUT / "system_prompt.txt").write_text(sp)
+        system_prompt = agent._build_system_prompt()
+        (OUT / "system_prompt.txt").write_text(system_prompt)
         t0 = time.time()
         result = agent.run_conversation(user_message=task["prompt"], task_id=task["task_id"])
         finish["agent_wall_s"] = round(time.time() - t0, 1)
@@ -175,7 +197,18 @@ def main() -> int:
         finish["stage"] = finish.get("stage", "?") + "_error"
         finish["error"] = traceback.format_exc()[-2000:]
     finally:
-        # 7. what the agent wrote outside the workspace, and the snapshot
+        # 7. what the agent wrote outside the workspace, and the snapshot. First, nothing it left running may
+        # race what follows, and nothing it left in /ep/out survives.
+        try:
+            os.kill(-1, signal.SIGKILL)  # every other process of this uid: the agent's shells and their children
+        except (ProcessLookupError, PermissionError, OSError):
+            pass
+        stray: list[str] = []
+        try:
+            stray = _reset_out()
+            (OUT / "system_prompt.txt").write_text(system_prompt)
+        except Exception as e:  # the outputs go wherever OUT now is; the grader sees what it sees
+            finish["reset_error"] = repr(e)[:300]
         try:
             (OUT / "before.json").write_text(json.dumps(before))  # from memory, after the agent is gone
             writes = [
@@ -192,7 +225,9 @@ def main() -> int:
                 if p.is_file() and WS not in p.parents and p != WS and OUT not in p.parents
             }
             ep_writes = sorted(
-                set(ep_now) - set(ep_before) | {k for k in ep_now if k in ep_before and ep_now[k] != ep_before[k]}
+                set(ep_now) - set(ep_before)
+                | {k for k in ep_now if k in ep_before and ep_now[k] != ep_before[k]}
+                | set(stray)
             )
             (OUT / "ep_writes.json").write_text(
                 json.dumps(ep_writes)

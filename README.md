@@ -31,8 +31,8 @@ Task families and their withheld halves live in a private repository; only what 
 ## Compete
 
 A round opens with a 2-hour submission window; the board shows the countdown. The family is `swe_fix`: fix a real
-bug in a real Python repository. While the window is open you get 8 practice bugs — one from each repository and
-environment the round is scored on — and the round is scored on 8 different, hidden bugs from those same
+bug in a real Python repository. While the window is open you get up to 8 practice bugs — one from each repository
+and environment the round is scored on — and the round is scored on as many different, hidden bugs from those same
 repositories, published when it closes.
 
 ```sh
@@ -50,7 +50,7 @@ round opens at once. Payment pools the last 8 rounds. Details: [`submissions/REA
 
 ```sh
 uv sync --extra dev
-SH_SALT_SECRET=... DOCKER_HOST=ssh://<worker> python -m supply.queue --queue queue --plan swe_fix:8:1 --ahead 3 --screen   # private repo: mints rounds ahead, images built on the worker
+SH_SALT_SECRET=... DOCKER_HOST=ssh://<worker> python -m supply.queue --queue queue --plan swe_fix:8:1 --ahead 3 --screen --screen-band 0.0:0.99   # private repo: mints rounds ahead, images built on the worker
 HF_TOKEN=... uv run python -m sh.validator.orchestrate --queue ../Spark-Hermes-Withheld/queue       # forever; --once for one round
 uv run python -m sh.validator.orchestrate --help
 ```
