@@ -101,7 +101,10 @@ consistency across rounds is what earns weight, not one lucky round.
    on the same instances. The board shows progress live.
 4. **Crown**: the strategy with the best Δ vs baseline *on this round's instances* — if it beat the baseline —
    is labelled `sh:round:crown`, merged into `submissions/`, and defends as the incumbent next round. Every
-   other competition PR is closed with the reason.
+   other competition PR is closed with the reason. The incumbent is **dethroned** (removed from `submissions/`)
+   only when a challenger is crowned over it, when its pooled 8-round window says it is worse than the baseline
+   (the correctness gate fails on enough evidence), or after 3 rounds in a row without the crown — a single
+   round that crowns nobody does not unseat it.
 5. **Payment** pools the last 8 rounds: Δc, the lower bound of your Δ vs baseline, is what earns weight.
    Consistency pays; a single round does not.
 6. **Your scorecard** is posted on the PR with the revealed withheld halves and salts, so you can recompute the

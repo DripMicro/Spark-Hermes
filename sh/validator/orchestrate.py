@@ -860,13 +860,36 @@ def outcome(sealed: dict, king: str | None) -> dict:
     return {"king": king, "merge": king_pr, "close": close_prs}
 
 
-def dethroned(sealed: dict, king: str | None) -> list[str]:
-    """Every hotkey whose bundle is in `submissions/` and is not this round's king — an incumbent, or one whose
-    incumbent bundle a challenger PR replaced this round (`was_incumbent`). `submissions/` carries exactly the
-    current king: a strategy that lost the crown does not keep competing for free at the validator's expense. Pure."""
-    return sorted(
-        h for h, info in sealed["active"].items() if (info.get("incumbent") or info.get("was_incumbent")) and h != king
-    )
+def dethroned(
+    sealed: dict, king: str | None, scores: dict | None = None, history: list | tuple = (), patience: int = 3
+) -> list[str]:
+    """Which carried bundles leave `submissions/` this round. An incumbent — or a hotkey whose incumbent bundle its
+    own PR replaced this round (`was_incumbent`) — is removed when
+
+      (a) another strategy was crowned: a challenger beat the baseline on these instances while it did not;
+      (b) its pooled window fails the correctness gate on enough evidence (`mean_d + z·se < 0`, the same eight
+          rounds payment weighs): the evidence says it is worse than the baseline, not merely unlucky;
+      (c) it has gone `patience` rounds in a row, this one included, without the crown: a lucky tiebreak king
+          cannot squat for free at the validator's expense.
+
+    A round that crowns nobody does not by itself dethrone: on six instances a genuinely better strategy ties the
+    baseline by noise in about a third of rounds (r0005: the incumbent's Δ was exactly 0.0). `history` is the
+    published `rounds/index.json` entries, oldest first, without this round. Pure."""
+    scores = scores or {}
+    gone = []
+    for h, info in sealed["active"].items():
+        if not (info.get("incumbent") or info.get("was_incumbent")) or h == king:
+            continue
+        s = scores.get(h) or {}
+        below = s.get("reason") is None and s.get("gate") is False  # a thin window is no evidence either way
+        streak = 1
+        for entry in reversed(history):
+            if entry.get("king") == h:
+                break
+            streak += 1
+        if king is not None or below or streak >= patience:
+            gone.append(h)
+    return sorted(gone)
 
 
 def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, crowned: dict) -> str | None:
@@ -947,7 +970,8 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
         log(rd, "merge", pr=plan["merge"], ok=merged.returncode == 0, head=sealed_head[:8], err=merged.stderr[-200:])
     elif king:
         log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown")
-    if gone := dethroned(sealed, king):  # after the merge, so the tree the removal commits onto is current
+    history = _read(cfg.repo / "rounds" / "index.json", {"rounds": []})["rounds"]  # closed rounds, this one not yet
+    if gone := dethroned(sealed, king, record.get("scores"), history):  # after the merge: the tree is current
         sh(["git", "pull", "-q", "--rebase", "--autostash", "origin", BRANCH], cwd=cfg.repo, check=False)
         for hotkey in gone:
             sh(["git", "rm", "-r", "-q", f"submissions/{hotkey}"], cwd=cfg.repo, check=False)

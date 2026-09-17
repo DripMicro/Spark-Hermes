@@ -67,9 +67,12 @@ def crown(
     min_paired: int = 4,
     incumbent: str | None = None,
 ) -> dict:
-    """The king of this round, with the standings that decided it. A tie does not dethrone: the incumbent keeps the
-    crown unless a challenger *strictly* beats it, and among challengers a tie falls to a hash of the round and the
-    hotkey. A strategy disqualified on any of this round's instances cannot be crowned."""
+    """The king of this round, with the standings that decided it. Among the eligible, a tie does not dethrone: the
+    incumbent keeps the crown unless a challenger *strictly* beats it, and among challengers a tie falls to a hash
+    of the round and the hotkey. A strategy disqualified on any of this round's instances cannot be crowned. A
+    round where nobody is eligible crowns nobody; whether the incumbent then stays in `submissions/` is decided
+    by `sh.validator.orchestrate.dethroned` (a challenger crowned over it, the pooled gate failing, or three
+    rounds without the crown), not here."""
     st = standings(episodes, hotkeys, round_id=round_id)
     eligible = [
         h for h, s in st.items() if s["n"] >= min_paired and s["delta"] is not None and s["delta"] > 0 and not s["dq"]

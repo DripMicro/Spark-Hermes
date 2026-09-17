@@ -95,10 +95,37 @@ def test_a_future_signing_time_is_not_a_submission_and_ties_fall_to_the_pr_numbe
 
 
 def test_a_dethroned_incumbent_leaves_submissions():
-    """submissions/ carries exactly the king; a former king does not compete for free forever."""
+    """submissions/ carries the king; an incumbent leaves when a challenger is crowned over it — never merely
+    because a noisy round crowned nobody."""
     from sh.validator.orchestrate import dethroned
 
     sealed = _seal(OLD=None, OLDER=None, A=101)
-    assert dethroned(sealed, "A") == ["OLD", "OLDER"]
+    assert dethroned(sealed, "A") == ["OLD", "OLDER"]  # (a) a challenger was crowned
     assert dethroned(sealed, "OLD") == ["OLDER"]  # keeping the crown removes only the others
-    assert dethroned(sealed, None) == ["OLD", "OLDER"]  # nobody won: nobody is carried
+    assert dethroned(sealed, None) == []  # nobody won: the incumbents are carried on (r0005 would have kept its king)
+
+
+def test_an_incumbent_the_pooled_window_puts_below_the_baseline_is_dethroned():
+    """(b) the correctness gate on the eight-round window — the evidence payment uses — says worse than baseline.
+    A window too thin to be scored is not evidence and keeps the incumbent."""
+    from sh.validator.orchestrate import dethroned
+
+    sealed = _seal(OLD=None)
+    assert dethroned(sealed, None, {"OLD": {"gate": False, "reason": None, "n": 12}}) == ["OLD"]
+    assert dethroned(sealed, None, {"OLD": {"gate": False, "reason": "5 window episodes < 8"}}) == []
+    assert dethroned(sealed, None, {"OLD": {"gate": True, "reason": None}}) == []
+    assert dethroned(sealed, None, {}) == []  # not scored at all: nothing is known
+
+
+def test_an_incumbent_three_rounds_without_a_crown_is_dethroned():
+    """(c) a lucky tiebreak king cannot squat: three rounds in a row without the crown, this one included."""
+    from sh.validator.orchestrate import dethroned
+
+    sealed = _seal(OLD=None)
+    won, lost, other = {"king": "OLD"}, {"king": None}, {"king": "X"}
+    assert dethroned(sealed, None, history=[won]) == []  # streak 1
+    assert dethroned(sealed, None, history=[won, lost]) == []  # streak 2
+    assert dethroned(sealed, None, history=[won, lost, lost]) == ["OLD"]  # streak 3
+    assert dethroned(sealed, None, history=[won, other, lost]) == ["OLD"]  # a round someone else won counts too
+    assert dethroned(sealed, None, history=[lost, lost, won]) == []  # crowned last round: streak 1
+    assert dethroned(sealed, None, history=[]) == []  # a first round: streak 1
