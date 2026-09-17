@@ -82,12 +82,13 @@
 
 <script>
 (function () {
-  let LIVE = null, deepLinked = false;
+  let LIVE = null, deepLinked = false, lastHistory = "", lastKing = "", lastFocus = null;
+  const ROUND_ID = /^[a-z]\d{1,4}$/;  // r0004, s1 — what a deep link or a row may name
   const $ = (id) => document.getElementById(id);
   const LABEL = { open: "open", window: "window", seal: "seal", evaluate: "evaluate", close: "score", crown: "crown",
                   announce: "verdict", export: "export", publish_close: "publish", done: "done", waiting: "waiting for tasks" };
   const PHASE = { window: ["window", "submissions open"], done: ["closed", "closed"], waiting: ["closed", "waiting for the next round's tasks"] };
-  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const clock = (t) => new Date(t * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   const hhmm = (t) => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const iso = (s) => s ? new Date(s).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—";
@@ -111,7 +112,7 @@
     return '<span class="ident">' + av + '<span class="ident-txt">' + name + hk(h) + "</span></span>";
   };
   const th = (label, title, left) => "<th" + (left ? ' class="l"' : "") + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + "</th>";
-  const pr = (live, n) => '<a href="https://github.com/' + esc(live.repo) + "/pull/" + n + '">#' + n + "</a>";
+  const pr = (live, n) => { const k = Number(n); return '<a href="https://github.com/' + esc(live.repo) + "/pull/" + k + '">#' + k + "</a>"; };
   let current = null;
 
   function surfaceCell(live, s, crowned) {
@@ -203,7 +204,6 @@
 
   function render(live) {
     LIVE = live;
-    if (!deepLinked && location.hash.startsWith("#round-")) { deepLinked = true; openRound(location.hash.slice(7)); }
     current = live;
     const stale = Date.now() / 1000 - live.updated > 900;
     document.body.classList.toggle("stale", stale);
@@ -237,9 +237,11 @@
     const last = (live.history || []).slice(-1)[0];
     const kingScore = (h, src) => src && src[h] ? " · score " + num(src[h].score, 4) + " · weight " + num(src[h].weight, 3) : "";
     const nowScores = live.scores && live.scores.per_hotkey ? Object.fromEntries(Object.entries(live.scores.per_hotkey).map(([h, s]) => [h, { ...s, weight: live.scores.weights[h] || 0 }])) : null;
-    if (king) { $("king-now").innerHTML = ident(live, king, true); $("king-sub").textContent = "this round" + kingScore(king, nowScores || live.standings); }
-    else if (last && last.king) { $("king-now").innerHTML = ident({ github: last.github || live.github, repo: live.repo }, last.king, true); $("king-sub").textContent = "since " + last.round_id + kingScore(last.king, last.scores); }
-    else { $("king-now").textContent = "—"; $("king-sub").textContent = ""; }
+    let kingHtml = "—", kingSub = "";
+    if (king) { kingHtml = ident(live, king, true); kingSub = "this round" + kingScore(king, nowScores || live.standings); }
+    else if (last && last.king) { kingHtml = ident({ github: last.github || live.github, repo: live.repo }, last.king, true); kingSub = "since " + last.round_id + kingScore(last.king, last.scores); }
+    if (kingHtml !== lastKing) { lastKing = kingHtml; $("king-now").innerHTML = kingHtml; }  // unchanged: keep the <img>, no refetch
+    $("king-sub").textContent = kingSub;
     paint();
     submissions(live);
     board(live);
@@ -249,21 +251,29 @@
     $("rejected").innerHTML = rej.length ? "Rejected at seal: " + rej.map(([n, why]) => pr(live, n) + " — " + esc(why)).join(" · ") : "";
 
     const hist = (live.history || []).slice().reverse();
+    const histKey = JSON.stringify([live.history || [], live.github || {}, live.repo]);  // re-render only on change:
+    if (histKey !== lastHistory) { lastHistory = histKey;                                 // every row carries an <img>
     $("history").innerHTML = hist.length ? hist.map((h) => {
       const ks = h.king && h.scores ? h.scores[h.king] : null, kc = h.king && h.crown ? h.crown[h.king] : null;
-      return "<tr><td class='l'><a class='round-link' href='../rounds/" + esc(h.round_id) + "/' data-round='" + esc(h.round_id) + "'>" + esc(h.round_id) + "</a></td>" +
+      return '<tr><td class="l"><a class="round-link" href="../rounds/' + esc(h.round_id) + '/" data-round="' + esc(h.round_id) + '">' + esc(h.round_id) + "</a></td>" +
         "<td class='l'>" + (h.king ? ident({ github: h.github || live.github, repo: live.repo }, h.king, true) + (h.pr ? " " + pr(live, h.pr) : "") : "<span class='zero'>none</span>") + "</td>" +
         "<td class='" + cls(kc && kc.delta) + "'>" + signed(kc && kc.delta, 3) + "</td><td>" + num(ks && ks.score, 4) + "</td><td>" + num(ks && ks.weight, 3) + "</td>" +
         "<td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
         "<td class='l'>" + (h.commitments_ok ? "<span class='pos'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td>" +
         "<td>" + clock(h.closed_at) + "</td></tr>";
     }).join("") : '<tr><td class="empty" colspan="10">none yet</td></tr>';
+    }
     const q = live.queue || [];
     $("queue-line").textContent = q.length ? "Minted ahead, unread until they open: " + q.map((r) => r.round_id).join(" · ") + " (task digests published in rounds/queue.json)." : "";
 
     if (live.repo) $("nav-repo").href = "https://github.com/" + live.repo;
     if (live.hf_repo) $("nav-hf").href = "https://huggingface.co/datasets/" + live.hf_repo;
     if (live.repo && live.branch) $("link-rounds").href = "https://github.com/" + live.repo + "/tree/" + live.branch + "/rounds";
+    if (!deepLinked) {  // last, and on its own: a bad deep link must not take the board down with it
+      deepLinked = true;
+      const m = location.hash.match(/^#round-([a-z]\d{1,4})$/);
+      if (m) { try { openRound(m[1]); } catch (e) { console.warn("round modal", e); } }
+    }
   }
 
   // A closed round opens in a modal built from its own history entry (same-origin, already polled) — no navigation,
@@ -271,10 +281,10 @@
   function roundDetail(live, h) {
     const gh = { github: h.github || live.github, repo: live.repo };
     const scores = h.scores || {}, crown = h.crown || {};
-    const ranked = Object.keys(scores).sort((a, b) =>
-      (scores[b].weight || 0) - (scores[a].weight || 0) || (scores[b].score || 0) - (scores[a].score || 0) || a.localeCompare(b));
+    const sc = (k, f) => (scores[k] || {})[f] || 0;
+    const ranked = Object.keys(scores).sort((a, b) => sc(b, "weight") - sc(a, "weight") || sc(b, "score") - sc(a, "score") || a.localeCompare(b));
     const rows = ranked.map((k) => {
-      const s = scores[k], c = crown[k] || {}, isK = k === h.king, w = s.weight || 0;
+      const s = scores[k] || {}, c = crown[k] || {}, isK = k === h.king, w = s.weight || 0;
       return "<tr" + (isK ? " class='king'" : "") + "><td class='l'>" + ident(gh, k, isK) + "</td><td>" + (c.rank || "—") +
         "</td><td class='" + cls(c.delta) + "'>" + signed(c.delta, 3) + "</td><td>" + num(s.score, 4) +
         "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>";
@@ -290,32 +300,48 @@
       "<div class='stat'><b class='" + (h.commitments_ok ? "pos" : "neg") + "'>" + (h.commitments_ok ? "verified" : "mismatch") +
       "</b><span>commitments</span></div></div>" +
       "<div class='wrap'><table><thead><tr><th class='l'>strategy</th><th>rank</th>" +
-      "<th title=\"the king's Δ vs baseline on this round's instances\">Δ round</th><th>score</th><th>weight</th></tr></thead>" +
+      '<th title="Δ vs baseline on this round\'s instances">Δ round</th><th>score</th><th>weight</th></tr></thead>' +
       "<tbody>" + rows + "</tbody></table></div>" +
-      "<p class='note' style='margin-top:1rem'>Full detail and artefacts: <a href='../rounds/" + esc(h.round_id) + "/'>round page</a> · " +
-      "<a href='" + tree + "'>rounds/" + esc(h.round_id) + "/</a>" + (h.hf ? " · <a href='" + esc(h.hf) + "'>dataset</a>" : "") + "</p>";
+      '<p class="note" style="margin-top:1rem">Full detail and artefacts: <a href="../rounds/' + esc(h.round_id) + '/">round page</a> · ' +
+      '<a href="' + tree + '">rounds/' + esc(h.round_id) + "/</a>" +
+      (typeof h.hf === "string" && h.hf.startsWith("https://") ? ' · <a href="' + esc(h.hf) + '">dataset</a>' : "") + "</p>";
   }
+  const behind = () => document.querySelectorAll("main, nav, footer");  // what a modal takes out of the tab order
   function openRound(id) {
+    if (!ROUND_ID.test(id)) return;
     const h = ((LIVE && LIVE.history) || []).find((x) => x.round_id === id);
     if (!h) { location.href = "../rounds/" + id + "/"; return; }  // older than the window: fall back to the static page
+    const modal = $("round-modal"), card = modal.querySelector(".modal-card");
     $("rm-body").innerHTML = roundDetail(LIVE, h);
-    $("round-modal").hidden = false;
+    if (modal.hidden) lastFocus = document.activeElement;
+    modal.hidden = false;
     document.body.classList.add("modal-open");
+    behind().forEach((el) => { el.inert = true; });
+    card.tabIndex = -1;
+    card.focus({ preventScroll: true });
     if (location.hash !== "#round-" + id) history.replaceState(null, "", "#round-" + id);
   }
   function closeRound() {
     $("round-modal").hidden = true;
     document.body.classList.remove("modal-open");
+    behind().forEach((el) => { el.inert = false; });
     if (location.hash.startsWith("#round-")) history.replaceState(null, "", location.pathname + location.search);
+    if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+    lastFocus = null;
   }
   $("history").addEventListener("click", (e) => {
     const a = e.target.closest(".round-link");
-    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;  // let new-tab / middle-click through
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;  // let new-tab clicks through
     e.preventDefault();
     openRound(a.dataset.round);
   });
   $("round-modal").addEventListener("click", (e) => { if (e.target.matches("[data-close]")) closeRound(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("round-modal").hidden) closeRound(); });
+  window.addEventListener("hashchange", () => {  // Back/Forward and a hand-edited hash open or close the modal too
+    const m = location.hash.match(/^#round-([a-z]\d{1,4})$/);
+    if (m) openRound(m[1]);
+    else if (!$("round-modal").hidden) closeRound();
+  });
 
   async function tick() {
     try {

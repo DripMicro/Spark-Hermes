@@ -67,7 +67,7 @@ p { margin: 0; max-width: 66ch; }
 /* the round card */
 .round { background: linear-gradient(180deg, rgba(167, 139, 250, .06), transparent 40%), var(--panel); border: 1px solid var(--line); border-radius: var(--r);
          padding: 1.5rem 1.6rem; display: flex; flex-direction: column; gap: 1.2rem; box-shadow: var(--glow); }
-.round .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem 1.1rem; }
+.round .head, .modal-card .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem 1.1rem; }
 .round .head .when { margin-left: auto; }
 .bars { display: flex; flex-direction: column; gap: .9rem; }
 .bar { position: relative; height: .9rem; background: var(--soft); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
@@ -146,8 +146,8 @@ tr.king td { background: rgba(251, 191, 36, .05); }
 .crown-badge { position: absolute; bottom: -.3rem; right: -.3rem; width: 1.05rem; height: 1.05rem; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center; background: var(--panel); border: 1px solid var(--line);
   font-size: .6rem; line-height: 1; pointer-events: none; box-shadow: 0 1px 3px rgba(0, 0, 0, .5); }
-.ident-txt { display: inline-flex; flex-direction: column; line-height: 1.2; min-width: 0; }
-.gh-name { font-weight: 600; text-decoration: none; color: var(--ink); }
+.ident-txt { display: inline-flex; flex-direction: column; line-height: 1.2; min-width: 0; white-space: nowrap; }
+.gh-name { font-weight: 600; text-decoration: none; color: var(--ink); font-family: var(--sans); }
 .gh-name:hover { text-decoration: underline; }
 .gh-name.gh-anon { color: var(--muted); font-weight: 400; font-style: italic; }
 .ident .hk { color: var(--muted); }
@@ -159,17 +159,19 @@ tr.king td { background: rgba(251, 191, 36, .05); }
 .modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; }
 body.modal-open { overflow: hidden; }
 .modal-back { position: fixed; inset: 0; background: rgba(5, 5, 10, .72); backdrop-filter: blur(3px); }
-.modal-card { position: relative; z-index: 1; width: min(58rem, 100%); max-height: calc(100dvh - 3rem); display: flex; flex-direction: column;
+.modal-card { position: relative; z-index: 1; width: min(58rem, 100%); max-height: calc(100vh - 3rem); max-height: calc(100dvh - 3rem);
+  display: flex; flex-direction: column; overflow: auto;  /* a last resort on a short viewport; the table scrolls first */
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--glow); padding: 1.5rem 1.6rem; }
 .modal-card .head { margin-bottom: .5rem; }
 .modal-card .strip { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
 .modal-card .stat b { font-size: 1.15rem; }
 #rm-body { display: flex; flex-direction: column; min-width: 0; min-height: 0; }   /* shrink to the card; never widen it */
-#rm-body > .wrap { min-height: 0; overflow: auto; }           /* a wide or many-strategy round scrolls the table, never the modal */
+#rm-body > .wrap { min-height: 8rem; overflow: auto; }        /* a wide or many-strategy round scrolls the table, never the modal */
 .modal-x { position: absolute; top: .7rem; right: .9rem; background: none; border: none; color: var(--muted); font-size: 1.7rem; line-height: 1; cursor: pointer; padding: .1rem .45rem; border-radius: 8px; }
 .modal-x:hover { color: var(--ink); background: var(--soft); }
 /* a king cell is an identity in a big-number slot: keep it in its box (smaller face, smaller avatar). */
 .stat .ident { font-size: .9rem; }
 .stat .ident .hk { font-size: .72rem; }
 .stat .gh-av { width: 1.7rem; height: 1.7rem; }
+.stat b .crown-badge { font-size: .6rem; }  /* `.stat b span { font-size: inherit }` would otherwise win */
 @media (max-width: 520px) { .modal { padding: 1rem .5rem; } .modal-card { padding: 1.1rem 1rem; } }

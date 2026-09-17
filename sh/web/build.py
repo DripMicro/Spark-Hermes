@@ -41,9 +41,9 @@ def _cls(x) -> str:
 
 def _ident(meta: dict, h: str, crowned: bool = False) -> str:
     """A strategy's author: their GitHub avatar and name when the round's `github` map knows them, the hotkey
-    beneath. Mirrors the live board's `ident()`, so a closed round reads the same as it did live; degrades to the
-    hotkey alone for an older round whose entry carries no map, or a hotkey never matched to a GitHub author. The
-    king wears its crown as a badge on the avatar (`crowned`), matching the board."""
+    beneath. Mirrors the live board's `ident()`, so a closed round reads the same as it did live; for an older round
+    whose entry carries no map, or a hotkey never matched to a GitHub author, it shows "unlinked" beside the hotkey.
+    The king wears its crown as a badge on the avatar (`crowned`), matching the board."""
     g = (meta.get("github") or {}).get(h)
     if g:
         img = (
