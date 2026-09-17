@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789624662.7813342,
+ "updated": 1789624705.8408484,
  "round_id": "r0004",
  "stage": "window",
  "stages": [
@@ -20,6 +20,14 @@
   {
    "stage": "start",
    "t": 1789624662.7650764
+  },
+  {
+   "stage": "open",
+   "t": 1789624665.0980327
+  },
+  {
+   "stage": "mock_submit",
+   "t": 1789624695.0334978
   }
  ],
  "window": {
@@ -27,7 +35,50 @@
   "closes_at": 1789631862.7645879,
   "seconds": 7200
  },
- "submissions": [],
+ "submissions": [
+  {
+   "pr": 121,
+   "hotkey": "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c",
+   "created_at": "2026-09-17T05:58:14Z",
+   "updated_at": "2026-09-17T05:58:14Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/121"
+  },
+  {
+   "pr": 120,
+   "hotkey": "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT",
+   "created_at": "2026-09-17T05:58:09Z",
+   "updated_at": "2026-09-17T05:58:09Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/120"
+  },
+  {
+   "pr": 119,
+   "hotkey": "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ",
+   "created_at": "2026-09-17T05:58:04Z",
+   "updated_at": "2026-09-17T05:58:04Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/119"
+  },
+  {
+   "pr": 118,
+   "hotkey": "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra",
+   "created_at": "2026-09-17T05:57:59Z",
+   "updated_at": "2026-09-17T05:57:59Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/118"
+  },
+  {
+   "pr": 117,
+   "hotkey": "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC",
+   "created_at": "2026-09-17T05:57:55Z",
+   "updated_at": "2026-09-17T05:57:55Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/117"
+  },
+  {
+   "pr": 116,
+   "hotkey": "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8",
+   "created_at": "2026-09-17T05:57:50Z",
+   "updated_at": "2026-09-17T05:57:50Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/116"
+  }
+ ],
  "standings": {
   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
    "score": 0.0,
