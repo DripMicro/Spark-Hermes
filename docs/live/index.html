@@ -280,12 +280,13 @@
         "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>";
     }).join("") || "<tr><td class='empty' colspan='5'>no strategies were sealed</td></tr>";
     const stat = (v, k) => "<div class='stat'><b>" + v + "</b><span>" + k + "</span></div>";
-    const kingCell = h.king ? ident(gh, h.king, true) + (h.pr ? " " + pr(live, h.pr) : "") : "<span class='zero'>none</span>";
+    const kingId = h.king ? ident(gh, h.king, true) : "<span class='zero'>none</span>";
+    const kingPr = h.king && h.pr ? "<span class='sub'>" + pr(live, h.pr) + "</span>" : "";
     const tree = "https://github.com/" + esc(live.repo) + "/tree/" + esc(live.branch) + "/rounds/" + esc(h.round_id);
     return "<div class='head'><h1>Round <span class='grad'>" + esc(h.round_id) + "</span></h1>" +
       "<span class='phase closed'>closed</span><span class='muted small'>" + clock(h.closed_at) + "</span></div>" +
       "<div class='strip' style='margin:1rem 0'>" + stat(h.episodes, "episodes") + stat(h.sft_rows ?? "—", "SFT rows") +
-      stat(h.dpo_pairs ?? "—", "DPO pairs") + "<div class='stat'><b>" + kingCell + "</b><span>king</span></div>" +
+      stat(h.dpo_pairs ?? "—", "DPO pairs") + "<div class='stat'><b>" + kingId + "</b><span>king</span>" + kingPr + "</div>" +
       "<div class='stat'><b class='" + (h.commitments_ok ? "pos" : "neg") + "'>" + (h.commitments_ok ? "verified" : "mismatch") +
       "</b><span>commitments</span></div></div>" +
       "<div class='wrap'><table><thead><tr><th class='l'>strategy</th><th>rank</th>" +
@@ -299,10 +300,12 @@
     if (!h) { location.href = "../rounds/" + id + "/"; return; }  // older than the window: fall back to the static page
     $("rm-body").innerHTML = roundDetail(LIVE, h);
     $("round-modal").hidden = false;
+    document.body.classList.add("modal-open");
     if (location.hash !== "#round-" + id) history.replaceState(null, "", "#round-" + id);
   }
   function closeRound() {
     $("round-modal").hidden = true;
+    document.body.classList.remove("modal-open");
     if (location.hash.startsWith("#round-")) history.replaceState(null, "", location.pathname + location.search);
   }
   $("history").addEventListener("click", (e) => {
