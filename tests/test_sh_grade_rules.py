@@ -346,3 +346,25 @@ def test_the_runner_resets_its_output_directory_and_reports_what_the_agent_left_
     out.rmdir()
     out.symlink_to(tmp_path)  # the directory itself replaced by a link
     assert r._reset_out() == [str(out)] and out.is_dir() and not out.is_symlink()
+
+
+def test_a_tree_that_reaches_for_the_test_runner_is_disqualified(monkeypatch, tmp_path):
+    """swe_fix's checks compare the agent's tree with the pristine one; what they flag, the grader enforces."""
+    import sh.validator.grade as g
+
+    (tmp_path / "result.json").write_text(json.dumps({"messages": []}))
+    (tmp_path / "finish.json").write_text(json.dumps({"api_calls": 9, "wall_s": 120.0}))
+    monkeypatch.setattr(
+        g,
+        "grade_in_container",
+        lambda *a, **k: {
+            "published_pass": True,
+            "withheld_pass": True,
+            "protected_modified": [],
+            "tests": {"t.py::a": True},
+            "detail": {"valid": True, "tamper": [["pkg/__init__.py", "import _pytest.runner"]]},
+        },
+    )
+    withheld = {"withheld": {"predicates": [["custom", "swe_test", "t.py::a"]]}, "salt": "00"}
+    rec = g.grade(tmp_path, {"task_id": "swe-fix-r0005-00", "published": {"predicates": []}}, withheld, "img")
+    assert rec["disqualified"] and "harness_tamper" in rec["signals"] and rec["credit"] == 0.0
