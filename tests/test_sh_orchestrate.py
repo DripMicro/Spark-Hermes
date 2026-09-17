@@ -426,3 +426,37 @@ def test_a_hugging_face_failure_does_not_block_the_round(tmp_path, monkeypatch):
     monkeypatch.setenv("HF_TOKEN", "tok")
     result = o.export_and_upload(cfg, "r0009", rd, king="5A")  # must return, not raise
     assert result["upload"]["uploaded"] is False and "HF 401" in result["upload"]["reason"]
+
+
+def test_the_archive_holds_only_episode_records_not_snapshots(tmp_path):
+    from sh.validator.orchestrate import window_archive
+
+    cfg = _cfg(tmp_path, window=2)
+    d = cfg.rounds / "r0005" / "episodes" / "null" / "t0"
+    d.mkdir(parents=True)
+    (d / "episode.json").write_text(json.dumps({"round_id": "r0005", "surface": "null"}))
+    (d / "snapshot.tar").write_bytes(b"\x00" * 5000)  # the heavy part
+    (d / "trajectory.json").write_text("[]")
+    pooled = window_archive(cfg, "r0005")
+    archived = [p.name for p in (cfg.state / "archive" / "r0005").rglob("*") if p.is_file()]
+    assert archived == ["episode.json"] and not list((cfg.state / "archive" / "r0005").rglob("snapshot.tar"))
+    assert (pooled / "r0005" / "null" / "t0" / "episode.json").exists()
+
+
+def test_reclaim_strips_heavy_files_from_old_done_rounds_but_keeps_recent_and_records(tmp_path):
+    from sh.validator.orchestrate import _reclaim_disk
+
+    cfg = _cfg(tmp_path)
+    for rid in ("r0003", "r0004", "r0005"):
+        d = cfg.rounds / rid / "episodes" / "null" / "t0"
+        d.mkdir(parents=True)
+        (d / "episode.json").write_text("{}")
+        (d / "snapshot.tar").write_bytes(b"x" * 100)
+        (d / "trajectory.json").write_text("[]")
+        (cfg.rounds / rid / "DONE").write_text("{}")
+    _reclaim_disk(cfg, keep_recent=2)
+    # r0003 is old: stripped; r0004/r0005 are the two most recent: kept; episode.json survives everywhere
+    assert not (cfg.rounds / "r0003" / "episodes" / "null" / "t0" / "snapshot.tar").exists()
+    assert (cfg.rounds / "r0003" / "episodes" / "null" / "t0" / "episode.json").exists()
+    assert (cfg.rounds / "r0004" / "episodes" / "null" / "t0" / "snapshot.tar").exists()
+    assert (cfg.rounds / "r0005" / "episodes" / "null" / "t0" / "trajectory.json").exists()
