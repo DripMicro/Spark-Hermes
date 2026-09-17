@@ -233,7 +233,10 @@ def main(argv=None) -> int:
         print(f"your PR  {'#' + str(n) if n else 'none open'}")
         st = (live.get("crown") or {}).get("standings", {}).get(a.hotkey)
         if st:
-            print(f"crown    rank {st.get('rank', '—')} · Δ {st['delta']:+.3f} on {st['n']} paired")
+            delta = st.get("delta")
+            print(
+                f"crown    rank {st.get('rank', '—')} · Δ {'—' if delta is None else f'{delta:+.3f}'} on {st['n']} paired"
+            )
     return 0
 
 

@@ -13,8 +13,8 @@ signals, both on normalised text so indentation and markdown fences do not hide 
   * **shingles** — distinct 12-token runs the bundle shares with a reference, which catches a paste reflowed
     into paragraphs.
 
-Anything that also appears in a task's published prompt is excluded: quoting the task a miner was given is not
-reproducing its answer. Instruction-style prose shares essentially nothing with a solution script.
+Anything that also appears in a task's prompt, or in a preview's, is excluded: quoting what a miner was given is not
+reproducing an answer. Instruction-style prose shares essentially nothing with a solution script.
 """
 
 from __future__ import annotations
@@ -87,7 +87,12 @@ def load(round_dir: Path) -> References:
         if record.get("assets_are_answers", True):  # a verifier is an answer; a repository's own tests are not
             for b64 in (record.get("assets") or {}).values():
                 answers.append(base64.b64decode(b64).decode("utf-8", "replace"))
-    prompts = [json.loads(p.read_text()).get("prompt", "") for p in sorted((round_dir / "tasks").glob("*.json"))]
+    # what miners were given: the tasks, or the previews they saw in their place (swe_fix) — quoting either is fair
+    prompts = [
+        json.loads(p.read_text()).get("prompt", "")
+        for sub in ("tasks", "preview")
+        for p in sorted((round_dir / sub).glob("*.json"))
+    ]
     return References([a for a in answers if a], prompts)
 
 

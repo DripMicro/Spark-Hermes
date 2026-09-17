@@ -226,7 +226,7 @@ def live(
         "submissions": submissions or [],
         "standings": (last or {}).get("scores") or {},  # the pooled standing after the last close: what pays now
         "last_round": (last or {}).get("round_id"),
-        "tasks": len(list((rd / "tasks").glob("*.json"))) if (rd / "tasks").exists() else 0,
+        "tasks": len(list(shown(rd).glob("*.json"))) if (rd / "tasks").exists() else 0,
         "active": sealed.get("active", {}),
         "rejected": sealed.get("rejected", {}),
         "progress": progress or {},
@@ -269,10 +269,7 @@ def open_round(cfg: Config) -> Path:
     cfg.rounds.mkdir(parents=True, exist_ok=True)
     shutil.move(str(cfg.queue / round_id), str(rd))  # consumed: the daemon refills
     (rd / "READY").unlink(missing_ok=True)
-    for tag in _image_tags(rd):  # derivation is done; the images only cost disk here now
-        subprocess.run(["docker", "image", "rm", "-f", tag], capture_output=True)
-    if _image_tags(rd):
-        subprocess.run(["docker", "builder", "prune", "-f", "--filter", "until=48h"], capture_output=True)
+    # The task images were built on the worker at mint and are removed there once the round is evaluated.
     now = time.time()
     (rd / "window.json").write_text(
         json.dumps({"opens_at": now, "closes_at": now + cfg.window_s, "seconds": cfg.window_s})
@@ -284,7 +281,7 @@ def open_round(cfg: Config) -> Path:
 def shown(rd: Path) -> Path:
     """What miners get when the window opens: the round's tasks, or — for a family that evaluates on hidden bugs
     (swe_fix) — their previews, sibling bugs from the same repositories. The evaluated tasks follow at close."""
-    return rd / "preview" if (rd / "preview").is_dir() else rd / "tasks"
+    return rd / "preview" if any((rd / "preview").glob("*.json")) else rd / "tasks"
 
 
 def publish_round(cfg: Config, rd: Path) -> None:
@@ -308,10 +305,9 @@ def publish_round(cfg: Config, rd: Path) -> None:
         json.dumps({"schema": "sh-queue-v1", "published_at": time.time(), "ready": ready}, indent=1)
     )
     live(cfg, rd, "window", progress={}, submissions=[], push=False)
-    _commit(
-        cfg, f"{round_id}: open — {len(list((rd / 'tasks').glob('*.json')))} tasks, window {cfg.window_s // 60} min"
-    )
-    log(rd, "open", tasks=len(list((rd / "tasks").glob("*.json"))), closes_at=_read(rd / "window.json")["closes_at"])
+    n = len(list(shown(rd).glob("*.json")))
+    _commit(cfg, f"{round_id}: open — {n} tasks, window {cfg.window_s // 60} min")
+    log(rd, "open", tasks=n, closes_at=_read(rd / "window.json")["closes_at"])
 
 
 def _image_tags(rd: Path) -> list[str]:

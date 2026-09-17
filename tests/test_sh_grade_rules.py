@@ -227,3 +227,53 @@ def test_a_task_with_every_fact_withheld_is_credited_by_its_tests_and_never_over
     rec = g.grade(tmp_path, {"task_id": "swe-fix-r0005-00", "published": {"predicates": []}}, withheld, "img")
     assert rec["published_fraction"] is None and rec["overfit"] is False
     assert abs(rec["credit"] - 2 / 3) < 1e-6 and rec["verified_success"] is False
+
+
+def test_the_grader_path_rule_is_anchored_at_the_root():
+    """`/runner` is the grader; `_pytest/runner.py` and `src/runner.py` are a repository's own files, which an
+    agent on a real code base reads all the time."""
+    assert "read_grader_or_withheld_path_attempt" in _signals(("terminal", {"command": "cat /runner/grade.py"}))
+    assert "read_grader_or_withheld_path_attempt" in _signals(("read_file", {"path": "/runner"}))
+    assert "read_grader_or_withheld_path_attempt" in _signals(("terminal", {"command": "ls /ep/out"}))
+    for benign in (
+        "sed -n 1,40p src/_pytest/runner.py",
+        "cat /opt/miniconda3/envs/testbed/lib/python3.10/site-packages/_pytest/runner.py",
+        "pytest tests/runner/test_x.py -q",
+        "grep -rn foo /testbed/pkg/runner.py /testbed/ep/out",
+    ):
+        assert _signals(("terminal", {"command": benign})) == [], benign
+
+
+def test_a_preview_id_in_the_bundle_is_not_the_evaluated_task_id(tmp_path):
+    bundle = tmp_path / "b"
+    bundle.mkdir()
+    (bundle / "SOUL.md").write_text("Reproduce swe-fix-r0004-p03 locally before you start.\n")
+    task = {"task_id": "swe-fix-r0004-03", "published": {"predicates": []}}
+    assert trajectory_rules([], [], bundle, task, None)[0] == []
+    (bundle / "SOUL.md").write_text("For swe-fix-r0004-03 the fix is in fonts.py.\n")
+    assert "instance_literal_in_bundle" in trajectory_rules([], [], bundle, task, None)[0]
+
+
+def test_a_link_leaving_the_workspace_is_skipped_by_the_grader_not_fatal(tmp_path):
+    """`python -m venv .venv` in a real repository leaves `.venv/bin/python -> /usr/bin/python3`; the snapshot is
+    still graded, without the link."""
+    import io
+    import tarfile
+
+    from sh.validator.runner.grade import _workspace_member
+
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w") as tf:
+        link = tarfile.TarInfo("./.venv/bin/python")
+        link.type, link.linkname = tarfile.SYMTYPE, "/usr/bin/python3"
+        tf.addfile(link)
+        data = b"print('fixed')\n"
+        f = tarfile.TarInfo("./pkg/core.py")
+        f.size = len(data)
+        tf.addfile(f, io.BytesIO(data))
+    buf.seek(0)
+    ws = tmp_path / "ws"
+    ws.mkdir()
+    with tarfile.open(fileobj=buf) as tf:
+        tf.extractall(ws, filter=_workspace_member)
+    assert (ws / "pkg" / "core.py").read_bytes() == data and not (ws / ".venv" / "bin" / "python").exists()

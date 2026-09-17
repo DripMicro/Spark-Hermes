@@ -108,13 +108,14 @@ def render(close: dict, meta: dict | None = None) -> str:
         (f"{blob}/crown.json", "crown.json"),
         (f"{blob}/close.json", "close.json"),
         (f"{blob}/reveal.json", "reveal.json"),
+        (f"{tree}/evaluated", "evaluated tasks"),
         (f"{tree}/scorecards", "scorecards"),
         (f"{tree}/checks", "checks"),
         (f"{blob}/manifest.json", "manifest.json"),
     ]
     present = meta.get("artefacts")
     if present is not None:  # an older round may lack a directory; never link to a 404
-        links = [(u, t) for u, t in links if t.split("/")[0] in present]
+        links = [(u, t) for u, t in links if t.split(" ")[0].split("/")[0] in present]
     links += [(hf, "dataset")] if hf else []
     artefacts = " · ".join(f'<a href="{_e(u)}">{_e(t)}</a>' for u, t in links)
 
@@ -162,7 +163,7 @@ def render(close: dict, meta: dict | None = None) -> str:
       <tbody>{families or '<tr><td class="empty" colspan="6">—</td></tr>'}</tbody>
     </table></div>
   </section>
-  <p class="small muted">Artefacts: {artefacts}. Every withheld half and its salt is in <code>reveal.json</code>; <code>HMAC(salt, withheld)</code> must equal the commitment published when the round opened.</p>
+  <p class="small muted">Artefacts: {artefacts}. Every withheld half and its salt is in <code>reveal.json</code>; <code>HMAC(salt, withheld)</code> must equal the commitment in the task record — published at open, or at close under <code>evaluated/</code> when miners were shown previews.</p>
 </main>
 </body>
 </html>

@@ -125,11 +125,15 @@ class MinerWindow:
     def public_passers(self) -> int:
         """Episodes that did most of what the published half checks — the population overfitting is a share of."""
 
-        def published(e: dict) -> float:
+        def published(e: dict) -> float | None:
             f = e.get("published_fraction")
-            return float(f) if isinstance(f, (int, float)) else (1.0 if e.get("published_pass") else 0.0)
+            if isinstance(f, (int, float)):
+                return float(f)
+            if "published_fraction" in e:  # recorded as None: the task publishes no half, so nothing was passed
+                return None
+            return 1.0 if e.get("published_pass") else 0.0
 
-        return sum(1 for e in self.episodes if published(e) >= 0.5)
+        return sum(1 for e in self.episodes if (f := published(e)) is not None and f >= 0.5)
 
     @property
     def overfit(self) -> int:

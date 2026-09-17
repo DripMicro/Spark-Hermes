@@ -26,6 +26,7 @@ import sys
 from pathlib import Path
 
 from sh.scoring.v2 import credit
+from sh.validator.grade import TEST_CHECKS
 
 SCHEMA_SFT = "sh-sft-v2"
 SCHEMA_DPO = "sh-dpo-v2"
@@ -36,6 +37,20 @@ DPO_MARGIN = 0.5  # and the other side at least this much less of it
 def _leak_scan(text: str, secrets: set[str]) -> list[str]:
     """Nothing withheld may leave in a training row: the withheld half is what makes future rounds gradeable."""
     return sorted({s for s in secrets if s and s in text})
+
+
+def _secrets(reveal: dict) -> set[str]:
+    """Everything withheld, as strings, so a row carrying any of it can be refused rather than uploaded. The ids
+    of a withheld test suite are not secrets: they are the family's public dataset, and any honest `pytest -v`
+    names them."""
+    secrets: set[str] = set()
+    for entry in reveal.values():
+        secrets.add(entry.get("salt", ""))
+        for predicate in entry.get("withheld", {}).get("predicates", []):
+            if predicate[0] == "custom" and predicate[1:2] and predicate[1] in TEST_CHECKS:
+                continue
+            secrets.update(str(a) for a in predicate[1:] if isinstance(a, str) and len(str(a)) >= 16)
+    return secrets
 
 
 def _rows_for(episode_dir: Path, episode: dict, task: dict, system_prompt: str) -> dict | None:
@@ -77,14 +92,8 @@ def build(
     tasks = {p.stem: json.loads(p.read_text()) for p in sorted((round_dir / "tasks").glob("*.json"))}
     closed = json.loads(close_file.read_text())
 
-    # Everything withheld, as strings, so a row carrying any of it can be refused rather than uploaded.
-    secrets: set[str] = set()
     reveal = close_file.parent / "reveal.json"
-    if reveal.exists():
-        for entry in json.loads(reveal.read_text()).values():
-            secrets.add(entry.get("salt", ""))
-            for predicate in entry.get("withheld", {}).get("predicates", []):
-                secrets.update(str(a) for a in predicate[1:] if isinstance(a, str) and len(str(a)) >= 16)
+    secrets = _secrets(json.loads(reveal.read_text())) if reveal.exists() else set()
 
     sft, by_task = [], {}
     gates = {"not_king": 0, "no_trajectory": 0, "not_verified": 0, "disqualified": 0, "leaked": 0}

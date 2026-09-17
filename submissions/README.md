@@ -26,7 +26,7 @@ submissions/<hotkey>/
 ```
 
 No scripts, no config, no URLs, no `!\`…\`` inline shell, no `${HERMES_…}`. And not the round's answers: a bundle that reproduces the
-round's reference solutions or verifiers is refused at seal (S1) — write how to work, not what to type. The validator executes *its* pinned
+round's fixes (the code its hidden bugs replaced) is refused at seal (S1) — write how to work, not what to type. The validator executes *its* pinned
 agent and model against your prose, which is what makes every submission comparable.
 
 ## The loop, as a miner
