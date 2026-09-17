@@ -1,0 +1,6 @@
+{
+ "dataset": "SWE-bench/SWE-smith",
+ "license": "MIT",
+ "repository": "https://github.com/pallets/jinja",
+ "environment": "jyangballin/swesmith.x86_64.pallets_1776_jinja.ada0a9a6"
+}

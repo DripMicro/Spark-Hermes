@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0005-p07",
+ "round_id": "r0005",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nNamespace object assignment broken - values and keys swapped\n\n#### Description\n\nWhen using Jinja2's `namespace()` object and assigning values using bracket notation, the keys and values get swapped internally. This causes unexpected behavior when accessing namespace attributes.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom jinja2 import Environment\n\nenv = Environment()\n\n# This should work but produces wrong results\ntmpl = env.from_string(\"{% set ns = namespace() %}{% set ns['bar'] = '42' %}{{ ns.bar }}\")\nresult = tmpl.render()\nprint(f\"Expected: '42', Got: '{result}'\")\n\n# Also affects initialization with keyword arguments\ntmpl2 = env.from_string('{% set ns = namespace(d, self=37) %}{% set ns.b = 42 %}{{ ns.a }}|{{ ns.self }}|{{ ns.b }}')\nresult2 = tmpl2.render(d={'a': 13})\nprint(f\"Expected: '13|37|42', Got: '{result2}'\")\n```\n\nThe namespace object appears to be storing keys as values and values as keys internally, causing attribute access to fail or return unexpected results.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pallets__jinja.ada0a9a6.func_basic__9lrualwu",
+  "environment": "jyangballin/swesmith.x86_64.pallets_1776_jinja.ada0a9a6",
+  "fail_to_pass": [
+   "tests/test_core_tags.py::TestSet::test_init_namespace",
+   "tests/test_core_tags.py::TestSet::test_namespace",
+   "tests/test_core_tags.py::TestSet::test_namespace_block",
+   "tests/test_core_tags.py::TestSet::test_namespace_loop",
+   "tests/test_core_tags.py::TestSet::test_namespace_macro"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

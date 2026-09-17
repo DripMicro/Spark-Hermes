@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0005-p04",
+ "round_id": "r0005",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nNameError in Snowflake dialect when transpiling REGEXP_SUBSTR with group parameter\n\n#### Description\n\nWhen transpiling REGEXP_SUBSTR expressions that include a group parameter, the Snowflake dialect throws a NameError because variables are referenced before being defined.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This will raise a NameError\nsql = \"REGEXP_SUBSTR(subject, pattern, 1, 1, 'c', 1)\"\nresult = sqlglot.transpile(sql, read=\"snowflake\", write=\"snowflake\")\n```\n\nThe error occurs when the function tries to reference `group`, `parameters`, and `occurrence` variables that are not properly defined in the current scope.\n\n#### Expected Behavior\n\nThe REGEXP_SUBSTR function should transpile correctly without throwing NameError exceptions, maintaining all the original parameters in the correct order.\n\n#### Actual Behavior\n\nA NameError is raised because variables like `group`, `parameters`, and `occurrence` are referenced before being assigned values in the function scope.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_assign__mavnvb9l",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_regexp_substr"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

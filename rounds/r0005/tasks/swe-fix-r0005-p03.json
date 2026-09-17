@@ -1,0 +1,30 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0005-p03",
+ "round_id": "r0005",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nBearer token validation parameter order incorrect\n\n#### Description\n\nWhen validating bearer tokens, the parameter order passed to `validate_bearer_token` is incorrect, causing validation to fail unexpectedly.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth2 import BearerToken\nfrom oauthlib.common import Request\n\n# Create a mock request validator\nclass MockValidator:\n    def validate_bearer_token(self, token, request, scopes):\n        # This method expects: token, request, scopes\n        return True\n\n# Create bearer token handler\ntoken = BearerToken(request_validator=MockValidator())\n\n# Create a request with scopes\nrequest = Request('http://example.com')\nrequest.scopes = ['read', 'write']\n\n# This will fail because parameters are passed in wrong order\nresult = token.validate_request(request)\n```\n\nThe `validate_bearer_token` method in request validators expects parameters in the order `(token, request, scopes)`, but the current implementation passes them as `(token, scopes, request)`.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__ty24mp1h",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_json_response",
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_jwt_response",
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_no_auth",
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_token_expired",
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_token_no_openid_scope",
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_wrong_auth"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0005-p01",
+ "round_id": "r0005",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nRow.grid_cols_before returns incorrect value\n\n#### Description\n\nThe `grid_cols_before` property on table rows is returning values that are off by one. When a row has no grid columns before it should return 0, but it's returning 1. When it should return 3, it's returning 4.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.table import _Row\n\n# Create a simple table\ndoc = Document()\ntable = doc.add_table(rows=2, cols=3)\n\n# Get the first row\nrow = table.rows[0]\n\n# This should return 0 but returns 1\nprint(f\"Expected: 0, Got: {row.grid_cols_before}\")\n\n# You can also test with XML directly\nfrom docx.oxml.parser import parse_xml\nfrom docx.oxml.table import CT_Row\n\n# Test case with gridBefore value of 3\ntr_xml = '''<w:tr xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">\n    <w:trPr>\n        <w:gridBefore w:val=\"3\"/>\n    </w:trPr>\n</w:tr>'''\n\ntr_element = parse_xml(tr_xml)\nrow = _Row(tr_element, None)\n\n# This should return 3 but returns 4\nprint(f\"Expected: 3, Got: {row.grid_cols_before}\")\n```\n\nThe issue affects table layout calculations where the number of grid columns before a row is used to determine cell positioning and table structure.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__qci2p295",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_table.py::Describe_Row::it_knows_its_grid_cols_before[w:tr-0]",
+   "tests/test_table.py::Describe_Row::it_knows_its_grid_cols_before[w:tr/w:trPr-0]",
+   "tests/test_table.py::Describe_Row::it_knows_its_grid_cols_before[w:tr/w:trPr/w:gridBefore{w:val=0}-0]",
+   "tests/test_table.py::Describe_Row::it_knows_its_grid_cols_before[w:tr/w:trPr/w:gridBefore{w:val=3}-3]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
