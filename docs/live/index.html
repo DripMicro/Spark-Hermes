@@ -43,7 +43,7 @@
   <section class="panel rise" id="subs-panel" hidden>
     <h2>Submissions <small>open pull requests, one per hotkey; the newest push counts at the seal</small></h2>
     <div class="wrap"><table>
-      <thead><tr><th class="l">hotkey</th><th class="l">pull request</th><th>submitted</th><th>last push</th><th title="weight after the last close — what pays now">weight</th><th title="score after the last close">score</th><th title="Δc after the last close">Δc</th></tr></thead>
+      <thead><tr><th class="l">miner</th><th class="l">pull request</th><th>submitted</th><th>last push</th><th title="weight after the last close — what pays now">weight</th><th title="score after the last close">score</th><th title="Δc after the last close">Δc</th></tr></thead>
       <tbody id="subs"><tr><td class="empty" colspan="7">no submission yet</td></tr></tbody>
     </table></div>
   </section>
@@ -92,6 +92,14 @@
   const cls = (x) => x == null || x === 0 ? "zero" : x > 0 ? "pos" : "neg";
   const short = (h) => h.length <= 16 ? h : h.slice(0, 6) + "…" + h.slice(-4);
   const hk = (h) => '<span class="hk" title="' + esc(h) + '">' + esc(short(h)) + "</span>";
+  // a strategy's identity: its author's GitHub avatar and name when known (carried in live.github), with the
+  // hotkey beneath — the hotkey is what the chain pays, the GitHub handle is who to recognise.
+  const ident = (live, h) => {
+    const g = (live.github || {})[h];
+    const av = g ? '<img class="gh-av" src="https://github.com/' + esc(g) + '.png?size=48" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add(\'gh-none\');this.removeAttribute(\'src\')">' : '<span class="gh-av gh-none" aria-hidden="true"></span>';
+    const name = g ? '<a class="gh-name" href="https://github.com/' + esc(g) + '">@' + esc(g) + "</a>" : '<span class="gh-name gh-anon">unlinked</span>';
+    return '<span class="ident">' + av + '<span class="ident-txt">' + name + hk(h) + "</span></span>";
+  };
   const th = (label, title, left) => "<th" + (left ? ' class="l"' : "") + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + "</th>";
   const pr = (live, n) => '<a href="https://github.com/' + esc(live.repo) + "/pull/" + n + '">#' + n + "</a>";
   let current = null;
@@ -104,7 +112,7 @@
     else if (info && info.incumbent) tag = '<span class="tag king">incumbent</span>';
     else if (info && info.pr) tag = '<span class="tag">' + pr(live, info.pr) + "</span>";
     else tag = '<span class="tag" title="scored on its episodes from earlier rounds in the window; not sealed this round">window</span>';
-    return '<td class="l">' + (s === "null" || s === "canon" ? '<span class="hk">' + s + "</span>" : hk(s)) + tag + "</td>";
+    return '<td class="l">' + (s === "null" || s === "canon" ? '<span class="hk">' + s + "</span>" : ident(live, s)) + tag + "</td>";
   }
 
   function submissions(live) {
@@ -112,7 +120,7 @@
     $("subs-panel").hidden = live.stage !== "window";
     $("subs").innerHTML = subs.length ? subs.slice().sort((a, b) => a.pr - b.pr).map((s) => {
       const k = st[s.hotkey] || {};
-      return "<tr><td class='l'>" + hk(s.hotkey) + (live.active && live.active[s.hotkey] && live.active[s.hotkey].incumbent ? '<span class="tag king">incumbent</span>' : "") + "</td>" +
+      return "<tr><td class='l'>" + ident(live, s.hotkey) + (live.active && live.active[s.hotkey] && live.active[s.hotkey].incumbent ? '<span class="tag king">incumbent</span>' : "") + "</td>" +
         "<td class='l'>" + pr(live, s.pr) + "</td><td>" + iso(s.created_at) + "</td><td>" + iso(s.updated_at) + "</td>" +
         "<td class='" + (k.weight ? "" : "zero") + "'>" + num(k.weight, 3) + "</td><td>" + num(k.score, 4) + "</td><td>" + num(k.delta_c, 3) + "</td></tr>";
     }).join("") : '<tr><td class="empty" colspan="7">no submission yet — the window is open</td></tr>';
@@ -218,7 +226,7 @@
     const last = (live.history || []).slice(-1)[0];
     const kingScore = (h, src) => src && src[h] ? " · score " + num(src[h].score, 4) + " · weight " + num(src[h].weight, 3) : "";
     const nowScores = live.scores && live.scores.per_hotkey ? Object.fromEntries(Object.entries(live.scores.per_hotkey).map(([h, s]) => [h, { ...s, weight: live.scores.weights[h] || 0 }])) : null;
-    if (king) { $("king-now").innerHTML = "👑 " + hk(king); $("king-sub").textContent = "this round" + kingScore(king, nowScores || live.standings); }
+    if (king) { $("king-now").innerHTML = "👑 " + ident(live, king); $("king-sub").textContent = "this round" + kingScore(king, nowScores || live.standings); }
     else if (last && last.king) { $("king-now").innerHTML = hk(last.king); $("king-sub").textContent = "since " + last.round_id + kingScore(last.king, last.scores); }
     else { $("king-now").textContent = "—"; $("king-sub").textContent = ""; }
     paint();
