@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789618574.301422,
+ "updated": 1789618580.09337,
  "round_id": "r0003",
- "stage": "evaluate",
+ "stage": "close",
  "stages": [
   "open",
   "window",
@@ -896,6 +896,10 @@
   {
    "stage": "images",
    "t": 1789599830.4319308
+  },
+  {
+   "stage": "evaluate",
+   "t": 1789618580.084876
   }
  ],
  "window": {
