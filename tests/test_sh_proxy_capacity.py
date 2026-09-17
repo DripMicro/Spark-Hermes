@@ -23,9 +23,9 @@ def _engine(script):
         def do_POST(self):
             seen.append(json.loads(self.rfile.read(int(self.headers["Content-Length"]))))
             status, body = script.pop(0) if script else (200, {"usage": {"prompt_tokens": 1, "completion_tokens": 1}})
-            data = json.dumps(body).encode()
+            data = body if isinstance(body, bytes) else json.dumps(body).encode()  # bytes: a raw SSE stream
             self.send_response(status)
-            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Type", "text/event-stream" if isinstance(body, bytes) else "application/json")
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
             self.wfile.write(data)
@@ -115,3 +115,59 @@ def test_a_spent_budget_is_an_ending_never_a_void(monkeypatch, tmp_path):
     monkeypatch.setattr(g, "grade_in_container", lambda *a, **k: {"published_pass": True, "protected_modified": []})
     rec = g.grade(tmp_path, {"task_id": "t-1", "published": {"predicates": []}}, None, "img")
     assert not rec["void"] and "token_budget_spent" in rec["signals"] and rec["budget_spent"]["budget"] == 600000
+
+
+REFUSED = {
+    "choices": [
+        {"message": {"role": "assistant", "content": "server overloaded: no capacity for this request right now"}}
+    ],
+    "usage": {"prompt_tokens": 40, "completion_tokens": 0},
+}
+
+
+def test_a_refusal_wearing_a_200_is_held_and_retried_like_a_503(tmp_path):
+    """The engine refuses with a 200 — its overload message where the answer should be, no completion tokens — and
+    the 429/503 hold never saw it: a fifth of r0004–r0006's episodes were voided that way, each one a re-run."""
+    engine, seen = _engine([(200, REFUSED), (200, {"usage": {"prompt_tokens": 40, "completion_tokens": 3}})])
+    proxy, tokens = _proxy(tmp_path, f"http://127.0.0.1:{engine.server_port}")
+    tok = tokens.issue("ep-r", 60)
+    status, body = _post(proxy.server_port, tok)
+    assert status == 200 and body["usage"]["completion_tokens"] == 3 and len(seen) == 2
+    rows = [json.loads(line) for line in (tmp_path / "usage" / "ep-r.jsonl").read_text().splitlines()]
+    assert [r["usage"]["completion_tokens"] for r in rows] == [3]  # the refusal spent none of the budget
+
+
+def test_a_refused_stream_is_retried_before_a_byte_reaches_the_agent(tmp_path):
+    refused = b'data: {"choices":[{"delta":{"content":"server overloaded: no capacity"},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n'
+    answered = (
+        b'data: {"choices":[{"delta":{"role":"assistant","content":null}}]}\n\n'
+        b'data: {"choices":[{"delta":{"content":"fixed"}}]}\n\n'
+        b'data: {"choices":[],"usage":{"prompt_tokens":40,"completion_tokens":2}}\n\ndata: [DONE]\n\n'
+    )
+    engine, seen = _engine([(200, refused), (200, answered)])
+    proxy, tokens = _proxy(tmp_path, f"http://127.0.0.1:{engine.server_port}")
+    tok = tokens.issue("ep-s", 60)
+    req = urllib.request.Request(
+        f"http://127.0.0.1:{proxy.server_port}/v1/chat/completions",
+        data=json.dumps({"messages": [], "stream": True}).encode(),
+        headers={"Authorization": f"Bearer {tok}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=30) as r:
+        out = r.read()
+    assert b"fixed" in out and b"overloaded" not in out and len(seen) == 2
+    rows = [json.loads(line) for line in (tmp_path / "usage" / "ep-s.jsonl").read_text().splitlines()]
+    assert [r["usage"]["completion_tokens"] for r in rows] == [2]
+
+
+def test_a_completion_that_mentions_capacity_is_not_a_refusal():
+    from sh.validator.proxy import refusal
+
+    assert refusal(json.dumps(REFUSED).encode())
+    assert refusal(b'{"error": {"message": "server overloaded"}}')
+    assert not refusal(
+        json.dumps(
+            {"choices": [{"message": {"content": "no capacity left"}}], "usage": {"completion_tokens": 4}}
+        ).encode()
+    )
+    assert not refusal(b'{"choices":[{"delta":{"role":"assistant","content":null}}]}')  # an ordinary first chunk

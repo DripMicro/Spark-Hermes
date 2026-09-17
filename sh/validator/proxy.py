@@ -35,6 +35,24 @@ OVERLOAD_WAIT_S = 240  # how long a refused call is held before the refusal is p
 MAX_WAITING = 2  # calls of one episode allowed to queue behind its call in flight; more are refused at once
 _UNPINNED = ("n", "best_of", "logprobs", "top_logprobs", "echo")  # knobs that multiply what one call costs the engine
 _OVERLOAD_WORDS = (b"overloaded", b"no capacity", b"capacity")
+_REFUSAL_PHRASES = (b"overloaded", b"no capacity")  # in a 200: the engine's words, where a completion should be
+
+
+def refusal(payload: bytes) -> bool:
+    """A 200 that is really a capacity refusal: the engine puts its overload message where the answer should be and
+    generates nothing (r0004–r0006 voided a fifth of their episodes this way, unseen by the 429/503 hold). A
+    completion that merely mentions capacity has completion tokens. For a stream, `payload` is the first data chunk."""
+    if not any(p in payload.lower() for p in _REFUSAL_PHRASES):
+        return False
+    try:
+        j = json.loads(payload)
+    except ValueError:
+        return True
+    if not isinstance(j, dict):
+        return False
+    if j.get("error"):
+        return True
+    return int((j.get("usage") or {}).get("completion_tokens") or 0) == 0
 
 
 def spent(usage_file: Path) -> int:
@@ -209,7 +227,7 @@ def make_handler(upstream: str, tokens: Tokens, usage_dir: Path, sampling: dict)
             self._forward(raw, episode)
 
         def _forward(self, raw: bytes, episode: str):
-            t0, pause = time.time(), 2.0
+            t0, pause, data = time.time(), 2.0, b""
             while True:
                 req = urllib.request.Request(
                     upstream + self.path,
@@ -219,7 +237,6 @@ def make_handler(upstream: str, tokens: Tokens, usage_dir: Path, sampling: dict)
                 )
                 try:
                     resp = urllib.request.urlopen(req, timeout=600)
-                    break
                 except urllib.error.HTTPError as e:
                     data = e.read()
                     refused = e.code in (429, 503) or any(w in data.lower() for w in _OVERLOAD_WORDS)
@@ -235,8 +252,27 @@ def make_handler(upstream: str, tokens: Tokens, usage_dir: Path, sampling: dict)
                     return
                 except Exception as e:
                     return self._deny(502, f"upstream: {e!r}"[:200])
+                ctype = resp.headers.get("Content-Type", "application/json")
+                streaming = "text/event-stream" in ctype
+                # The engine also refuses with a 200. Look before a byte reaches the client — the first data chunk
+                # of a stream, the whole body otherwise — so that refusal is held and retried like a 503.
+                head: list[bytes] = []
+                if streaming:
+                    for line in resp:
+                        head.append(line)
+                        if line.startswith(b"data:"):
+                            break
+                    peek = head[-1][5:].strip() if head and head[-1].startswith(b"data:") else b""
+                else:
+                    data = resp.read()
+                    peek = data
+                if self.command == "POST" and refusal(peek) and time.time() - t0 < OVERLOAD_WAIT_S:
+                    resp.close()
+                    time.sleep(pause)
+                    pause = min(pause * 1.5, 10.0)
+                    continue
+                break
             queued = round(time.time() - t0, 1)
-            ctype = resp.headers.get("Content-Type", "application/json")
 
             def record(u):  # written BEFORE the client sees the end of the response, so a reader never races it
                 if self.command != "POST" or not u:
@@ -245,13 +281,14 @@ def make_handler(upstream: str, tokens: Tokens, usage_dir: Path, sampling: dict)
                 with open(usage_dir / f"{episode}.jsonl", "a") as f:
                     f.write(json.dumps({"t": time.time(), "usage": u, "queued_s": queued}) + "\n")
 
-            if "text/event-stream" in ctype:
+            if streaming:
                 self.send_response(resp.status)
                 self.send_header("Content-Type", ctype)
                 self.send_header("Cache-Control", "no-cache")
                 self.send_header("Transfer-Encoding", "chunked")
                 self.end_headers()
-                for line in resp:
+
+                def emit(line: bytes) -> None:
                     if line.startswith(b"data:") and b'"usage"' in line:
                         try:
                             record(json.loads(line[5:].strip()).get("usage"))
@@ -259,10 +296,14 @@ def make_handler(upstream: str, tokens: Tokens, usage_dir: Path, sampling: dict)
                             pass
                     self.wfile.write(f"{len(line):X}\r\n".encode() + line + b"\r\n")
                     self.wfile.flush()
+
+                for line in head:  # what the peek read ahead
+                    emit(line)
+                for line in resp:
+                    emit(line)
                 self.wfile.write(b"0\r\n\r\n")
                 self.wfile.flush()
             else:
-                data = resp.read()
                 try:
                     record(json.loads(data).get("usage"))
                 except ValueError:

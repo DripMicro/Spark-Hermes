@@ -294,13 +294,15 @@ def open_round(cfg: Config) -> Path:
     round_id = queue_ready(cfg)[0]
     rd = cfg.rounds / round_id
     cfg.rounds.mkdir(parents=True, exist_ok=True)
+    # The window is written before the move: a round directory, once it exists, always has its window.json, so
+    # a restart between the two can resume it (a kill there used to leave a round that no resume could publish).
+    now = time.time()
+    (cfg.queue / round_id / "window.json").write_text(
+        json.dumps({"opens_at": now, "closes_at": now + cfg.window_s, "seconds": cfg.window_s})
+    )
     shutil.move(str(cfg.queue / round_id), str(rd))  # consumed: the daemon refills
     (rd / "READY").unlink(missing_ok=True)
     # The task images were built on the worker at mint and are removed there once the round is evaluated.
-    now = time.time()
-    (rd / "window.json").write_text(
-        json.dumps({"opens_at": now, "closes_at": now + cfg.window_s, "seconds": cfg.window_s})
-    )
     log(rd, "start")
     return rd
 
@@ -600,17 +602,21 @@ def has_challengers(cfg: Config, round_id: str) -> int:
 
 def seal(cfg: Config, round_id: str, rd: Path) -> dict:
     """Which bundles are in this round, decided the instant the window closes and published before evaluation."""
-    active, rejected = candidates(cfg, round_id, rd / "bundles")
+    if (rd / "seal.json").exists():  # a restart after the seal was taken but before it was logged: never re-seal
+        record = json.loads((rd / "seal.json").read_text())  # (a PR pushed after the window would be taken)
+        active, rejected = record["active"], record["rejected"]
+    else:
+        active, rejected = candidates(cfg, round_id, rd / "bundles")
+        record = {
+            "schema": "sh-seal-v3",
+            "round_id": round_id,
+            "sealed_at": time.time(),
+            "active": active,
+            "rejected": rejected,
+        }
+        (rd / "seal.json").write_text(json.dumps(record, indent=1))
     for number in [i["pr"] for i in active.values() if i.get("pr")] + [int(n) for n in rejected]:
         _label(number, f"sh:round:{round_id}")
-    record = {
-        "schema": "sh-seal-v3",
-        "round_id": round_id,
-        "sealed_at": time.time(),
-        "active": active,
-        "rejected": rejected,
-    }
-    (rd / "seal.json").write_text(json.dumps(record, indent=1))
     dest = cfg.repo / "rounds" / round_id
     dest.mkdir(parents=True, exist_ok=True)
     shutil.copy(rd / "seal.json", dest / "seal.json")
@@ -759,7 +765,8 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
         _worker(
             cfg,
             "docker image rm -f " + " ".join(tags) + " >/dev/null 2>&1; docker image prune -f >/dev/null 2>&1; "
-            "docker builder prune -f --filter until=48h >/dev/null 2>&1; true",
+            "docker builder prune -f --filter until=12h >/dev/null 2>&1; "  # task images leave ~250 GB/day of cache
+            "docker builder prune -f --keep-storage 120GB >/dev/null 2>&1; true",  # and a hard cap on what stays
         )
     # Rounds older than the previous one leave the worker: their episodes are archived here.
     _worker(cfg, f"ls -d {cfg.worker_root}/rounds/r* 2>/dev/null | sort | head -n -2 | xargs -r rm -rf")
