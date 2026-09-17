@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0007-p17",
+ "round_id": "r0007",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDylan lexer not highlighting keywords and builtins correctly\n\n#### Description\n\nThe Dylan lexer is no longer properly highlighting keywords, builtins, functions, and operators. All identifiers are being treated as plain `Name` tokens instead of their appropriate token types like `Keyword`, `Name.Builtin`, or `Operator`.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pygments import highlight\nfrom pygments.lexers import DylanLexer\nfrom pygments.formatters import TerminalFormatter\n\ncode = \"\"\"\ndefine method hello-world()\n  format-out(\"Hello, world!\\\\n\");\nend method;\n\ndefine class <person> (<object>)\n  slot name :: <string>, required-init-keyword: name:;\n  slot age :: <integer>, init-value: 0;\nend class;\n\"\"\"\n\nlexer = DylanLexer()\nformatter = TerminalFormatter()\nresult = highlight(code, lexer, formatter)\nprint(result)\n```\n\nExpected: Keywords like `define`, `method`, `class`, `end` should be highlighted as keywords, and builtins like `format-out`, `<string>`, `<integer>`, `<object>` should be highlighted as builtins.\n\nActual: All identifiers appear as plain names without any special highlighting.\n\nThe issue affects syntax highlighting in editors and documentation tools that rely on Pygments for Dylan code highlighting.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pygments__pygments.27649ebb.func_pm_class_rm_funcs__03456rbv",
+  "environment": "jyangballin/swesmith.x86_64.pygments_1776_pygments.27649ebb",
+  "fail_to_pass": [
+   "tests/examplefiles/dylan-console/console.dylan-console::",
+   "tests/examplefiles/dylan-console/session.dylan-console::",
+   "tests/examplefiles/dylan/classes.dylan::",
+   "tests/examplefiles/dylan/nanomsg.intr::"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

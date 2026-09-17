@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0007-p10",
+ "round_id": "r0007",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nFunction `__kwdefaults__` returns List instead of Dict\n\n#### Description\n\nWhen accessing `__kwdefaults__` on a function with keyword-only arguments that have default values, the returned object is a List instead of the expected Dict.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ncode = \"\"\"\ndef test(a: 1, *args: 2, f:4='lala', **kwarg:3)->2: pass\ntest.__kwdefaults__\n\"\"\"\n\nast_node = astroid.extract_node(code)\nkwdefaults = next(ast_node.infer())\nprint(type(kwdefaults))  # Expected: <class 'astroid.node_classes.Dict'>\nprint(kwdefaults)\n```\n\nThe above code prints a List type instead of the expected Dict type for `__kwdefaults__`.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__tjegnydx",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_object_model.py::FunctionModelTest::test_annotations_kwdefaults"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

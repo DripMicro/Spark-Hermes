@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0007-p21",
+ "round_id": "r0007",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n`reject` filter returns wrong results\n\n#### Description\n\nThe `reject` filter is not working correctly and returns the opposite of what it should. Instead of rejecting items that match the test, it's accepting them.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom jinja2 import Environment\n\n# Test with a simple predicate\nenv = Environment()\ntmpl = env.from_string('{{ [1, 2, 3, 4, 5]|reject(\"odd\")|join(\"|\") }}')\nresult = tmpl.render()\nprint(f\"Got: {result}\")\nprint(\"Expected: 2|4\")\n\n# Test with boolean rejection\ntmpl2 = env.from_string('{{ [none, false, 0, 1, 2, 3, 4, 5]|reject|join(\"|\") }}')\nresult2 = tmpl2.render()\nprint(f\"Got: {result2}\")\nprint(\"Expected: None|False|0\")\n```\n\nThe `reject` filter should remove items that evaluate to true (or match the given test), but it's currently doing the opposite - it's keeping those items and removing the ones that should be kept.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pallets__jinja.ada0a9a6.func_basic__jeyj7262",
+  "environment": "jyangballin/swesmith.x86_64.pallets_1776_jinja.ada0a9a6",
+  "fail_to_pass": [
+   "tests/test_filters.py::TestFilter::test_bool_reject",
+   "tests/test_filters.py::TestFilter::test_simple_reject"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
