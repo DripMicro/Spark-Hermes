@@ -31,6 +31,7 @@ import argparse
 import base64
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -52,6 +53,10 @@ from sh.web.build import render as render_leaderboard
 REPO = "gittensor-model-hub/Spark-Hermes"
 BRANCH = "main"
 LABEL_STRATEGY, LABEL_SCORED, LABEL_CROWN = "sh:strategy", "sh:round:scored", "sh:round:crown"
+# A hotkey directory name is an ss58 address: base58, 47–48 chars. Everything downstream trusts it as a directory
+# name and as a shell word in the worker's `--surfaces` argument; a name like `$(...)` or `../x` must never reach
+# there. Anything else in submissions/ is not a submission.
+SS58 = re.compile(r"\A[1-9A-HJ-NP-Za-km-z]{47,48}\Z")
 HF_REPO = "gittensor-model-hub/spark-hermes-rounds"
 LIVE = "docs/live/live.json"  # what the dashboard polls; committed on every stage change
 CLAIM_GRACE_S = 30  # after claiming the engine, how long a screen the daemon had just started is given to show up
@@ -84,11 +89,13 @@ class Config:
         return self.state / "rounds"
 
 
-def sh(cmd: list[str], *, cwd: Path | None = None, env: dict | None = None, check: bool = True) -> str:
+def sh(
+    cmd: list[str], *, cwd: Path | None = None, env: dict | None = None, check: bool = True, want_err: bool = False
+) -> str:
     r = subprocess.run(cmd, cwd=cwd, env={**os.environ, **(env or {})}, capture_output=True, text=True)
     if check and r.returncode:
         raise RuntimeError(f"{' '.join(cmd[:4])}… exited {r.returncode}: {r.stderr[-800:]}")
-    return r.stdout
+    return (r.stdout + r.stderr) if want_err and r.returncode else r.stdout
 
 
 def gh(*args: str) -> str:
@@ -138,11 +145,19 @@ def _commit(cfg: Config, message: str, paths: tuple[str, ...] = ("rounds", "docs
     paths = tuple(p for p in paths if (cfg.repo / p).exists())  # a fresh checkout has no docs/rounds yet
     if not paths:
         return
+    branch = sh(["git", "symbolic-ref", "--short", "-q", "HEAD"], cwd=cfg.repo, check=False).strip()
+    if branch != BRANCH:  # the loop commits only on main, in its own clone: never move a developer's branch
+        raise RuntimeError(f"the validator checkout is on {branch!r}, not {BRANCH}; refusing to commit")
     sh(["git", "add", *paths], cwd=cfg.repo)
     if sh(["git", "status", "--porcelain", *paths], cwd=cfg.repo).strip():
         sh(["git", "commit", "-q", "-m", message, "--", *paths], cwd=cfg.repo)  # only these paths
-        sh(["git", "pull", "-q", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False)
-        sh(["git", "push", "-q", "origin", BRANCH], cwd=cfg.repo)
+        if sh(["git", "pull", "--rebase", "origin", BRANCH], cwd=cfg.repo, check=False, want_err=True).strip():
+            # a rebase that could not apply cleanly (a conflict on live.json) leaves the tree mid-rebase and every
+            # later parse of it fails: abort, so the next commit retries from a clean HEAD ahead of origin
+            if (cfg.repo / ".git" / "rebase-merge").exists() or (cfg.repo / ".git" / "rebase-apply").exists():
+                sh(["git", "rebase", "--abort"], cwd=cfg.repo, check=False)
+                raise RuntimeError("the validator checkout could not rebase onto origin; aborted, will retry")
+        sh(["git", "push", "-q", "origin", f"HEAD:{BRANCH}"], cwd=cfg.repo)
 
 
 def _read(path: Path, default: Any = None) -> Any:
@@ -392,20 +407,31 @@ def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_i
     """Materialise `submissions/<hotkey>/` as of `ref` into `dest` and lint it; None if there is nothing there.
     With `round_id`, the bundle must carry a valid attestation for that round (a challenger); without, it is an
     incumbent whose attestation was checked when it was sealed."""
-    listing = sh(["git", "ls-tree", "-r", "--name-only", ref, f"submissions/{hotkey}/"], cwd=cfg.repo, check=False)
+    listing = sh(
+        ["git", "ls-tree", "-r", "-z", "--name-only", ref, f"submissions/{hotkey}/"], cwd=cfg.repo, check=False
+    )
     prefix = f"submissions/{hotkey}/"
-    rels = [r for r in listing.split() if r.startswith(prefix)]
+    rels = [r for r in listing.split("\0") if r.startswith(prefix)]  # -z: a filename with spaces or newlines is one
     if not rels:
         return None
     shutil.rmtree(dest, ignore_errors=True)
     dest.mkdir(parents=True)
     for rel in rels:
         out = dest / rel[len(prefix) :]
+        if not str(out.resolve()).startswith(str(dest.resolve()) + os.sep):  # a name climbing out of the bundle
+            return {"problems": [f"path escapes the bundle: {rel[:60]}"], "digest": "", "attestation": None}
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_bytes(sh(["git", "show", f"{ref}:{rel}"], cwd=cfg.repo).encode())
+        blob = subprocess.run(["git", "show", f"{ref}:{rel}"], cwd=cfg.repo, capture_output=True)  # bytes, not text
+        out.write_bytes(blob.stdout)
     files, problems = collect(dest)
     result = check_files(files, problems, hotkey=hotkey, round_id=round_id, require_attestation=round_id is not None)
     return {"problems": result["problems"], "digest": result["bundle_sha256"], "attestation": result["attestation"]}
+
+
+def _changed_paths(cfg: Config, base: str, head: str) -> list[str]:
+    """Every path a head changes relative to where it forked from the base (three-dot)."""
+    names = sh(["git", "diff", "--name-only", "-z", f"{base}...{head}", "--"], cwd=cfg.repo, check=False)
+    return [p for p in names.split("\0") if p]
 
 
 def _changed_submissions(cfg: Config, base: str, head: str) -> list[str]:
@@ -491,7 +517,7 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
     rejected: dict[str, str] = {}
     for entry in sh(["git", "ls-tree", "--name-only", tip, "submissions/"], cwd=cfg.repo, check=False).split():
         hotkey = entry.split("/")[-1]
-        if not hotkey or hotkey == "README.md":
+        if not SS58.match(hotkey):  # README.md and anything not an ss58 directory is not a submission
             continue
         b = _bundle_from_tree(cfg, tip, hotkey, bundles / hotkey, round_id=None)
         if b and not b["problems"]:
@@ -507,6 +533,15 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
     valid: list[dict] = []
     for pr in (p for p in prs if pr_role(p["changed"]) == "strategy"):
         hotkey, staged = pr["changed"][0], bundles / f".pr{pr['number']}"
+        if not SS58.match(hotkey):
+            rejected[str(pr["number"])] = f"submissions/{hotkey[:16]}…/ is not a hotkey (ss58) directory"
+            continue
+        outside = [p for p in _changed_paths(cfg, tip, pr["headRefOid"]) if not p.startswith(f"submissions/{hotkey}/")]
+        if outside:  # a strategy is prose under one hotkey and nothing else — never code, never another's directory
+            rejected[str(pr["number"])] = (
+                f"changes {len(outside)} path(s) outside submissions/{hotkey[:8]}…/ (e.g. {outside[0]})"
+            )
+            continue
         b = _bundle_from_tree(cfg, pr["headRefOid"], hotkey, staged, round_id=round_id)
         if b is not None and not b["problems"] and answers:
             files, _ = collect(staged)
@@ -762,12 +797,14 @@ def close(cfg: Config, round_id: str, rd: Path) -> dict:
 def crown_round(cfg: Config, rd: Path, record: dict, sealed: dict) -> dict:
     """This round's king, from this round's episodes alone (spec: the crown is a merge, not a payment)."""
     pooled = {h: s.get("delta_c", 0.0) for h, s in record.get("scores", {}).items()}
+    incumbent = next((h for h, info in sealed["active"].items() if info.get("incumbent")), None)
     result = crown_rule(
         load_episodes(rd / "episodes"),
         set(sealed["active"]),
         round_id=rd.name,
         pooled_delta_c=pooled,
         min_paired=cfg.min_paired,
+        incumbent=incumbent,  # a tie does not dethrone
     )
     (rd / "close" / "crown.json").write_text(json.dumps(result, indent=1))
     log(rd, "crown", king=result["king"], ranked=[h for h, s in result["standings"].items() if "rank" in s])
@@ -845,6 +882,7 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
         sh(["gh", "api", "-X", "DELETE", f"repos/{REPO}/issues/{pr['number']}/labels/{LABEL_CROWN}"], check=False)
     if plan["merge"]:
         _label(plan["merge"], LABEL_CROWN)
+        sealed_head = sealed["active"][king]["head"]  # the head the round evaluated; a push after the seal changes it
         merged = subprocess.run(
             [
                 "gh",
@@ -854,13 +892,20 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
                 "--repo",
                 REPO,
                 "--squash",
+                "--match-head-commit",
+                sealed_head,
                 "--subject",
                 f"crown {round_id}: {king}",
             ],
             capture_output=True,
             text=True,
         )
-        log(rd, "merge", pr=plan["merge"], ok=merged.returncode == 0, err=merged.stderr[-200:])
+        if merged.returncode != 0:  # a mismatch (the king pushed after the seal) or a transient failure: retry once
+            time.sleep(5)
+            merged = subprocess.run(
+                ["gh", "pr", "merge", str(plan["merge"]), "--repo", REPO, "--squash", "--match-head-commit",
+                 sealed_head, "--subject", f"crown {round_id}: {king}"], capture_output=True, text=True)  # fmt: skip
+        log(rd, "merge", pr=plan["merge"], ok=merged.returncode == 0, head=sealed_head[:8], err=merged.stderr[-200:])
     elif king:
         log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown")
     if gone := dethroned(sealed, king):  # after the merge, so the tree the removal commits onto is current

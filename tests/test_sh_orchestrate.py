@@ -255,10 +255,11 @@ def test_a_forged_later_resubmission_cannot_take_a_miners_real_submission_out_of
 
     cfg = _cfg(tmp_path)
     (cfg.rounds / "r0009" / "tasks").mkdir(parents=True)
+    HKA, HKB = "5" + "A" * 47, "5" + "B" * 47  # ss58-shaped
     prs = [
-        {"number": 7, "headRefOid": "h7", "changed": ["A"]},
-        {"number": 12, "headRefOid": "h12", "changed": ["A"]},
-        {"number": 9, "headRefOid": "h9", "changed": ["B"]},
+        {"number": 7, "headRefOid": "h7", "changed": [HKA]},
+        {"number": 12, "headRefOid": "h12", "changed": [HKA]},
+        {"number": 9, "headRefOid": "h9", "changed": [HKB]},
     ]
     signed = {
         "h7": (2000, []),
@@ -276,10 +277,12 @@ def test_a_forged_later_resubmission_cannot_take_a_miners_real_submission_out_of
     monkeypatch.setattr(o, "sh", lambda *a, **k: "")
     monkeypatch.setattr(o, "_strategy_prs", lambda cfg, tip: prs)
     monkeypatch.setattr(o, "_bundle_from_tree", fake_bundle)
+    head_hk = {"h7": HKA, "h12": HKA, "h9": HKB}
+    monkeypatch.setattr(o, "_changed_paths", lambda cfg, base, head: [f"submissions/{head_hk[head]}/SOUL.md"])
     active, rejected = o.candidates(cfg, "r0009", tmp_path / "bundles")
-    assert active["A"]["pr"] == 7 and active["B"]["pr"] == 9
+    assert active[HKA]["pr"] == 7 and active[HKB]["pr"] == 9
     assert rejected == {"12": "L10 attestation.json: signature is not the hotkey's over this round and digest"}
-    assert sorted(p.name for p in (tmp_path / "bundles").iterdir()) == ["A", "B"]  # staging directories cleaned up
+    assert sorted(p.name for p in (tmp_path / "bundles").iterdir()) == sorted([HKA, HKB])  # staging cleaned up
 
 
 def test_the_credit_window_does_not_pool_rounds_scored_all_or_nothing(tmp_path):
@@ -363,3 +366,36 @@ def test_evaluation_claims_the_engine_before_it_waits_and_releases_the_claim_onc
         and "batch?" in calls[calls.index("launch") : calls.index("release")]
     )
     assert calls.count("claim") == calls.count("release") == 1
+
+
+def test_a_strategy_pr_that_touches_anything_but_its_own_submission_directory_is_rejected(tmp_path, monkeypatch):
+    """A crowned PR is merged; a PR that also edits sh/ or another hotkey's directory would merge arbitrary code."""
+    import sh.validator.orchestrate as o
+
+    cfg = _cfg(tmp_path)
+    (cfg.rounds / "r0009" / "tasks").mkdir(parents=True)
+    HK = "5" + "C" * 47
+    prs = [
+        {"number": 3, "headRefOid": "h3", "changed": [HK]},  # touches sh/ too
+        {"number": 4, "headRefOid": "h4", "changed": ["not-an-ss58"]},
+        {"number": 5, "headRefOid": "h5", "changed": [HK]},  # clean
+    ]
+    diffs = {
+        "h3": [f"submissions/{HK}/SOUL.md", "sh/validator/grade.py"],
+        "h4": ["submissions/not-an-ss58/SOUL.md"],
+        "h5": [f"submissions/{HK}/SOUL.md"],
+    }
+
+    def fake_bundle(cfg, ref, hotkey, dest, *, round_id):
+        dest.mkdir(parents=True, exist_ok=True)
+        (dest / "SOUL.md").write_text("Be careful.\n")
+        (dest / "attestation.json").write_text(json.dumps({"signed_at": 100}))
+        return {"problems": [], "digest": "d-" + ref, "attestation": None}
+
+    monkeypatch.setattr(o, "sh", lambda *a, **k: "")
+    monkeypatch.setattr(o, "_strategy_prs", lambda cfg, tip: prs)
+    monkeypatch.setattr(o, "_bundle_from_tree", fake_bundle)
+    monkeypatch.setattr(o, "_changed_paths", lambda cfg, base, head: diffs[head])
+    active, rejected = o.candidates(cfg, "r0009", tmp_path / "bundles")
+    assert set(active) == {HK} and active[HK]["pr"] == 5
+    assert "outside" in rejected["3"] and "ss58" in rejected["4"]
