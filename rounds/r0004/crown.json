@@ -1,0 +1,47 @@
+{
+ "schema": "sh-crown-v1",
+ "round_id": "r0004",
+ "king": "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ",
+ "standings": {
+  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+   "n": 5,
+   "verified": 1,
+   "credit": 0.3,
+   "delta": 0.2,
+   "rank": 1
+  },
+  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+   "n": 5,
+   "verified": 0,
+   "credit": 0.1,
+   "delta": 0.0
+  },
+  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+   "n": 5,
+   "verified": 1,
+   "credit": 0.3,
+   "delta": 0.2,
+   "rank": 2
+  },
+  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+   "n": 5,
+   "verified": 0,
+   "credit": 0.1,
+   "delta": 0.0
+  },
+  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
+   "n": 5,
+   "verified": 0,
+   "credit": 0.0,
+   "delta": -0.1
+  },
+  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+   "n": 5,
+   "verified": 1,
+   "credit": 0.3,
+   "delta": 0.2,
+   "rank": 3
+  }
+ },
+ "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired; ties by pooled \u0394c"
+}

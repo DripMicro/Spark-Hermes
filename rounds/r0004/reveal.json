@@ -1,0 +1,162 @@
+{
+ "swe-fix-r0004-00": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/chart/test_datalabel.py::DescribeDataLabel::it_can_change_whether_it_has_a_text_frame[has_tf_set_fixture0]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/chart/test_datalabel.py::DescribeDataLabel::it_can_change_whether_it_has_a_text_frame[has_tf_set_fixture1]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/chart/test_datalabel.py::DescribeDataLabel::it_can_change_whether_it_has_a_text_frame[has_tf_set_fixture2]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/chart/test_datalabel.py::DescribeDataLabel::it_can_change_whether_it_has_a_text_frame[has_tf_set_fixture3]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/chart/test_datalabel.py::DescribeDataLabel::it_can_change_whether_it_has_a_text_frame[has_tf_set_fixture4]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/chart/test_datalabel.py::DescribeDataLabel::it_can_change_whether_it_has_a_text_frame[has_tf_set_fixture5]"
+    ]
+   ]
+  },
+  "salt": "44ea73b0636ab757e8a108bf0511c11f77c17442796b585c4a34f8463ef5d9e8",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "scanny__python-pptx.278b47b1.func_basic__f0tf9lba",
+   "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1"
+  }
+ },
+ "swe-fix-r0004-01": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_no_compu_method_category_arxml"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_system_3_arxml"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_system_4_arxml"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_system_arxml_float_values"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_list.py::CanToolsListTest::test_arxml4"
+    ]
+   ]
+  },
+  "salt": "77c095f01f828e13c365b487652039686a3a58f7096cd7a9af2082ab76ac9c6b",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.func_pm_ctrl_invert_if__27pym2df",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0004-02": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/shapes/test_shapetree.py::DescribeMasterPlaceholders::it_can_find_a_placeholder_by_type[body]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/shapes/test_shapetree.py::DescribeMasterPlaceholders::it_can_find_a_placeholder_by_type[title]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/shapes/test_shapetree.py::DescribeMasterPlaceholders::it_returns_default_on_ph_type_not_found"
+    ]
+   ]
+  },
+  "salt": "06609743a814eb3a21040d0b64256932f9e31da6b87b2f52569ee6c242303e6d",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "scanny__python-pptx.278b47b1.func_basic__d8ncr3s9",
+   "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1"
+  }
+ },
+ "swe-fix-r0004-04": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_databricks.py::TestDatabricks::test_databricks"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_teradata.py::TestTeradata::test_create"
+    ]
+   ]
+  },
+  "salt": "c9b50ac36f26c02fc1124ad7bae0cca85a0109d7e8272c6318c8985622ed0d7b",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_cond__xzfal0gu",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0004-07": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_common.py::RequestTest::test_password_body"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_common.py::RequestTest::test_sanitized_request_non_debug_mode"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_common.py::RequestTest::test_sanitizing_authorization_header"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_common.py::RequestTest::test_token_body"
+    ]
+   ]
+  },
+  "salt": "74aaa77944a10ba611fc8ae52a88bc22759acfbcc2e69633c340bb8b613add4a",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "oauthlib__oauthlib.1fd52536.lm_rewrite__hrv1h255",
+   "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536"
+  }
+ }
+}
