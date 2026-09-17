@@ -94,9 +94,10 @@
   const hk = (h) => '<span class="hk" title="' + esc(h) + '">' + esc(short(h)) + "</span>";
   // a strategy's identity: its author's GitHub avatar and name when known (carried in live.github), with the
   // hotkey beneath — the hotkey is what the chain pays, the GitHub handle is who to recognise.
-  const ident = (live, h) => {
+  const ident = (live, h, crowned) => {
     const g = (live.github || {})[h];
-    const av = g ? '<img class="gh-av" src="https://github.com/' + esc(g) + '.png?size=48" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add(\'gh-none\');this.removeAttribute(\'src\')">' : '<span class="gh-av gh-none" aria-hidden="true"></span>';
+    const img = g ? '<img class="gh-av" src="https://github.com/' + esc(g) + '.png?size=48" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add(\'gh-none\');this.removeAttribute(\'src\')">' : '<span class="gh-av gh-none" aria-hidden="true"></span>';
+    const av = crowned ? '<span class="gh-av-wrap">' + img + '<span class="crown-badge" title="crowned">👑</span></span>' : img;
     const name = g ? '<a class="gh-name" href="https://github.com/' + esc(g) + '">@' + esc(g) + "</a>" : '<span class="gh-name gh-anon">unlinked</span>';
     return '<span class="ident">' + av + '<span class="ident-txt">' + name + hk(h) + "</span></span>";
   };
@@ -104,7 +105,7 @@
   const pr = (live, n) => '<a href="https://github.com/' + esc(live.repo) + "/pull/" + n + '">#' + n + "</a>";
   let current = null;
 
-  function surfaceCell(live, s) {
+  function surfaceCell(live, s, crowned) {
     const info = (live.active || {})[s];
     let tag = "";
     if (s === "null") tag = '<span class="tag">baseline</span>';
@@ -112,7 +113,7 @@
     else if (info && info.incumbent) tag = '<span class="tag king">incumbent</span>';
     else if (info && info.pr) tag = '<span class="tag">' + pr(live, info.pr) + "</span>";
     else tag = '<span class="tag" title="scored on its episodes from earlier rounds in the window; not sealed this round">window</span>';
-    return '<td class="l">' + (s === "null" || s === "canon" ? '<span class="hk">' + s + "</span>" : ident(live, s)) + tag + "</td>";
+    return '<td class="l">' + (s === "null" || s === "canon" ? '<span class="hk">' + s + "</span>" : ident(live, s, crowned)) + tag + "</td>";
   }
 
   function submissions(live) {
@@ -152,9 +153,8 @@
       const ranked = all.sort((a, b) => ((st[a] || {}).rank || 1e6) - ((st[b] || {}).rank || 1e6) || (sc.weights[b] || 0) - (sc.weights[a] || 0) || a.localeCompare(b));
       const rows = ranked.map((h) => {
         const s = sc.per_hotkey[h], w = sc.weights[h] || 0, t = st[h] || {}, isKing = h === (cr && cr.king);
-        const crown = isKing ? ' <span class="crown" title="crowned">👑</span>' : "";
         const why = s && w === 0 && s.reason ? '<span class="why">' + esc(s.reason) + "</span>" : "";
-        const cell = surfaceCell(live, h).replace("</td>", crown + why + "</td>");
+        const cell = surfaceCell(live, h, isKing).replace("</td>", why + "</td>");
         return "<tr" + (isKing ? " class='king'" : "") + ">" + cell + "<td>" + (t.rank || "—") + "</td><td class='" + cls(t.delta) + "'>" + signed(t.delta, 3) + "</td><td>" + pct(t.credit) + "</td>" +
           "<td>" + (s ? s.n : 0) + "</td><td class='" + cls(s && s.mean_d) + "'>" + signed(s && s.mean_d, 3) + "</td><td>" + (s ? num(s.delta_c || 0, 3) : "—") + "</td>" +
           "<td>" + (s ? num(s.score || 0, 4) : "—") + "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>";
@@ -226,8 +226,8 @@
     const last = (live.history || []).slice(-1)[0];
     const kingScore = (h, src) => src && src[h] ? " · score " + num(src[h].score, 4) + " · weight " + num(src[h].weight, 3) : "";
     const nowScores = live.scores && live.scores.per_hotkey ? Object.fromEntries(Object.entries(live.scores.per_hotkey).map(([h, s]) => [h, { ...s, weight: live.scores.weights[h] || 0 }])) : null;
-    if (king) { $("king-now").innerHTML = "👑 " + ident(live, king); $("king-sub").textContent = "this round" + kingScore(king, nowScores || live.standings); }
-    else if (last && last.king) { $("king-now").innerHTML = "👑 " + ident({ github: last.github || live.github, repo: live.repo }, last.king); $("king-sub").textContent = "since " + last.round_id + kingScore(last.king, last.scores); }
+    if (king) { $("king-now").innerHTML = ident(live, king, true); $("king-sub").textContent = "this round" + kingScore(king, nowScores || live.standings); }
+    else if (last && last.king) { $("king-now").innerHTML = ident({ github: last.github || live.github, repo: live.repo }, last.king, true); $("king-sub").textContent = "since " + last.round_id + kingScore(last.king, last.scores); }
     else { $("king-now").textContent = "—"; $("king-sub").textContent = ""; }
     paint();
     submissions(live);
@@ -241,7 +241,7 @@
     $("history").innerHTML = hist.length ? hist.map((h) => {
       const ks = h.king && h.scores ? h.scores[h.king] : null, kc = h.king && h.crown ? h.crown[h.king] : null;
       return "<tr" + (h.king ? "" : "") + "><td class='l'><a href='../rounds/" + esc(h.round_id) + "/'>" + esc(h.round_id) + "</a></td>" +
-        "<td class='l'>" + (h.king ? "<span class='crown'>👑</span> " + ident({ github: h.github || live.github, repo: live.repo }, h.king) + (h.pr ? " " + pr(live, h.pr) : "") : "<span class='zero'>none</span>") + "</td>" +
+        "<td class='l'>" + (h.king ? ident({ github: h.github || live.github, repo: live.repo }, h.king, true) + (h.pr ? " " + pr(live, h.pr) : "") : "<span class='zero'>none</span>") + "</td>" +
         "<td class='" + cls(kc && kc.delta) + "'>" + signed(kc && kc.delta, 3) + "</td><td>" + num(ks && ks.score, 4) + "</td><td>" + num(ks && ks.weight, 3) + "</td>" +
         "<td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
         "<td class='l'>" + (h.commitments_ok ? "<span class='pos'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td>" +
