@@ -22,6 +22,16 @@ WS = EP / "ws"
 OUT = EP / "out"
 
 
+def _workspace_member(member: tarfile.TarInfo, path: str) -> tarfile.TarInfo | None:
+    """The snapshot is agent-authored: the `data` filter refuses absolute paths and links that leave the tree.
+    A link the filter refuses is *skipped*, not fatal — `python -m venv .venv` leaves `.venv/bin/python -> /usr/…`
+    in any real repository, and an episode is not lost over it. The tree graded is everything else."""
+    try:
+        return tarfile.data_filter(member, path)
+    except tarfile.FilterError:
+        return None
+
+
 def _checks() -> dict:
     """The semantics of any `custom` predicate the family uses (spec §6): `checks.py` is placed in /ep by the
     host, outside the workspace, and is read-only to this container. Absent for families that use none.
@@ -47,7 +57,7 @@ def main() -> int:
     WS.mkdir(parents=True, exist_ok=True)
     OUT.mkdir(parents=True, exist_ok=True)
     with tarfile.open(EP / "snapshot.tar") as tf:
-        tf.extractall(WS, filter="data")  # agent-authored content: refuse links/abs paths
+        tf.extractall(WS, filter=_workspace_member)
     kw = dict(commands=task["commands"], checks=_checks(), timeout_s=int(task["timeout_s"]))
     pub = predicates.judge(task["published"]["predicates"], WS, **kw)
     g = {

@@ -156,3 +156,17 @@ def test_credit_is_scored_against_the_baseline_s_mean_credit():
     assert s_good["delta_c"] > 0.3 and s_good["score"] > 0
     assert s_flat["delta_c"] == 0.0 and s_flat["score"] == 0.0
     assert credit({"verified_success": True}) == 1.0 and credit({"credit": 0.25, "verified_success": True}) == 0.25
+
+
+def test_a_task_with_no_published_half_is_not_a_public_passer():
+    """swe_fix publishes nothing, so nothing was passed: such episodes must not pad the overfit denominator."""
+    from sh.scoring.v2 import MinerWindow
+
+    w = MinerWindow("hk")
+    w.episodes = [
+        {"published_fraction": None, "published_pass": True},  # sh-episode-v3, empty published half
+        {"published_fraction": 0.75},
+        {"published_pass": True},  # pre-v3 record: the verdict stands
+        {"published_fraction": 0.25},
+    ]
+    assert w.public_passers == 2

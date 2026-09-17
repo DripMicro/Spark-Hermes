@@ -65,7 +65,7 @@ def grade_in_container(
     if checks_py is not None:  # semantics of the family's `custom` predicates
         entries["checks.py"] = Path(checks_py).read_bytes()
     _run(["docker", "volume", "create", vol]).check_returncode()
-    try:
+    try:  # the grade container is named after the volume so a hung suite can be killed, not just abandoned
         _run(
             [
                 "docker",
@@ -81,37 +81,43 @@ def grade_in_container(
             ],
             input=_tar(entries),
         ).check_returncode()
-        r = _run(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--network",
-                "none",
-                "--cap-drop",
-                "ALL",
-                "--security-opt",
-                "no-new-privileges:true",
-                "--pids-limit",
-                "256",
-                "--memory",
-                "2048m",
-                "--read-only",
-                "--user",
-                "1000:1000",
-                "--tmpfs",
-                "/tmp:rw,size=256m,uid=1000,gid=1000",
-                *(["--tmpfs", f"{task['workdir']}:rw,size=1024m,uid=1000,gid=1000"] if task.get("workdir") else []),
-                "-v",
-                f"{vol}:/ep",
-                "-e",
-                "SH_EP=/ep",
-                image,
-                "/opt/hermes/.venv/bin/python",
-                "/runner/grade.py",
-            ],
-            timeout=int(task["timeout_s"]) * 3 + 60,
-        )
+        try:
+            r = _run(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--name",
+                    vol,
+                    "--network",
+                    "none",
+                    "--cap-drop",
+                    "ALL",
+                    "--security-opt",
+                    "no-new-privileges:true",
+                    "--pids-limit",
+                    "256",
+                    "--memory",
+                    "2048m",
+                    "--read-only",
+                    "--user",
+                    "1000:1000",
+                    "--tmpfs",
+                    "/tmp:rw,size=256m,uid=1000,gid=1000",
+                    *(["--tmpfs", f"{task['workdir']}:rw,size=1024m,uid=1000,gid=1000"] if task.get("workdir") else []),
+                    "-v",
+                    f"{vol}:/ep",
+                    "-e",
+                    "SH_EP=/ep",
+                    image,
+                    "/opt/hermes/.venv/bin/python",
+                    "/runner/grade.py",
+                ],
+                timeout=int(task["timeout_s"]) * 3 + 60,
+            )
+        except subprocess.TimeoutExpired:
+            _run(["docker", "kill", vol])
+            raise
         if r.returncode != 0:
             raise RuntimeError(f"grader exited {r.returncode}: {r.stderr[-800:].decode(errors='replace')}")
         data = _run(["docker", "run", "--rm", "-v", f"{vol}:/ep", "alpine", "cat", "/ep/out/grade.json"]).stdout
@@ -136,6 +142,14 @@ def grade_in_container(
             g["tests"] = json.loads(tests) if tests.strip() else None
         except ValueError:
             g["tests"] = None
+        # ... and, when it explains itself (swe_fix: which kept tests failed), that explanation beside the grade
+        detail = _run(
+            ["docker", "run", "--rm", "-v", f"{vol}:/ep", "alpine", "sh", "-c", "cat /ep/out/detail.json 2>/dev/null"]
+        ).stdout
+        try:
+            g["detail"] = json.loads(detail) if detail.strip() else None
+        except ValueError:
+            g["detail"] = None
         return g
     finally:
         _run(["docker", "volume", "rm", "-f", vol])
@@ -149,9 +163,9 @@ def grade_in_container(
 ALLOWED_WRITE_PREFIXES = ("/ep/ws", "/tmp", "/home/hermes")
 PATH_KEYS = ("path", "file_path", "target", "directory", "dir", "cwd", "file")
 CMD_KEYS = ("command", "cmd", "script", "query", "pattern", "args")
-GRADER_PATH = re.compile(  # the grader's own paths — not any task file that happens to be called grade.py
-    r"/ep/(out|task\.json|withheld|before)|/runner\b|/ep/withheld\.json|/runner/grade\.py"
-)
+# The grader's own paths, anchored at the filesystem root: `_pytest/runner.py`, `src/runner.py` and
+# `/testbed/ep/out` are ordinary repository paths, not the runner at `/runner` or the episode volume at `/ep`.
+GRADER_PATH = re.compile(r"(?<![\w.\-/])/(ep/(out|task\.json|withheld|before)|runner)(?![\w\-])")
 
 
 def _reaching(args_json: str) -> tuple[list[str], list[str]]:
@@ -227,7 +241,8 @@ def trajectory_rules(
             literals |= {
                 a for p in w["predicates"] for a in p[1:] if isinstance(a, str) and re.fullmatch(r"[0-9a-f]{64}", a)
             }
-        if any(lit in text for lit in literals):
+        # whole-token matches: a preview id such as `swe-fix-r0004-p03` must not match the evaluated `…-03`
+        if any(re.search(rf"(?<![\w-]){re.escape(lit)}(?![\w-])", text) for lit in literals):
             signals.append("instance_literal_in_bundle")
     last_mut = max((i for i, n, _, _ in calls if n in MUTATING), default=-1)
     self_checked = any(i > last_mut for i, n, _, _ in calls if n in VERIFYING) if last_mut >= 0 else False
@@ -344,6 +359,7 @@ def grade(
         "finish_reason": finish.get("turn_exit_reason"),
         "published_failed": g.get("published_failed", ""),
         "withheld_failed": g.get("withheld_failed", ""),
+        "detail": g.get("detail"),
         "validator": validator,
         "graded_at": time.time(),
     }

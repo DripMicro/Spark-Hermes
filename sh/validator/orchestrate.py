@@ -226,7 +226,7 @@ def live(
         "submissions": submissions or [],
         "standings": (last or {}).get("scores") or {},  # the pooled standing after the last close: what pays now
         "last_round": (last or {}).get("round_id"),
-        "tasks": len(list((rd / "tasks").glob("*.json"))) if (rd / "tasks").exists() else 0,
+        "tasks": len(list(shown(rd).glob("*.json"))) if (rd / "tasks").exists() else 0,
         "active": sealed.get("active", {}),
         "rejected": sealed.get("rejected", {}),
         "progress": progress or {},
@@ -269,10 +269,7 @@ def open_round(cfg: Config) -> Path:
     cfg.rounds.mkdir(parents=True, exist_ok=True)
     shutil.move(str(cfg.queue / round_id), str(rd))  # consumed: the daemon refills
     (rd / "READY").unlink(missing_ok=True)
-    for tag in _image_tags(rd):  # derivation is done; the images only cost disk here now
-        subprocess.run(["docker", "image", "rm", "-f", tag], capture_output=True)
-    if _image_tags(rd):
-        subprocess.run(["docker", "builder", "prune", "-f", "--filter", "until=48h"], capture_output=True)
+    # The task images were built on the worker at mint and are removed there once the round is evaluated.
     now = time.time()
     (rd / "window.json").write_text(
         json.dumps({"opens_at": now, "closes_at": now + cfg.window_s, "seconds": cfg.window_s})
@@ -284,7 +281,7 @@ def open_round(cfg: Config) -> Path:
 def shown(rd: Path) -> Path:
     """What miners get when the window opens: the round's tasks, or — for a family that evaluates on hidden bugs
     (swe_fix) — their previews, sibling bugs from the same repositories. The evaluated tasks follow at close."""
-    return rd / "preview" if (rd / "preview").is_dir() else rd / "tasks"
+    return rd / "preview" if any((rd / "preview").glob("*.json")) else rd / "tasks"
 
 
 def publish_round(cfg: Config, rd: Path) -> None:
@@ -308,10 +305,9 @@ def publish_round(cfg: Config, rd: Path) -> None:
         json.dumps({"schema": "sh-queue-v1", "published_at": time.time(), "ready": ready}, indent=1)
     )
     live(cfg, rd, "window", progress={}, submissions=[], push=False)
-    _commit(
-        cfg, f"{round_id}: open — {len(list((rd / 'tasks').glob('*.json')))} tasks, window {cfg.window_s // 60} min"
-    )
-    log(rd, "open", tasks=len(list((rd / "tasks").glob("*.json"))), closes_at=_read(rd / "window.json")["closes_at"])
+    n = len(list(shown(rd).glob("*.json")))
+    _commit(cfg, f"{round_id}: open — {n} tasks, window {cfg.window_s // 60} min")
+    log(rd, "open", tasks=n, closes_at=_read(rd / "window.json")["closes_at"])
 
 
 def _image_tags(rd: Path) -> list[str]:
@@ -635,7 +631,16 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
         f"--tokens {cfg.worker_root}/state/tokens --usage-dir {cfg.worker_root}/state/usage "
         f">> {remote}/batch.log 2>&1 < /dev/null & echo started"
     )
-    running = lambda: _worker(cfg, f"pgrep -f '[b]atch --round {remote}' | wc -l").strip() not in ("", "0")  # noqa: E731
+
+    def running() -> bool:
+        return _worker(cfg, f"pgrep -f '[b]atch --round {remote}' | wc -l").strip() not in ("", "0")
+
+    def screening() -> bool:
+        # The daemon's baseline screen holds one of the engine's two long-context slots; launching beside it makes
+        # three and the engine refuses everyone. The screen never starts while a batch runs (supply.baseline);
+        # this is the other direction.
+        return _worker(cfg, f"pgrep -f '[b]atch --round {cfg.worker_root}/screen/' | wc -l").strip() not in ("", "0")
+
     # Resume-safe: a restarted control plane finds the batch still running and polls it rather than launching a
     # second one; if it is not running, launching is safe — `batch` resumes on its own episode records. A batch
     # that ends short (episodes the provider voided past its own retries) is launched again, a bounded number of
@@ -644,6 +649,10 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
     if running():
         log(rd, "evaluate_resume", note="batch already running on the worker; polling")
     else:
+        if screening():
+            log(rd, "evaluate_wait", note="a baseline screen holds the engine; launching when it ends")
+            while screening():
+                time.sleep(30)
         _worker_launch(cfg, launch)
         launches = 1
     last_push = 0.0

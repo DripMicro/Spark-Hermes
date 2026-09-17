@@ -120,6 +120,8 @@ def close(
         sealed = json.loads(path.read_text())
         withheld, salt = sealed["withheld"], sealed["salt"]
         reveals[task_id] = {"withheld": withheld, "salt": salt}
+        if sealed.get("source"):  # where the task came from (swe_fix: the dataset's instance id), public at close
+            reveals[task_id]["source"] = sealed["source"]
         commitment = task.get("withheld_commitment")
         verified[task_id] = bool(commitment) and verify_commitment(withheld, salt, commitment)
 

@@ -85,3 +85,27 @@ def test_a_bug_fix_round_is_checked_against_the_fixed_code_not_the_repository_or
     refs = S.load(rd)
     assert refs.refuse("Read the code around the failure:\n" + context + "\n" + TESTS) is None
     assert refs.refuse("Apply this:\n" + fixed) is not None
+
+
+def test_quoting_a_preview_is_not_reproducing_an_answer(tmp_path):
+    """swe_fix shows miners previews; text from a preview's issue is what they were given, not an answer."""
+    rd = tmp_path / "r0009"
+    for sub in ("private", "tasks", "preview"):
+        (rd / sub).mkdir(parents=True)
+    quoted = "\n".join(f"        self.width_{i} = compute_width(self.chars_{i}, self.font_{i})" for i in range(10))
+    (rd / "private" / "t.json").write_text(json.dumps({"solutions": {"reference": "x", "answer": quoted}}))
+    (rd / "tasks" / "t.json").write_text(json.dumps({"prompt": "hidden"}))
+    (rd / "preview" / "p.json").write_text(json.dumps({"prompt": "The issue shows:\n" + quoted}))
+    assert S.load(rd).refuse("As the practice issue shows:\n" + quoted) is None
+
+
+def test_a_bug_that_only_added_code_has_no_answer_and_its_diff_is_never_matched(tmp_path):
+    rd = tmp_path / "r0010"
+    for sub in ("private", "tasks"):
+        (rd / sub).mkdir(parents=True)
+    context = "\n".join(f"    def validate_request_number_{i}(self, request, scopes=None):" for i in range(10))
+    (rd / "private" / "t.json").write_text(
+        json.dumps({"solutions": {"reference": "git apply -R <<EOF\n" + context + "\nEOF", "answer": ""}})
+    )
+    (rd / "tasks" / "t.json").write_text(json.dumps({"prompt": "Fix the bug."}))
+    assert S.load(rd).refuse("Look at:\n" + context) is None

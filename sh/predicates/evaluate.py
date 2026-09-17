@@ -15,6 +15,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
@@ -160,10 +161,11 @@ def _one(
     if op == "custom":
         try:
             return bool(checks[a[0]](workspace, *a[1:]))
-        except Exception:
+        except Exception as e:
             # A family check that raises has failed to establish the fact; it has not established
             # the opposite. False is the only honest answer, and `derive` will notice a check that
-            # is false on the reference.
+            # is false on the reference. The cause goes to stderr, which the host keeps.
+            print(f"check {a[0]} raised: {e!r}"[:500], file=sys.stderr)
             return False
     raise AssertionError(op)
 

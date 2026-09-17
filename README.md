@@ -23,7 +23,7 @@ crowned strategy is merged as the incumbent; every verified trajectory is export
 | `sh/cli/` | `miner` (tasks / submit / status), `lint` (the contract CI runs), `attest` (the hotkey's signature), `scorecard`, `mock_miners` |
 | `sh/web/` | the static page for a closed round |
 | `submissions/` | one directory per hotkey, prose only — merged when crowned |
-| `rounds/` | every round's tasks, window, seal, `close.json`, `crown.json`, `reveal.json`, checks, scorecards; `queue.json` — digests of rounds minted ahead |
+| `rounds/` | every round's tasks (what miners were shown), window, seal, `close.json`, `crown.json`, `reveal.json`, checks, scorecards, and `evaluated/` — the scored tasks, when miners were shown previews; `queue.json` — digests of rounds minted ahead |
 | `docs/` | the site served by Pages: landing, live dashboard, round pages; pins and findings |
 
 Task families and their withheld halves live in a private repository; only what a round publishes is here.
@@ -65,8 +65,9 @@ it reached and never changes what that round sealed.
 `rounds/<id>/reveal.json` carries every withheld half and salt. For each instance,
 `"hmac-sha256:" + HMAC(salt, canonical_json(withheld))` must equal the commitment in the task record — in
 `rounds/<id>/tasks/` when miners were shown the evaluated tasks, in `rounds/<id>/evaluated/` when they were shown
-previews — and `rounds/queue.json`, published before the round opened, carries the digest of both. `close.json`
-recomputes from the graded episodes. Nothing here needs to be trusted.
+previews — and `rounds/queue.json`, published before the round opened, carries the digest of both. For `swe_fix`,
+`reveal.json` also names each scored bug's SWE-smith instance id: the committed test ids are that bug's own tests,
+readable in the public dataset. `close.json` recomputes from the graded episodes. Nothing here needs to be trusted.
 
 ## Develop
 
