@@ -22,21 +22,25 @@ import sys
 from pathlib import Path
 
 CARD = """---
-license: other
+license: mit
 pretty_name: Spark-Hermes rounds
-tags: [agent, hermes, trajectories, sft, dpo]
+tags: [agent, hermes, trajectories, sft, dpo, swe-bench]
 ---
 
 # Spark-Hermes rounds
 
-Training data from a competition in which miners submit **prose strategies** and a validator runs one pinned
-agent and model against every strategy inside a sealed sandbox. Every row here is an episode that a **withheld**
-half verified — grading criteria committed to before submissions opened and revealed at close — so a row says
-"this trajectory actually solved the task", not "this trajectory looked right".
+Training data from a competition (Bittensor SN74) in which miners submit **prose strategies** and a validator
+runs one pinned agent (Hermes) and model (Qwen3.8-27B) against every strategy inside a sealed sandbox. The tasks
+are bug fixes drawn from [SWE-bench/SWE-smith](https://huggingface.co/datasets/SWE-bench/SWE-smith) (MIT).
 
-Layout: `rounds/<round_id>/sft.jsonl`, `rounds/<round_id>/dpo.jsonl`, `rounds/<round_id>/manifest.json`, and
-`index.json` listing every round. The public round artefacts (tasks, revealed withheld halves, scores,
-leaderboard) live in the subnet repository under `rounds/<round_id>/`.
+Only the **crowned** strategy of each round is exported. **SFT** rows are its episodes that a withheld test suite
+verified fully. **DPO** pairs a higher-credit episode (chosen, ≥ 0.8 of the tests) against a lower-credit one on
+the same task — chosen rows are strong, not necessarily perfect. Grading criteria were committed to before
+submissions opened and revealed at close.
+
+Layout: `rounds/<round_id>/{sft.jsonl,dpo.jsonl,manifest.json}` and `index.json` listing every round. The public
+round artefacts (tasks, revealed withheld halves, scores, leaderboard) live in the subnet's GitHub repository
+under `rounds/<round_id>/`. Upstream repositories keep their own licenses; see each row's `source`.
 """
 
 
@@ -52,7 +56,9 @@ def upload(export_dir: Path, repo: str, token: str, *, round_id: str | None = No
         raise SystemExit("refusing to upload: the manifest records no leak scan")
     round_id = round_id or manifest.get("round_id") or export_dir.name
     api = _api(token)
-    api.create_repo(repo, repo_type="dataset", private=True, exist_ok=True)
+    api.create_repo(
+        repo, repo_type="dataset", private=False, exist_ok=True
+    )  # public: this is the point — training data
 
     # Idempotence: the same round with the same manifest digest is already there.
     index: dict = {"schema": "sh-hf-index-v2", "rounds": {}}

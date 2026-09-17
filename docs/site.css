@@ -1,5 +1,6 @@
 /* Spark-Hermes site — one stylesheet for the landing page, the live board and every round page.
    Dark by design: the pages live in the world of the project's own artwork. No third-party fonts or scripts. */
+[hidden] { display: none !important; }  /* a card marked hidden stays hidden even when a layout rule sets display */
 :root {
   --bg: #0a0a10; --panel: #12121b; --soft: #191926; --line: #262636; --ink: #ecebf5; --muted: #9c9bb4;
   --accent: #a78bfa; --accent-2: #22d3ee; --good: #4ade80; --warn: #fbbf24; --bad: #f87171; --crown: #fbbf24;
