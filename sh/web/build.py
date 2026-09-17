@@ -39,6 +39,24 @@ def _cls(x) -> str:
     return "zero" if not x else ("pos" if x > 0 else "neg")
 
 
+def _ident(meta: dict, h: str) -> str:
+    """A strategy's author: their GitHub avatar and name when the round's `github` map knows them, the hotkey
+    beneath. Mirrors the live board's `ident()`, so a closed round reads the same as it did live; degrades to the
+    hotkey alone for an older round whose entry carries no map, or a hotkey never matched to a GitHub author."""
+    g = (meta.get("github") or {}).get(h)
+    if g:
+        av = (
+            f'<img class="gh-av" src="https://github.com/{_e(g)}.png?size=48" alt="" loading="lazy" '
+            f"referrerpolicy=\"no-referrer\" onerror=\"this.classList.add('gh-none');this.removeAttribute('src')\">"
+        )
+        name = f'<a class="gh-name" href="https://github.com/{_e(g)}">@{_e(g)}</a>'
+    else:
+        av = '<span class="gh-av gh-none" aria-hidden="true"></span>'
+        name = '<span class="gh-name gh-anon">unlinked</span>'
+    hk = f'<span class="hk" title="{_e(h)}">{_e(_short(h))}</span>'
+    return f'<span class="ident">{av}<span class="ident-txt">{name}{hk}</span></span>'
+
+
 def render(close: dict, meta: dict | None = None) -> str:
     """The page for one closed round. `meta` is the round's entry in `rounds/index.json` (king, export sizes,
     dataset URL) plus `repo`/`branch` for artefact links; the page degrades to `close.json` alone without it."""
@@ -59,7 +77,7 @@ def render(close: dict, meta: dict | None = None) -> str:
         crown = ' <span class="crown" title="crowned">👑</span>' if h == king else ""
         why = f'<span class="why">{_e(s["reason"])}</span>' if w == 0 and s.get("reason") else ""
         body.append(
-            f'<tr><td class="l"><span class="hk" title="{_e(h)}">{_e(_short(h))}</span>{crown}{why}</td><td>{rank}</td><td>{s["n"]}</td>'
+            f'<tr><td class="l">{_ident(meta, h)}{crown}{why}</td><td>{rank}</td><td>{s["n"]}</td>'
             f'<td class="{_cls(s.get("mean_d"))}">{_signed(s.get("mean_d"))}</td><td>{s.get("delta_c", 0):.3f}</td>'
             f"<td>{'yes' if s.get('gate') else 'no'}</td><td>{s.get('overfit_rate', 0):.2f}</td><td>{s.get('dq', 0)}</td>"
             f'<td>{s.get("score", 0):.4f}</td><td class="{"" if w else "zero"}">{w:.3f}</td></tr>'
@@ -77,7 +95,7 @@ def render(close: dict, meta: dict | None = None) -> str:
         st = st_all[h]
         crown_mark = ' <span class="crown" title="crowned">👑</span>' if h == crowned.get("king") else ""
         this_round.append(
-            f'<tr><td class="l"><span class="hk" title="{_e(h)}">{_e(_short(h))}</span>{crown_mark}</td>'
+            f'<tr><td class="l">{_ident(meta, h)}{crown_mark}</td>'
             f"<td>{st.get('rank') or '—'}</td><td>{st.get('n', 0)}</td><td>{st.get('verified', 0)}</td>"
             f'<td class="{_cls(st.get("delta"))}">{_signed(st.get("delta"))}</td></tr>'
         )
@@ -91,9 +109,7 @@ def render(close: dict, meta: dict | None = None) -> str:
         (str(close.get("episodes", 0)), "episodes"),
         (str(len(close.get("tasks", []))), "instances"),
         (
-            f'<span class="crown">👑</span> <span title="{_e(king)}">{_e(_short(king))}</span>'
-            if king
-            else '<span class="zero">none</span>',
+            f'<span class="crown">👑</span> {_ident(meta, king)}' if king else '<span class="zero">none</span>',
             "king",
         ),
         ("—" if meta.get("sft_rows") is None else str(meta["sft_rows"]), "SFT rows"),
