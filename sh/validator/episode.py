@@ -110,7 +110,7 @@ def run_episode(
     timeout_s = timeout_s or int(task["timeout_s"])
     tokens = Tokens(tokens_path) if tokens_path else None
     if tokens:
-        token = tokens.issue(ep, ttl=timeout_s + 300)
+        token = tokens.issue(ep, ttl=timeout_s + 300, budget=task.get("token_budget"))
     if network == "sh-ep":
         inference = f"http://inference:{SH_EP_PROXY_PORT}/v1"
         extra_add_hosts = [f"inference:{SH_EP_GW}", *extra_add_hosts]
@@ -237,11 +237,15 @@ def run_episode(
     finish["episode"] = ep
     finish["dropped_packets"] = drops
     if (out / "proxy_usage.jsonl").exists():
-        rows = [json.loads(line) for line in (out / "proxy_usage.jsonl").read_text().splitlines() if line.strip()]
+        lines = [json.loads(line) for line in (out / "proxy_usage.jsonl").read_text().splitlines() if line.strip()]
+        rows = [r for r in lines if r.get("usage")]
         finish["proxy_calls"] = len(rows)
         finish["proxy_tokens"] = {
             k: sum(int(r["usage"].get(k) or 0) for r in rows) for k in ("prompt_tokens", "completion_tokens")
         }
+        finish["proxy_queued_s"] = round(sum(float(r.get("queued_s") or 0) for r in rows), 1)
+        if marks := [r["budget_spent"] for r in lines if r.get("budget_spent")]:
+            finish["budget_spent"] = marks[0]
     (out / "finish.json").write_text(json.dumps(finish, indent=1))
     return finish
 

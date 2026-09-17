@@ -76,6 +76,7 @@ class Config:
     min_paired: int = 4  # instances a strategy must share with the baseline to be crowned
     concurrency: int = 2
     era: str = "e0"
+    canon_every: int = 8  # the reference strategy runs in every n-th round (calibration); 1 = every round
 
     @property
     def rounds(self) -> Path:
@@ -622,7 +623,12 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
         if "FAILED" in built:
             raise RuntimeError(f"task image build failed on the worker: {built.strip()[-300:]}")
         log(rd, "images", built=len(list((rd / "images").iterdir())))
-    surfaces = ["null", f"canon={remote}/canon"] + [f"{h}={remote}/bundles/{h}" for h in sealed["active"]]
+    # The reference strategy (canon) labels a family; nothing is paid by it. On one GPU it runs in calibration
+    # rounds only — every `canon_every`-th — and the pooled window carries its measurements between them.
+    calibrate = cfg.canon_every <= 1 or int(rd.name[1:]) % cfg.canon_every == 0
+    surfaces = (["null"] + ([f"canon={remote}/canon"] if calibrate else [])) + [
+        f"{h}={remote}/bundles/{h}" for h in sealed["active"]
+    ]
     total = len(surfaces) * len(list((rd / "tasks").glob("*.json")))
     launch = (
         f"cd {cfg.worker_root}/pkg && PYTHONPATH={cfg.worker_root}/pkg setsid nohup python3 -m sh.validator.batch "
@@ -1044,6 +1050,7 @@ def main(argv=None) -> int:
     ap.add_argument("--window-from", default="r0004", help="the first round pooled (the credit scoring era)")
     ap.add_argument("--window-minutes", type=int, default=120, help="the submission window")
     ap.add_argument("--min-paired", type=int, default=4)
+    ap.add_argument("--canon-every", type=int, default=8, help="run the reference strategy every n-th round")
     ap.add_argument("--once", action="store_true")
     ap.add_argument("--pause", type=int, default=0, help="seconds between rounds")
     ap.add_argument("--mock-miners", help="directory of mock miner bundles that submit each window (test only)")
@@ -1060,6 +1067,7 @@ def main(argv=None) -> int:
         worker_port=a.worker_port,
         window_s=a.window_minutes * 60,
         min_paired=a.min_paired,
+        canon_every=a.canon_every,
     )
     mock = (Path(a.mock_miners), Path(a.mock_keys or (cfg.state / "mock-keys"))) if a.mock_miners else None
     resume = unfinished_round(cfg)  # a restart picks up the round it was in the middle of
