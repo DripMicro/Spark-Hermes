@@ -80,13 +80,32 @@ def _run(cmd: list[str], cwd: Path | None = None, check_rc: bool = True) -> str:
     return r.stdout
 
 
-def _open_pr_for(repo: str, base: str, head: str) -> int | None:
+def _open_pr_for(repo: str, base: str, branch: str, owner: str | None = None) -> int | None:
+    """The open PR whose head is `branch` (and, for a fork, whose head repository belongs to `owner`). `gh pr list
+    --head owner:branch` returns nothing, so the branch is matched and the owner filtered here."""
     prs = json.loads(
         _run(
-            ["gh", "pr", "list", "--repo", repo, "--base", base, "--head", head, "--state", "open", "--json", "number"]
+            [
+                "gh",
+                "pr",
+                "list",
+                "--repo",
+                repo,
+                "--base",
+                base,
+                "--head",
+                branch,
+                "--state",
+                "open",
+                "--json",
+                "number,headRepositoryOwner",
+            ]  # fmt: skip
         )
     )
-    return prs[0]["number"] if prs else None
+    for pr in prs:
+        if owner is None or (pr.get("headRepositoryOwner") or {}).get("login") == owner:
+            return pr["number"]
+    return None
 
 
 def submit_bundle(
@@ -144,10 +163,10 @@ def submit_bundle(
         _run(["git", "add", f"submissions/{hotkey}"], cwd=wt)
         _run(["git", "commit", "-q", "-m", f"miner: {hotkey} for {round_id}\n\nbundle_sha256 {digest}"], cwd=wt)
         _run(["git", "push", "-q", "-f", "-u", remote, branch], cwd=wt)
-        number = _open_pr_for(repo, base, head)
+        number = _open_pr_for(repo, base, branch, head_owner)
         created = number is None
         if created:
-            url = _run(
+            create = _run(
                 [
                     "gh",
                     "pr",
@@ -161,11 +180,18 @@ def submit_bundle(
                     "--title",
                     f"miner: {hotkey}",
                     "--body",
-                    f"Strategy for round `{round_id}` by hotkey `{hotkey}`.\n\n`bundle_sha256` `{digest}`, signed "
-                    f"(`attestation.json`). Linted with `python -m sh.cli.lint` — ok.",
-                ]
+                    f"Strategy for round `{round_id}` by hotkey `{hotkey}`.\n\n`bundle_sha256` `{digest}`, "
+                    "signed (`attestation.json`). Linted with `python -m sh.cli.lint` — ok.",
+                ],  # fmt: skip
+                check_rc=False,
             ).strip()
-            number = int(url.rstrip("/").split("/")[-1])
+            if create.startswith("http"):
+                number = int(create.rstrip("/").split("/")[-1])
+            else:  # the push updated a PR that already existed: find it rather than fail
+                number = _open_pr_for(repo, base, branch, head_owner)
+                created = False
+                if number is None:
+                    return {"ok": False, "problems": [f"pushed {branch} but could not open or find its PR"]}
         return {"ok": True, "hotkey": hotkey, "pr": number, "bundle_sha256": digest, "created": created}
     finally:
         _run(["git", "worktree", "remove", "--force", str(wt)], cwd=checkout, check_rc=False)

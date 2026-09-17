@@ -45,17 +45,28 @@ def load_keypair(source: str):
     """A keypair from a bittensor hotkey file (`secretSeed` or `secretPhrase`), a mnemonic, or a `//dev` URI."""
     from substrateinterface import Keypair, KeypairType
 
+    if source.startswith("//"):  # a substrate dev URI (//Alice) — before the path heuristic, which `/` would trip
+        return Keypair.create_from_uri(source, crypto_type=KeypairType.SR25519)
     p = Path(source).expanduser()
-    if p.is_file():
-        data = json.loads(p.read_text())
+    looks_like_path = source.startswith((".", "/", "~")) or p.exists() or source.endswith((".json", ".txt"))
+    if looks_like_path or " " not in source:  # a path, or a single token that is not a mnemonic
+        if not p.is_file():
+            raise ValueError(f"{source}: no such hotkey file (pass a --key that is a file, a mnemonic, or a //dev URI)")
+        try:
+            data = json.loads(p.read_text())
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise ValueError(
+                f"{p}: not a bittensor hotkey file (expected JSON with secretSeed or secretPhrase). If this holds a "
+                f"mnemonic, pass the words directly, not the file. [{exc}]"
+            ) from exc
         if data.get("secretSeed"):
             return Keypair.create_from_seed(data["secretSeed"], crypto_type=KeypairType.SR25519)
         if data.get("secretPhrase"):
             return Keypair.create_from_mnemonic(data["secretPhrase"], crypto_type=KeypairType.SR25519)
-        raise ValueError(f"{p}: neither secretSeed nor secretPhrase")
-    if source.startswith("//"):
-        return Keypair.create_from_uri(source, crypto_type=KeypairType.SR25519)
-    return Keypair.create_from_mnemonic(source, crypto_type=KeypairType.SR25519)
+        raise ValueError(
+            f"{p}: a hotkey JSON with neither secretSeed nor secretPhrase (an encrypted key is not supported)"
+        )
+    return Keypair.create_from_mnemonic(source, crypto_type=KeypairType.SR25519)  # a mnemonic on the command line
 
 
 def sign(keypair, round_id: str, bundle_sha256: str, signed_at: int | None = None) -> dict:
