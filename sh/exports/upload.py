@@ -1,6 +1,6 @@
 """Upload a closed round's training data to Hugging Face (spec §8, V7).
 
-One private dataset repo, partitioned by round: `rounds/<round_id>/{sft.jsonl,dpo.jsonl,manifest.json}` plus a
+One public dataset repo, partitioned by round: `rounds/<round_id>/{sft.jsonl,dpo.jsonl,manifest.json}` plus a
 top-level `index.json` and a dataset card. Idempotent — a round already present with the same manifest digest
 is skipped, so the loop can call this every round without duplicating anything.
 

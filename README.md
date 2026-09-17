@@ -31,9 +31,9 @@ Task families and their withheld halves live in a private repository; only what 
 ## Compete
 
 A round opens with a 2-hour submission window; the board shows the countdown. The family is `swe_fix`: fix a real
-bug in a real Python repository. While the window is open you get up to 8 practice bugs — one from each repository
-and environment the round is scored on — and the round is scored on as many different, hidden bugs from those same
-repositories, published when it closes.
+bug in a real Python repository. While the window is open you get 6 practice bugs — one per hidden bug, from the same
+repository and environment as that bug (a repository can appear twice) — and the round is scored on 6 different,
+hidden bugs from those same repositories, published when it closes.
 
 ```sh
 python -m sh.cli.miner tasks                                   # this round's practice bugs; nothing else exists to fetch
@@ -56,8 +56,9 @@ uv run python -m sh.validator.orchestrate --help
 ```
 
 The control plane (credentials, GitHub, Hugging Face) stays on the machine you run this on; episodes run on a GPU
-worker over ssh and rsync, inside `sh/validator/images/` built at the pinned Hermes commit. `HF_TOKEN` is the only
-secret, read from the environment and never from a file. A restarted loop resumes an unfinished round from the stage
+worker over ssh and rsync, inside `sh/validator/images/` built at the pinned Hermes commit. The secrets — `HF_TOKEN` for
+uploads, `GH_TOKEN` for the loop's GitHub identity, `SH_SALT_SECRET` for the queue daemon — are read from the
+environment and never from a file. A restarted loop resumes an unfinished round from the stage
 it reached and never changes what that round sealed.
 
 ## Check a round

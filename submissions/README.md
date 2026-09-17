@@ -4,14 +4,14 @@ A round opens with a **2-hour submission window**. During the window you fetch t
 and submit it as one signed pull request per hotkey; you may resubmit as often as you like
 and each submission replaces the last. When the window closes the validator seals every open strategy PR at
 its head SHA, evaluates, scores, crowns, and opens the next round. Nothing submitted after the close is sealed. If the
-window closes with no valid submission, the round is not sealed: it reopens with the same tasks and a fresh window.
+window closes with no valid submission (an incumbent alone does not count), the round is not sealed: it reopens with the same tasks and a fresh window.
 
 The tasks are real bugs in real Python repositories (family `swe_fix`, from SWE-smith): a problem statement, the
 repository at the bug, and a grader that runs the tests the bug broke — each passing test earns its share of the
 task's credit, and none counts if a test that passed before now fails. What `tasks` gives you are **practice
-bugs**: one from each repository and environment the round is scored on, with its SWE-smith instance id so you can
-reproduce it locally. The round is scored on **as many different, hidden bugs** (up to 8) from those same
-repositories, published when it closes. Write how to debug these codebases; the answers to the practice bugs will not be asked.
+bugs**: one per hidden bug, from the same repository and environment as that bug (a repository can appear twice),
+with its SWE-smith instance id so you can reproduce it locally. The round is scored on **6 different, hidden bugs**
+from those same repositories, published when it closes. Write how to debug these codebases; the answers to the practice bugs will not be asked.
 
 ## What a strategy is
 
@@ -28,6 +28,10 @@ submissions/<hotkey>/
 No scripts, no config, no URLs, no `!\`…\`` inline shell, no `${HERMES_…}`. And not the round's answers: a bundle that reproduces the
 round's fixes (the code its hidden bugs replaced) is refused at seal (S1) — write how to work, not what to type. The validator executes *its* pinned
 agent and model against your prose, which is what makes every submission comparable.
+
+The lint also bounds the bundle: a `SKILL.md` at most 15 KiB, any file at most 64 KiB, the bundle at most 512 KiB,
+UTF-8 text only (no CRLF, no symlinks), a skill `description` of at most 500 characters, no agent-generated markers,
+no reserved names. `python -m sh.cli.lint DIR` reports every rule by its L-code.
 
 ## The loop, as a miner
 
@@ -51,7 +55,10 @@ uv run python -m sh.cli.miner status --hotkey <ss58>
 ```
 
 `--head-owner` is your GitHub user: the branch is pushed to your fork and the PR opened against the competition
-repository. Resubmit as often as you like during the window; each push replaces your PR.
+repository. Resubmit as often as you like during the window; each push replaces your PR. The PR's author is your
+public face: the board and the round pages show that GitHub account's avatar and `@login` beside your hotkey, and it
+is recorded in `rounds/index.json` at close — submit from an account you are willing to show. Resubmitting from the
+incumbent's own hotkey replaces its carried bundle at the seal (a byte-identical resubmission is skipped by the CLI).
 
 `submit` signs `spark-hermes:<repo>:<round>:<bundle_sha256>:<signed_at>` with your hotkey (sr25519) and writes
 `attestation.json`; your most recently signed submission is the one that counts.
@@ -67,8 +74,11 @@ directory is named after the hotkey — a PR cannot be replayed into another rou
   tests are removed from its tree), tools **`terminal` and `file` only**, **no network**, a **token budget of
   600,000** prompt+completion tokens (the run ends when it is spent), and backstops of **100 turns / 30 minutes**.
 - **Disqualifications (credit 0):** modifying or adding tests or test configuration; editing a protected file;
-  writing outside the workspace; any network attempt; or a fix that reaches for the test runner or Python's import
-  machinery (`harness_tamper`). Fix the source, run the tests, stop.
+  writing outside the workspace; any network attempt; reading the grader's or the withheld paths; an inline-shell
+  marker or a task's instance id in the bundle; filling the worker's disk (`disk_abuse`); or a fix that reaches for
+  the test runner or Python's import machinery (`harness_tamper`). Two disqualified episodes in the pooled window
+  zero the whole score. Running out of the token budget or hitting a backstop is **not** a disqualification — the
+  episode scores what it achieved. Fix the source, run the tests, stop.
 - **S1:** a bundle that reproduces a bug's fix (the code it replaced) is refused. Do not paste upstream source
   into `references/`; describe how to debug, not what to type.
 
@@ -86,7 +96,8 @@ The full dataset (patches, FAIL_TO_PASS / PASS_TO_PASS) is `SWE-bench/SWE-smith`
 
 ## Getting paid
 
-Weight is set on Bittensor **SN74** for registered hotkeys. Payment pools the **last 8 rounds** and needs at
+Weights are computed at every close and published in `rounds/<id>/close.json`; setting them on Bittensor **SN74**
+is not wired yet — nothing pays on-chain until it is. Payment pools the **last 8 rounds** and needs at
 least **8 scored episodes** in that window, so your first round or two accumulate evidence before they pay —
 consistency across rounds is what earns weight, not one lucky round.
 
@@ -97,8 +108,9 @@ consistency across rounds is what earns weight, not one lucky round.
 2. **Seal**, when the window closes: one PR per hotkey — the **latest *signed*** counts, not the newest PR (signed
    bundles are public, so a newer PR carrying your old bundle cannot displace your real one). Your PR must change
    only your own `submissions/<hotkey>/` directory and nothing else, or it is rejected.
-3. **Evaluation** on the validator's GPU, inside the sealed sandbox, against the NULL and CANON reference arms
-   on the same instances. The board shows progress live.
+3. **Evaluation** on the validator's GPU, inside the sealed sandbox, against the strategy-less NULL baseline on
+   the same instances (the CANON reference strategy runs every 8th round, for calibration). The board shows
+   progress live.
 4. **Crown**: the strategy with the best Δ vs baseline *on this round's instances* — if it beat the baseline —
    is labelled `sh:round:crown`, merged into `submissions/`, and defends as the incumbent next round. Every
    other competition PR is closed with the reason. The incumbent is **dethroned** (removed from `submissions/`)

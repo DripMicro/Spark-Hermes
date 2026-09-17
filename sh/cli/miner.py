@@ -6,7 +6,7 @@
 
 Only the open round's tasks are in the repository — future rounds exist as digests until they open — so `tasks`
 cannot fetch ahead. For a family that evaluates on hidden bugs (swe_fix) they are the round's previews: sibling bugs
-from the repositories the round is scored on. `submit` lints the bundle, signs `round_id:bundle_sha256` with the hotkey, writes
+from the repositories the round is scored on. `submit` lints the bundle, signs `spark-hermes:<repo>:<round_id>:<bundle_sha256>:<signed_at>` with the hotkey, writes
 `attestation.json` beside the prose, and pushes `miner/<hotkey>` from a temporary worktree: the first push
 opens the pull request, every later push replaces it. It refuses outside the submission window, because the
 validator would.
