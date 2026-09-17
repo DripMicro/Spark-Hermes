@@ -207,10 +207,10 @@ def live(
         progress = prev.get("progress") if same else None
     if submissions is None and same:
         submissions = prev.get("submissions")
-    github = dict(prev.get("github") or {})  # who each hotkey is on GitHub, accumulated across rounds
-    for row in submissions or []:
-        if row.get("hotkey") and row.get("github"):
-            github[row["hotkey"]] = row["github"]
+    # Who each hotkey is on GitHub, accumulated across rounds — but only from SEALED entries, whose attestation binds
+    # the hotkey to the bundle the PR author signed. An open PR is unverified: anyone can open one touching
+    # submissions/<victim>/, and its opener must never be shown, let alone published, as the victim's identity.
+    github = dict(prev.get("github") or {})
     for hk, info in sealed.get("active", {}).items():
         if info.get("github"):
             github[hk] = info["github"]
@@ -373,7 +373,6 @@ def _submissions(cfg: Config) -> list[dict]:
             "created_at": p.get("createdAt"),
             "updated_at": p.get("updatedAt"),
             "url": p.get("url"),
-            "github": (p.get("author") or {}).get("login"),
         }
         for p in _strategy_prs(cfg, f"origin/{BRANCH}")
         if pr_role(p["changed"]) == "strategy"
@@ -1058,10 +1057,12 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: d
         "dpo_pairs": exported["manifest"]["dpo_pairs"],
         "hf": exported["upload"].get("url"),
     }
-    gh = _read(cfg.repo / LIVE, {}).get("github") or {}  # hotkey -> GitHub login, accumulated live this round
+    # hotkey -> GitHub login, published with the round so the page stays recomputable. This round's seal is the
+    # authority (attested); the live map, accumulated from earlier seals, covers an incumbent carried without a PR.
+    sealed_active = _read(rd / "seal.json", {}).get("active") or {}  # hotkey -> {pr, head, github, ...}
+    gh = _read(cfg.repo / LIVE, {}).get("github") or {}
     shown_hk = set(entry["scores"]) | set(crowned.get("standings", {})) | ({king} if king else set())
-    entry["github"] = {h: gh[h] for h in shown_hk if gh.get(h)}  # a published artefact, so the page stays recomputable
-    sealed_active = _read(rd / "seal.json", {}).get("active") or {}  # hotkey -> {pr, head, ...}
+    entry["github"] = {h: login for h in shown_hk if (login := (sealed_active.get(h) or {}).get("github") or gh.get(h))}
     entry["pr"] = (sealed_active.get(king) or {}).get("pr") if king else None  # the king's PR this round, if any
     index_path = cfg.repo / "rounds" / "index.json"
     index = _read(index_path, {"schema": "sh-rounds-index-v2", "rounds": []})

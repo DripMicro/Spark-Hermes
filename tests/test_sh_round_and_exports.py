@@ -197,3 +197,28 @@ def test_a_pair_is_not_lost_because_the_first_loser_timed_out(tmp_path):
     build(rd, eps, tmp_path / "out" / "close.json", tmp_path / "export", king="5Fa")
     pairs = [json.loads(line) for line in (tmp_path / "export" / "dpo.jsonl").read_text().splitlines()]
     assert len(pairs) == 1 and pairs[0]["rejected_surface"] == "5Fc"
+
+
+def test_the_round_page_shows_the_github_author_beside_the_hotkey(tmp_path):
+    """Identity on the page comes from the round's published `github` map (attested at seal): avatar, @login, the
+    hotkey beneath, and the crown as a badge on the king's avatar. Without a map the page degrades to the hotkey."""
+    from sh.web.build import render
+
+    rd = _round(tmp_path)
+    eps = _episodes(tmp_path, [("null", False), ("5Fminer", True)])
+    record = close(rd, eps, tmp_path / "out")
+    page = render(record, {"github": {"5Fminer": "octocat"}, "king": "5Fminer"})
+    assert "github.com/octocat.png" in page and ">@octocat</a>" in page and "crown-badge" in page
+    bare = render(record)
+    assert "unlinked" in bare and "github.com/octocat.png" not in bare and "crown-badge" not in bare
+
+
+def test_the_round_page_escapes_a_github_login(tmp_path):
+    """A login is attacker-influenced text from GitHub; it is escaped wherever it lands (URL and label)."""
+    from sh.web.build import render
+
+    rd = _round(tmp_path)
+    eps = _episodes(tmp_path, [("null", False), ("5Fminer", True)])
+    record = close(rd, eps, tmp_path / "out")
+    page = render(record, {"github": {"5Fminer": '"><b'}})
+    assert '"><b' not in page and "&quot;&gt;&lt;b" in page

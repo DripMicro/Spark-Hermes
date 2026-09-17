@@ -462,7 +462,9 @@ def test_reclaim_strips_heavy_files_from_old_done_rounds_but_keeps_recent_and_re
     assert (cfg.rounds / "r0005" / "episodes" / "null" / "t0" / "trajectory.json").exists()
 
 
-def test_live_json_carries_a_hotkey_to_github_map_accumulated_across_rounds(tmp_path, monkeypatch):
+def test_live_json_takes_github_logins_only_from_the_seal(tmp_path, monkeypatch):
+    """An open PR is unverified — anyone can open one touching submissions/<victim>/. Its opener must never be shown
+    as the victim's identity: the map accumulates across rounds from sealed (attested) entries alone."""
     import sh.validator.orchestrate as o
 
     cfg = _cfg(tmp_path)
@@ -476,6 +478,8 @@ def test_live_json_carries_a_hotkey_to_github_map_accumulated_across_rounds(tmp_
         json.dumps({"round_id": "r0006", "github": {"5A": "torvalds"}})
     )
     monkeypatch.setattr(o, "_commit", lambda *a, **k: None)
-    o.live(cfg, rd, "window", submissions=[{"hotkey": "5C", "pr": 9, "github": "gvanrossum"}], push=False)
+    impostors = [{"hotkey": "5A", "pr": 9, "github": "impostor"}, {"hotkey": "5C", "pr": 10, "github": "stranger"}]
+    o.live(cfg, rd, "window", submissions=impostors, push=False)
     live = json.loads((cfg.repo / "docs" / "live" / "live.json").read_text())
-    assert live["github"] == {"5A": "torvalds", "5B": "octocat", "5C": "gvanrossum"}  # prev + seal + submissions
+    assert live["github"] == {"5A": "torvalds", "5B": "octocat"}  # prev + seal; no open-PR opener anywhere
+    assert "5C" not in live["github"]
