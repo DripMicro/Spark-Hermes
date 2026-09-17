@@ -58,7 +58,7 @@
   </section>
 
   <section class="panel rise" id="rounds">
-    <h2>Closed rounds <small>every round links to its page: scores, weights, the revealed withheld halves</small></h2>
+    <h2>Closed rounds <small>open a round for its scores, weights and king; the full page and artefacts are linked inside</small></h2>
     <div class="wrap"><table>
       <thead><tr><th class="l">round</th><th class="l">king</th><th title="the king's Δ vs baseline on that round's instances">Δ round</th><th title="the king's pooled score at that close">score</th><th title="the king's weight at that close">weight</th><th>episodes</th><th>SFT</th><th>DPO</th><th class="l">commitments</th><th>closed</th></tr></thead>
       <tbody id="history"><tr><td class="empty" colspan="10">none yet</td></tr></tbody>
@@ -72,8 +72,17 @@
   <span>Source: <a href="live.json">live.json</a>, rewritten by the validator at every stage</span>
 </footer>
 
+<div id="round-modal" class="modal" hidden>
+  <div class="modal-back" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Round detail">
+    <button class="modal-x" data-close aria-label="Close">×</button>
+    <div id="rm-body"></div>
+  </div>
+</div>
+
 <script>
 (function () {
+  let LIVE = null, deepLinked = false;
   const $ = (id) => document.getElementById(id);
   const LABEL = { open: "open", window: "window", seal: "seal", evaluate: "evaluate", close: "score", crown: "crown",
                   announce: "verdict", export: "export", publish_close: "publish", done: "done", waiting: "waiting for tasks" };
@@ -193,6 +202,8 @@
   }
 
   function render(live) {
+    LIVE = live;
+    if (!deepLinked && location.hash.startsWith("#round-")) { deepLinked = true; openRound(location.hash.slice(7)); }
     current = live;
     const stale = Date.now() / 1000 - live.updated > 900;
     document.body.classList.toggle("stale", stale);
@@ -240,7 +251,7 @@
     const hist = (live.history || []).slice().reverse();
     $("history").innerHTML = hist.length ? hist.map((h) => {
       const ks = h.king && h.scores ? h.scores[h.king] : null, kc = h.king && h.crown ? h.crown[h.king] : null;
-      return "<tr" + (h.king ? "" : "") + "><td class='l'><a href='../rounds/" + esc(h.round_id) + "/'>" + esc(h.round_id) + "</a></td>" +
+      return "<tr><td class='l'><a class='round-link' href='../rounds/" + esc(h.round_id) + "/' data-round='" + esc(h.round_id) + "'>" + esc(h.round_id) + "</a></td>" +
         "<td class='l'>" + (h.king ? ident({ github: h.github || live.github, repo: live.repo }, h.king, true) + (h.pr ? " " + pr(live, h.pr) : "") : "<span class='zero'>none</span>") + "</td>" +
         "<td class='" + cls(kc && kc.delta) + "'>" + signed(kc && kc.delta, 3) + "</td><td>" + num(ks && ks.score, 4) + "</td><td>" + num(ks && ks.weight, 3) + "</td>" +
         "<td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
@@ -254,6 +265,54 @@
     if (live.hf_repo) $("nav-hf").href = "https://huggingface.co/datasets/" + live.hf_repo;
     if (live.repo && live.branch) $("link-rounds").href = "https://github.com/" + live.repo + "/tree/" + live.branch + "/rounds";
   }
+
+  // A closed round opens in a modal built from its own history entry (same-origin, already polled) — no navigation,
+  // no fetch; the full static page and the GitHub artefacts are linked inside for anyone who wants to recompute it.
+  function roundDetail(live, h) {
+    const gh = { github: h.github || live.github, repo: live.repo };
+    const scores = h.scores || {}, crown = h.crown || {};
+    const ranked = Object.keys(scores).sort((a, b) =>
+      (scores[b].weight || 0) - (scores[a].weight || 0) || (scores[b].score || 0) - (scores[a].score || 0) || a.localeCompare(b));
+    const rows = ranked.map((k) => {
+      const s = scores[k], c = crown[k] || {}, isK = k === h.king, w = s.weight || 0;
+      return "<tr" + (isK ? " class='king'" : "") + "><td class='l'>" + ident(gh, k, isK) + "</td><td>" + (c.rank || "—") +
+        "</td><td class='" + cls(c.delta) + "'>" + signed(c.delta, 3) + "</td><td>" + num(s.score, 4) +
+        "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>";
+    }).join("") || "<tr><td class='empty' colspan='5'>no strategies were sealed</td></tr>";
+    const stat = (v, k) => "<div class='stat'><b>" + v + "</b><span>" + k + "</span></div>";
+    const kingCell = h.king ? ident(gh, h.king, true) + (h.pr ? " " + pr(live, h.pr) : "") : "<span class='zero'>none</span>";
+    const tree = "https://github.com/" + esc(live.repo) + "/tree/" + esc(live.branch) + "/rounds/" + esc(h.round_id);
+    return "<div class='head'><h1>Round <span class='grad'>" + esc(h.round_id) + "</span></h1>" +
+      "<span class='phase closed'>closed</span><span class='muted small'>" + clock(h.closed_at) + "</span></div>" +
+      "<div class='strip' style='margin:1rem 0'>" + stat(h.episodes, "episodes") + stat(h.sft_rows ?? "—", "SFT rows") +
+      stat(h.dpo_pairs ?? "—", "DPO pairs") + "<div class='stat'><b>" + kingCell + "</b><span>king</span></div>" +
+      "<div class='stat'><b class='" + (h.commitments_ok ? "pos" : "neg") + "'>" + (h.commitments_ok ? "verified" : "mismatch") +
+      "</b><span>commitments</span></div></div>" +
+      "<div class='wrap'><table><thead><tr><th class='l'>strategy</th><th>rank</th>" +
+      "<th title=\"the king's Δ vs baseline on this round's instances\">Δ round</th><th>score</th><th>weight</th></tr></thead>" +
+      "<tbody>" + rows + "</tbody></table></div>" +
+      "<p class='note' style='margin-top:1rem'>Full detail and artefacts: <a href='../rounds/" + esc(h.round_id) + "/'>round page</a> · " +
+      "<a href='" + tree + "'>rounds/" + esc(h.round_id) + "/</a>" + (h.hf ? " · <a href='" + esc(h.hf) + "'>dataset</a>" : "") + "</p>";
+  }
+  function openRound(id) {
+    const h = ((LIVE && LIVE.history) || []).find((x) => x.round_id === id);
+    if (!h) { location.href = "../rounds/" + id + "/"; return; }  // older than the window: fall back to the static page
+    $("rm-body").innerHTML = roundDetail(LIVE, h);
+    $("round-modal").hidden = false;
+    if (location.hash !== "#round-" + id) history.replaceState(null, "", "#round-" + id);
+  }
+  function closeRound() {
+    $("round-modal").hidden = true;
+    if (location.hash.startsWith("#round-")) history.replaceState(null, "", location.pathname + location.search);
+  }
+  $("history").addEventListener("click", (e) => {
+    const a = e.target.closest(".round-link");
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;  // let new-tab / middle-click through
+    e.preventDefault();
+    openRound(a.dataset.round);
+  });
+  $("round-modal").addEventListener("click", (e) => { if (e.target.matches("[data-close]")) closeRound(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("round-modal").hidden) closeRound(); });
 
   async function tick() {
     try {
