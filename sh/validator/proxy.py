@@ -21,6 +21,7 @@ import hashlib
 import json
 import secrets
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -31,6 +32,8 @@ from pathlib import Path
 # not fall back to anything else — one did, and ran a round at the retired temperature 0.2.
 PINNED_SAMPLING = {"temperature": 0.7, "top_p": 0.95, "max_tokens": 8192}
 OVERLOAD_WAIT_S = 240  # how long a refused call is held before the refusal is passed on
+MAX_WAITING = 2  # calls of one episode allowed to queue behind its call in flight; more are refused at once
+_UNPINNED = ("n", "best_of", "logprobs", "top_logprobs", "echo")  # knobs that multiply what one call costs the engine
 _OVERLOAD_WORDS = (b"overloaded", b"no capacity", b"capacity")
 
 
@@ -104,7 +107,37 @@ class Tokens:
         return n
 
 
+class Gate:
+    """One call at a time per episode. The budget is then exact — each call is checked against everything spent
+    before it — and an agent firing requests in parallel with its own token cannot overshoot its budget or hold the
+    proxy's threads and the engine's slots against other episodes: a few calls queue, the rest are refused."""
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._episodes: dict[str, tuple[threading.Lock, int]] = {}
+
+    def enter(self, episode: str) -> threading.Lock | None:
+        with self._lock:
+            lock, waiting = self._episodes.get(episode, (threading.Lock(), 0))
+            if waiting > MAX_WAITING:
+                return None
+            self._episodes[episode] = (lock, waiting + 1)
+        lock.acquire()
+        return lock
+
+    def leave(self, episode: str, lock: threading.Lock) -> None:
+        lock.release()
+        with self._lock:
+            held, waiting = self._episodes.get(episode, (lock, 1))
+            if waiting <= 1:
+                self._episodes.pop(episode, None)
+            else:
+                self._episodes[episode] = (held, waiting - 1)
+
+
 def make_handler(upstream: str, tokens: Tokens, usage_dir: Path, sampling: dict):
+    gate = Gate()
+
     class H(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
 
@@ -132,7 +165,15 @@ def make_handler(upstream: str, tokens: Tokens, usage_dir: Path, sampling: dict)
             episode = rec["episode"]
             n = int(self.headers.get("Content-Length") or 0)
             raw = self.rfile.read(n)
-            budget = rec.get("budget")
+            lock = gate.enter(episode)
+            if lock is None:
+                return self._deny(429, "one call at a time per episode")
+            try:
+                self._post(raw, episode, rec.get("budget"))
+            finally:
+                gate.leave(episode, lock)
+
+        def _post(self, raw: bytes, episode: str, budget):
             if budget and (used := spent(usage_dir / f"{episode}.jsonl")) >= budget:
                 usage_dir.mkdir(parents=True, exist_ok=True)
                 with open(usage_dir / f"{episode}.jsonl", "a") as f:
@@ -158,6 +199,8 @@ def make_handler(upstream: str, tokens: Tokens, usage_dir: Path, sampling: dict)
                 return self._deny(400, "bad json")
             if isinstance(body, dict):
                 body.update({k: v for k, v in sampling.items() if v is not None})  # pinned sampling wins
+                for knob in _UNPINNED:
+                    body.pop(knob, None)
                 if body.get("stream"):
                     so = body.get("stream_options") or {}
                     so["include_usage"] = True

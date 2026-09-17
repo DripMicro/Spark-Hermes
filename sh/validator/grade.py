@@ -31,9 +31,32 @@ DQ = (
     "inline_shell_marker",
     "instance_literal_in_bundle",
     "harness_tamper",  # a family's checks found the agent's tree reaching for the test runner itself
+    "disk_abuse",  # the episode was stopped for filling the worker's disk
 )
 MUTATING = {"write_file", "patch"}
 VERIFYING = {"read_file", "search_files", "terminal", "process_manage"}
+
+
+def _digest(obj) -> str:
+    return hashlib.sha256(
+        json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+    ).hexdigest()
+
+
+def pins_digest(task: dict) -> str:
+    """What an episode was measured under: the pinned sampling and the task's limits and image. Episodes with
+    different pins are different measurements and are never pooled."""
+    from sh.validator.proxy import PINNED_SAMPLING
+
+    return _digest(
+        {
+            "sampling": PINNED_SAMPLING,
+            "max_turns": task.get("max_turns"),
+            "timeout_s": task.get("timeout_s"),
+            "token_budget": task.get("token_budget"),
+            "family": task.get("family"),
+        }
+    )[:16]
 
 
 def _run(args, *, input=None, timeout=None):
@@ -60,6 +83,11 @@ for rel in json.load(sys.stdin):
     out[rel] = hashlib.sha256(open(p, "rb").read()).hexdigest() if os.path.isfile(p) else None
 print(json.dumps(out))
 """
+
+
+# The grader is root inside its container, with only what it needs to run a family's suite as another uid and to kill
+# everything that uid started: the code under test must not reach the answer key, the outcomes, or outlive the run.
+GRADER_CAPS = ("SETUID", "SETGID", "CHOWN", "KILL", "DAC_OVERRIDE", "FOWNER")
 
 
 def pristine_digests(task: dict, image: str) -> dict[str, str | None] | None:
@@ -125,7 +153,9 @@ def grade_in_container(
                 "alpine",
                 "sh",
                 "-c",
-                "tar x -C /ep && mkdir -p /ep/out && chown -R 1000:1000 /ep",
+                # root's alone: the suite runs as another uid (a family's checks drop to it) and must not read the
+                # answer key in withheld.json nor write where outcomes are kept
+                "tar x -C /ep && mkdir -p /ep/out && chown -R 0:0 /ep && chmod -R go-rwx /ep",
             ],
             input=_tar(entries),
         ).check_returncode()
@@ -141,6 +171,7 @@ def grade_in_container(
                     "none",
                     "--cap-drop",
                     "ALL",
+                    *[arg for cap in GRADER_CAPS for arg in ("--cap-add", cap)],
                     "--security-opt",
                     "no-new-privileges:true",
                     "--pids-limit",
@@ -149,10 +180,10 @@ def grade_in_container(
                     "2048m",
                     "--read-only",
                     "--user",
-                    "1000:1000",
+                    "0:0",
                     "--tmpfs",
-                    "/tmp:rw,size=256m,uid=1000,gid=1000",
-                    *(["--tmpfs", f"{task['workdir']}:rw,size=1024m,uid=1000,gid=1000"] if task.get("workdir") else []),
+                    "/tmp:rw,size=256m,mode=1777",
+                    *(["--tmpfs", f"{task['workdir']}:rw,size=1024m"] if task.get("workdir") else []),
                     "-v",
                     f"{vol}:/ep",
                     "-e",
@@ -212,11 +243,12 @@ def grade_in_container(
 ALLOWED_WRITE_PREFIXES = ("/ep/ws", "/tmp", "/home/hermes")
 PATH_KEYS = ("path", "file_path", "target", "directory", "dir", "cwd", "file")
 CMD_KEYS = ("command", "cmd", "script", "args")  # not `pattern`/`query`: grepping the tree for a string is a read of it
-# The grader's own places, anchored at the filesystem root: the runner at `/runner`, and the episode volume at
-# `/ep` — all of it but the fixture workspace `/ep/ws` (and not `/ep/ws/..`), however it is spelled, `$SH_EP`
-# included. `_pytest/runner.py`, `src/runner.py` and `/testbed/ep/out` are ordinary repository paths.
+# The grader's own places, anchored at the filesystem root: the runner at `/runner`, and where the episode's outputs
+# and any withheld material would be (`/ep/out`, `/ep/withheld*`, `/ep/before*`, however `/ep` is spelled). The rest
+# of `/ep` is the public projection of the task — `ls /ep` or `cat /ep/task.json` reads nothing secret, and the runner
+# recreates `/ep/out` before writing to it. `_pytest/runner.py` and `/testbed/ep/out` are repository paths.
 GRADER_PATH = re.compile(
-    r"(?<![\w.\-/])/ep(?:/ws/\.\.|(?!/ws(?![\w\-]))(?![\w\-]))|\$\{?SH_EP\b|(?<![\w.\-/])/runner(?![\w\-])"
+    r"(?:(?<![\w.\-/])/ep|\$\{?SH_EP\}?)/(?:ws/\.\./)?(?:out|withheld|before)(?![\w\-])|(?<![\w.\-/])/runner(?![\w\-])"
 )
 
 
@@ -340,7 +372,10 @@ def grade(
     ep_writes = (
         json.loads((episode_out / "ep_writes.json").read_text()) if (episode_out / "ep_writes.json").exists() else []
     )
-    g = grade_in_container(episode_out, task, withheld, image, checks_py)
+    if finish.get("disk_guard"):  # stopped before it filled the disk: nothing is graded, and it is disqualified
+        g = {"published_pass": False, "withheld_pass": False, "protected_modified": None, "tests": None}
+    else:
+        g = grade_in_container(episode_out, task, withheld, image, checks_py)
     signals, self_checked, failed_tool = trajectory_rules(messages, ep_writes, bundle_dir, task, withheld)
     if g["protected_modified"]:
         signals.append("protected_path_modified")
@@ -358,6 +393,9 @@ def grade(
     )
     if finish.get("budget_spent"):  # the episode used its budget: an ending, graded like any other, never a void
         signals.append("token_budget_spent")
+        void = False
+    if finish.get("disk_guard"):
+        signals.append("disk_abuse")
         void = False
     if void:
         signals.append("inference_unavailable")
@@ -410,6 +448,10 @@ def grade(
         "tokens": finish.get("proxy_tokens"),
         "queued_s": finish.get("proxy_queued_s"),
         "budget_spent": finish.get("budget_spent"),
+        # which withheld half graded it, and under which pins: close checks the first against the reveal, and scoring
+        # pools only episodes measured under the same pins
+        "withheld_sha256": _digest(withheld.get("withheld", withheld)) if withheld else None,
+        "pins_sha256": pins_digest(task),
         "dropped_packets": finish.get("dropped_packets"),
         "tool_calls": finish.get("tool_calls"),
         "tool_errors": finish.get("tool_errors"),
