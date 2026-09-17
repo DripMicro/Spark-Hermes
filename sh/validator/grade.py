@@ -51,12 +51,59 @@ def _tar(entries: dict[str, bytes]) -> bytes:
     return buf.getvalue()
 
 
+_PRISTINE = """import hashlib, json, os, sys
+ws = sys.argv[1]
+out = {}
+for rel in json.load(sys.stdin):
+    p = os.path.join(ws, rel)
+    out[rel] = hashlib.sha256(open(p, "rb").read()).hexdigest() if os.path.isfile(p) else None
+print(json.dumps(out))
+"""
+
+
+def pristine_digests(task: dict, image: str) -> dict[str, str | None] | None:
+    """The protected paths as the task image ships them, digested here from the image — never from anything the
+    agent's uid could reach. The runner also records them, but it runs as the agent's uid: a link planted in
+    `/ep/out`, or an episode killed on its timeout, left the grader with no baseline and so no verdict on what
+    the agent changed. Image-defined tasks only; a fixture task's baseline is what its setup commands made, which
+    the runner alone sees. None when not applicable."""
+    if not task.get("workdir"):
+        return None
+    if not task.get("protected_paths"):
+        return {}
+    r = _run(
+        [
+            "docker",
+            "run",
+            "--rm",
+            "-i",
+            "--network",
+            "none",
+            "--user",
+            "1000:1000",
+            image,
+            "/opt/hermes/.venv/bin/python",
+            "-c",
+            _PRISTINE,
+            task["workdir"],
+        ],
+        input=json.dumps(list(task["protected_paths"])).encode(),
+        timeout=300,
+    )
+    if r.returncode:
+        raise RuntimeError(f"pristine digests of {image}: {r.stderr[-300:].decode(errors='replace')}")
+    return json.loads(r.stdout)
+
+
 def grade_in_container(
     episode_out: Path, task: dict, withheld: dict | None, image: str, checks_py: Path | None = None
 ) -> dict:
     vol = f"grade-{task['task_id']}-{hashlib.sha256(os.urandom(8)).hexdigest()[:8]}"
     entries = {"task.json": json.dumps(task).encode(), "snapshot.tar": (episode_out / "snapshot.tar").read_bytes()}
-    if (episode_out / "before.json").exists():
+    before = pristine_digests(task, image)
+    if before is not None:
+        entries["before.json"] = json.dumps(before).encode()
+    elif (episode_out / "before.json").is_file():
         entries["before.json"] = (episode_out / "before.json").read_bytes()
     # else: no baseline at all. Substituting an empty one here is what made the grader's own "absent means
     # unknown" rule unreachable — it never saw an absent file, it saw `{}` and read it as "nothing was there".
@@ -122,6 +169,7 @@ def grade_in_container(
             raise RuntimeError(f"grader exited {r.returncode}: {r.stderr[-800:].decode(errors='replace')}")
         data = _run(["docker", "run", "--rm", "-v", f"{vol}:/ep", "alpine", "cat", "/ep/out/grade.json"]).stdout
         g = json.loads(data)
+        g["before_from"] = "image" if before is not None else ("runner" if "before.json" in entries else None)
         # A family whose checks run a test suite leaves every test's outcome beside the grade (checks.py writes
         # it): the grader itself stops at the first failing predicate, and a fraction needs all of them.
         # `facet_tests.json` is the name terminal_task's checks used; rounds minted with it are still graded.
@@ -162,10 +210,13 @@ def grade_in_container(
 # scratch areas (HERMES_HOME and /tmp), whose contents are discarded with the container.
 ALLOWED_WRITE_PREFIXES = ("/ep/ws", "/tmp", "/home/hermes")
 PATH_KEYS = ("path", "file_path", "target", "directory", "dir", "cwd", "file")
-CMD_KEYS = ("command", "cmd", "script", "query", "pattern", "args")
-# The grader's own paths, anchored at the filesystem root: `_pytest/runner.py`, `src/runner.py` and
-# `/testbed/ep/out` are ordinary repository paths, not the runner at `/runner` or the episode volume at `/ep`.
-GRADER_PATH = re.compile(r"(?<![\w.\-/])/(ep/(out|task\.json|withheld|before)|runner)(?![\w\-])")
+CMD_KEYS = ("command", "cmd", "script", "args")  # not `pattern`/`query`: grepping the tree for a string is a read of it
+# The grader's own places, anchored at the filesystem root: the runner at `/runner`, and the episode volume at
+# `/ep` — all of it but the fixture workspace `/ep/ws` (and not `/ep/ws/..`), however it is spelled, `$SH_EP`
+# included. `_pytest/runner.py`, `src/runner.py` and `/testbed/ep/out` are ordinary repository paths.
+GRADER_PATH = re.compile(
+    r"(?<![\w.\-/])/ep(?:/ws/\.\.|(?!/ws(?![\w\-]))(?![\w\-]))|\$\{?SH_EP\b|(?<![\w.\-/])/runner(?![\w\-])"
+)
 
 
 def _reaching(args_json: str) -> tuple[list[str], list[str]]:
@@ -360,6 +411,8 @@ def grade(
         "published_failed": g.get("published_failed", ""),
         "withheld_failed": g.get("withheld_failed", ""),
         "detail": g.get("detail"),
+        "before_from": g.get("before_from"),
+        "skipped_members": g.get("skipped_members"),
         "validator": validator,
         "graded_at": time.time(),
     }

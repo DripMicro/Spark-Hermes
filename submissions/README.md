@@ -10,8 +10,8 @@ The tasks are real bugs in real Python repositories (family `swe_fix`, from SWE-
 repository at the bug, and a grader that runs the tests the bug broke — each passing test earns its share of the
 task's credit, and none counts if a test that passed before now fails. What `tasks` gives you are **practice
 bugs**: one from each repository and environment the round is scored on, with its SWE-smith instance id so you can
-reproduce it locally. The round is scored on **8 different, hidden bugs** from those same repositories, published
-when it closes. Write how to debug these codebases; the answers to the practice bugs will not be asked.
+reproduce it locally. The round is scored on **as many different, hidden bugs** (up to 8) from those same
+repositories, published when it closes. Write how to debug these codebases; the answers to the practice bugs will not be asked.
 
 ## What a strategy is
 

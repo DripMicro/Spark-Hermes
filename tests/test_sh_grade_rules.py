@@ -277,3 +277,72 @@ def test_a_link_leaving_the_workspace_is_skipped_by_the_grader_not_fatal(tmp_pat
     with tarfile.open(fileobj=buf) as tf:
         tf.extractall(ws, filter=_workspace_member)
     assert (ws / "pkg" / "core.py").read_bytes() == data and not (ws / ".venv" / "bin" / "python").exists()
+
+
+def test_the_grader_path_rule_covers_the_whole_episode_volume_however_it_is_spelled():
+    for attempt in (
+        "ls /ep",
+        "cat /ep/*.json",
+        "cat $SH_EP/out/before.json",
+        "cd ${SH_EP} && ln -s /nonexistent out/before.json",
+        "cat /ep/ws/../task.json",
+        "ls /ep/o*/",
+    ):
+        assert "read_grader_or_withheld_path_attempt" in _signals(("terminal", {"command": attempt})), attempt
+    assert _signals(("write_file", {"path": "/ep/ws/report.sh", "content": "x"})) == []  # the fixture workspace
+    assert _signals(("terminal", {"command": "grep -rn foo /testbed/ep/out"})) == []  # a repository path
+
+
+def test_grepping_the_tree_for_a_path_string_is_not_an_access_attempt():
+    assert _signals(("search_files", {"path": "/testbed", "pattern": "/runner"})) == []
+    assert _signals(("search_files", {"path": "/ep/out", "pattern": "x"})) != []  # the place searched still counts
+
+
+def test_results_come_out_of_the_episode_volume_as_plain_files_only(tmp_path):
+    """The agent can reach /ep/out: a link it leaves there must not be recreated on the host, where the grader
+    would follow it."""
+    import io
+    import tarfile
+
+    from sh.validator.episode import _result_member
+
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w") as tf:
+        link = tarfile.TarInfo("./before.json")
+        link.type, link.linkname = tarfile.SYMTYPE, "/nonexistent"
+        tf.addfile(link)
+        data = b'{"stage": "done"}'
+        f = tarfile.TarInfo("./finish.json")
+        f.size = len(data)
+        tf.addfile(f, io.BytesIO(data))
+    buf.seek(0)
+    out = tmp_path / "out"
+    out.mkdir()
+    with tarfile.open(fileobj=buf) as tf:
+        tf.extractall(out, filter=_result_member)
+    assert (out / "finish.json").read_bytes() == data and not (out / "before.json").is_symlink()
+    assert not (out / "before.json").exists()
+
+
+def test_the_runner_resets_its_output_directory_and_reports_what_the_agent_left_there(tmp_path, monkeypatch):
+    import importlib
+
+    for var in ("HERMES_HOME", "SH_EP"):  # the runner reads its environment at import; it is built for the container
+        monkeypatch.setenv(var, str(tmp_path / var.lower()))
+    monkeypatch.setenv("SH_INFERENCE", "http://inference/v1")
+    monkeypatch.setenv("SH_TOKEN", "none")
+    r = importlib.import_module("sh.validator.runner.run_episode")
+
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "system_prompt.txt").write_text("sp")
+    (out / "before.json").symlink_to("/nonexistent")  # the agent's plant
+    (out / "planted").mkdir()
+    (out / "planted" / "x").write_text("x")
+    monkeypatch.setattr(r, "OUT", out)
+    stray = r._reset_out()
+    assert sorted(p.split("/")[-1] for p in stray) == ["before.json", "planted"]
+    assert out.is_dir() and list(out.iterdir()) == []
+    out.rmdir()
+    out.symlink_to(tmp_path)  # the directory itself replaced by a link
+    assert r._reset_out() == [str(out)] and out.is_dir() and not out.is_symlink()

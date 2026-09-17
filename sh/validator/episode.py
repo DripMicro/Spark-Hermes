@@ -50,6 +50,17 @@ SH_EP_PROXY_PORT = 8090
 DROP_CHAIN = "SH_EP_DROP"  # per-episode accounting rules live here (net-up.sh creates the chain)
 
 
+def _result_member(member: tarfile.TarInfo, path: str) -> tarfile.TarInfo | None:
+    """The runner writes plain files into /ep/out; the agent can reach it too. A link, a device, anything that is
+    not a regular file or a directory, is the agent's and is not extracted onto the host."""
+    if not (member.isfile() or member.isdir()):
+        return None
+    try:
+        return tarfile.data_filter(member, path)
+    except tarfile.FilterError:
+        return None
+
+
 def _iptables(*args: str) -> subprocess.CompletedProcess | None:
     if shutil.which("iptables") is None:
         return None
@@ -195,7 +206,8 @@ def run_episode(
                     ep,
                     "sh",
                     "-c",
-                    f"tar cf /ep/out/snapshot.tar -C {task.get('workdir') or '/ep/ws'} . 2>/dev/null; true",
+                    # /ep/out may be whatever the agent made of it: start it over, then snapshot into it
+                    f"rm -rf /ep/out; mkdir -p /ep/out; tar cf /ep/out/snapshot.tar -C {task.get('workdir') or '/ep/ws'} . 2>/dev/null; true",
                 ],
                 timeout=60,
             )
@@ -205,7 +217,7 @@ def run_episode(
         # extract results
         data = _run(["docker", "run", "--rm", "-v", f"{ep}:/ep", "alpine", "tar", "c", "-C", "/ep/out", "."]).stdout
         with tarfile.open(fileobj=io.BytesIO(data)) as tf:
-            tf.extractall(out)
+            tf.extractall(out, filter=_result_member)
     finally:
         _run(["docker", "rm", "-f", ep])
         _run(["docker", "volume", "rm", "-f", ep])

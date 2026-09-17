@@ -645,14 +645,24 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
     # second one; if it is not running, launching is safe — `batch` resumes on its own episode records. A batch
     # that ends short (episodes the provider voided past its own retries) is launched again, a bounded number of
     # times, so a busy engine costs time rather than evidence.
+    def wait_for_screen() -> None:
+        # Bounded: a screen left by a dead daemon is a process nobody else will end. The board keeps moving.
+        waited = 0.0
+        if screening():
+            log(rd, "evaluate_wait", note="a baseline screen holds the engine; launching when it ends")
+        while screening() and waited < 5400:
+            live(cfg, rd, "evaluate", progress=_progress(cfg, remote, total))
+            time.sleep(60)
+            waited += 60
+        if waited >= 5400:
+            log(rd, "evaluate_wait", note="screen still running after 90 min; ending it")
+            _worker(cfg, f"pkill -f 'batch --round {cfg.worker_root}/screen/' ; true")
+
     launches = 0
     if running():
         log(rd, "evaluate_resume", note="batch already running on the worker; polling")
     else:
-        if screening():
-            log(rd, "evaluate_wait", note="a baseline screen holds the engine; launching when it ends")
-            while screening():
-                time.sleep(30)
+        wait_for_screen()
         _worker_launch(cfg, launch)
         launches = 1
     last_push = 0.0
@@ -667,6 +677,7 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
             continue
         if prog["done"] < total and launches < 3:
             log(rd, "evaluate_relaunch", done=prog["done"], total=total)
+            wait_for_screen()
             _worker_launch(cfg, launch)
             launches += 1
             continue
