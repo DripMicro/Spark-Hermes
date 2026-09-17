@@ -27,6 +27,9 @@ packages = ["sh"]
 [tool.ruff]
 line-length = 120
 target-version = "py312"
+# Published artefacts (rounds/, the site, submissions) are what the loop and miners wrote, not code to format:
+# a scorecard's "check it yourself" snippet must stay as published.
+extend-exclude = ["rounds", "docs", "submissions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
