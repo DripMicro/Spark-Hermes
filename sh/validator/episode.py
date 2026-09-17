@@ -50,6 +50,33 @@ SH_EP_PROXY_PORT = 8090
 DROP_CHAIN = "SH_EP_DROP"  # per-episode accounting rules live here (net-up.sh creates the chain)
 
 
+DISK_FLOOR_BYTES = 20 * 2**30  # an episode is stopped when the worker's Docker disk falls below this
+
+
+def _docker_root() -> str:
+    root = os.environ.get("SH_DOCKER_ROOT", "/var/lib/docker")
+    return root if os.path.isdir(root) else "/"
+
+
+def _wait(ep: str, timeout_s: int) -> dict | None:
+    """Wait for the episode's container, watching the worker's disk: the agent's tree and the /ep volume live on the
+    Docker disk with no quota, and one command can write hundreds of gigabytes. Returns the disk guard's record when it
+    stopped the episode; raises TimeoutExpired at the deadline."""
+    deadline = time.time() + timeout_s
+    while True:
+        remaining = deadline - time.time()
+        if remaining <= 0:
+            raise subprocess.TimeoutExpired(["docker", "wait", ep], timeout_s)
+        try:
+            _run(["docker", "wait", ep], timeout=int(min(30, remaining)) or 1)
+            return None
+        except subprocess.TimeoutExpired:
+            usage = shutil.disk_usage(_docker_root())
+            if usage.free < max(DISK_FLOOR_BYTES, usage.total // 20):
+                _run(["docker", "kill", ep])
+                return {"free_bytes": usage.free, "floor_bytes": max(DISK_FLOOR_BYTES, usage.total // 20)}
+
+
 def _result_member(member: tarfile.TarInfo, path: str) -> tarfile.TarInfo | None:
     """The runner writes plain files into /ep/out; the agent can reach it too. A link, a device, anything that is
     not a regular file or a directory, is the agent's and is not extracted onto the host."""
@@ -194,9 +221,9 @@ def run_episode(
             ip = _container_ip(ep)
             if ip:
                 _iptables("-I", DROP_CHAIN, "1", "-s", ip)  # count-only rule; the chain's final rule drops
-        timed_out = False
+        timed_out, disk_guard = False, None
         try:
-            _run(["docker", "wait", ep], timeout=timeout_s + 30)
+            disk_guard = _wait(ep, timeout_s + 30)
         except subprocess.TimeoutExpired:
             timed_out = True
             _run(
@@ -233,6 +260,8 @@ def run_episode(
         json.loads((out / "finish.json").read_text()) if (out / "finish.json").exists() else {"stage": "no_finish"}
     )
     finish["timed_out"] = timed_out
+    if disk_guard:
+        finish["disk_guard"] = disk_guard
     finish["host_wall_s"] = round(time.time() - t0, 1)
     finish["episode"] = ep
     finish["dropped_packets"] = drops
