@@ -161,14 +161,14 @@ def render(close: dict, meta: dict | None = None) -> str:
   <section class="panel">
     <h2>This round <small>{_e(crowned.get("rule", "the crown is decided on this round's instances alone"))}</small></h2>
     <div class="wrap"><table>
-      <thead><tr><th class="l">strategy</th><th>rank</th><th title="instances shared with the baseline this round">paired</th><th>verified</th><th title="mean of (pass − baseline pass) per instance, this round">Δ vs baseline</th></tr></thead>
+      <thead><tr><th class="l">strategy</th><th>rank</th><th title="instances shared with the baseline this round">paired</th><th>verified</th><th title="mean of (share of checks passed − the baseline's) per instance, this round">Δ vs baseline</th></tr></thead>
       <tbody>{"".join(this_round) or '<tr><td class="empty" colspan="5">no crown standings for this round</td></tr>'}</tbody>
     </table></div>
   </section>
   <section class="panel">
     <h2>Payment <small>pooled over the window — Δc, the one-sided 90% lower bound of Δ vs baseline, is what pays</small></h2>
     <div class="wrap"><table>
-      <thead><tr><th class="l">strategy</th><th>#</th><th>episodes</th><th title="mean of (miner pass − baseline pass) per instance">Δ vs baseline</th><th title="one-sided 90% lower bound of Δ vs baseline">Δc</th><th title="efficiency term admitted">gate</th><th title="passed the published check while failing the withheld one">overfit</th><th title="disqualified episodes">dq</th><th>score</th><th>weight</th></tr></thead>
+      <thead><tr><th class="l">strategy</th><th>#</th><th>episodes</th><th title="mean of (share of checks passed − the baseline's) per instance">Δ vs baseline</th><th title="one-sided 90% lower bound of Δ vs baseline">Δc</th><th title="correctness gate: the pooled window is not below the baseline (mean Δ + z·se ≥ 0)">gate</th><th title="passed the published check while failing the withheld one (families with a published half; swe_fix has none)">overfit</th><th title="disqualified episodes">dq</th><th>score</th><th>weight</th></tr></thead>
       <tbody>{"".join(body) or '<tr><td class="empty" colspan="10">no strategies were sealed</td></tr>'}</tbody>
     </table></div>
   </section>

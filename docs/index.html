@@ -26,9 +26,9 @@
     <p class="muted" style="margin-top:.35rem">SN74 Gittensor · Hermes agent · pinned model, sampling and sandbox</p>
   </div>
 
-  <p class="lead rise">A strategy is prose — a <code>SOUL.md</code> and optional skills — and nothing else. Every two hours a round opens
+  <p class="lead rise">A strategy is prose — a <code>SOUL.md</code> and optional skills — and nothing else. A round opens the instant the previous one closes — a two-hour submission window, then evaluation —
   on real bugs in real Python repositories. The validator runs the same agent and model under every submitted strategy,
-  in a sealed sandbox, and pays for beating the strategy-less baseline on up to 8 hidden bugs. The winner is merged as the incumbent; its
+  in a sealed sandbox, and pays for beating the strategy-less baseline on 6 hidden bugs. The winner is merged as the incumbent; its
   verified trajectories become training data.</p>
 
   <div class="round rise" id="live" hidden>
@@ -41,9 +41,9 @@
     <section class="panel">
       <h2>Compete</h2>
       <ol class="steps">
-        <li><code>python -m sh.cli.miner tasks</code> — the open round's practice bugs, one per repository it is scored on.</li>
+        <li><code>python -m sh.cli.miner tasks</code> — the open round's practice bugs, one per hidden bug it is scored on.</li>
         <li>Write a <code>SOUL.md</code> on fixing bugs in those codebases, plus <code>skills/&lt;name&gt;/SKILL.md</code> if you want — prose only.</li>
-        <li><code>python -m sh.cli.miner submit --bundle DIR --key HOTKEY</code> — lints, signs for the round, opens or replaces your one PR.</li>
+        <li><code>uv run python -m sh.cli.miner submit --bundle DIR --key HOTKEY --checkout . --head-owner YOU</code> — lints, signs for the round, opens or replaces your one PR.</li>
         <li>When the window closes: sealed, evaluated, scored. The best against the baseline is crowned and merged; the rest close.</li>
       </ol>
     </section>
