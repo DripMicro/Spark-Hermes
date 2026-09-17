@@ -150,3 +150,16 @@ tr.king td { background: rgba(251, 191, 36, .05); }
 .gh-name.gh-anon { color: var(--muted); font-weight: 400; font-style: italic; }
 .ident .hk { color: var(--muted); }
 @media (max-width: 520px) { .gh-av { width: 1.6rem; height: 1.6rem; } .crown-badge { font-size: .65rem; top: -.35rem; right: -.3rem; } }
+
+/* Round detail as a modal over the board, not a separate page. Reuses .head/.strip/.stat/.wrap/table. */
+.round-link { cursor: pointer; }
+.modal[hidden] { display: none; }
+.modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-start; justify-content: center; padding: 4rem 1rem; overflow-y: auto; }
+.modal-back { position: fixed; inset: 0; background: rgba(5, 5, 10, .72); backdrop-filter: blur(3px); }
+.modal-card { position: relative; z-index: 1; width: min(58rem, 100%); margin: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--glow); padding: 1.5rem 1.6rem; }
+.modal-card .head { margin-bottom: .5rem; }
+.modal-card .strip { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
+.modal-card .stat b { font-size: 1.15rem; }
+.modal-x { position: absolute; top: .7rem; right: .9rem; background: none; border: none; color: var(--muted); font-size: 1.7rem; line-height: 1; cursor: pointer; padding: .1rem .45rem; border-radius: 8px; }
+.modal-x:hover { color: var(--ink); background: var(--soft); }
+@media (max-width: 520px) { .modal { padding: 1rem .5rem; } .modal-card { padding: 1.1rem 1rem; } }
