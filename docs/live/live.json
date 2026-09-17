@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789661081.6400301,
- "round_id": "r0005",
- "stage": "done",
+ "updated": 1789661084.4743786,
+ "round_id": "r0006",
+ "stage": "window",
  "stages": [
   "open",
   "window",
@@ -15,151 +15,19 @@
   "publish_close",
   "done"
  ],
- "started": 1789644184.226243,
+ "started": 1789661084.4534488,
  "phases": [
   {
    "stage": "start",
-   "t": 1789644184.226243
-  },
-  {
-   "stage": "open",
-   "t": 1789644187.3814814
-  },
-  {
-   "stage": "mock_submit",
-   "t": 1789644213.9655912
-  },
-  {
-   "stage": "resume",
-   "t": 1789646517.8783493
-  },
-  {
-   "stage": "resume",
-   "t": 1789648350.7159116
-  },
-  {
-   "stage": "resume",
-   "t": 1789649445.3662858
-  },
-  {
-   "stage": "resume",
-   "t": 1789650618.4435058
-  },
-  {
-   "stage": "window",
-   "t": 1789651393.2571013
-  },
-  {
-   "stage": "seal",
-   "t": 1789651406.9135966
-  },
-  {
-   "stage": "images",
-   "t": 1789651416.9552374
-  },
-  {
-   "stage": "resume",
-   "t": 1789652818.8599594
-  },
-  {
-   "stage": "images",
-   "t": 1789652829.2254112
-  },
-  {
-   "stage": "evaluate_resume",
-   "t": 1789652830.0999901
-  },
-  {
-   "stage": "resume",
-   "t": 1789653045.9385648
-  },
-  {
-   "stage": "images",
-   "t": 1789653056.8305705
-  },
-  {
-   "stage": "evaluate_resume",
-   "t": 1789653057.827125
-  },
-  {
-   "stage": "resume",
-   "t": 1789653953.9112382
-  },
-  {
-   "stage": "images",
-   "t": 1789653963.1373994
-  },
-  {
-   "stage": "evaluate_resume",
-   "t": 1789653963.996084
-  },
-  {
-   "stage": "evaluate",
-   "t": 1789661047.045338
-  },
-  {
-   "stage": "close",
-   "t": 1789661050.2679374
-  },
-  {
-   "stage": "crown",
-   "t": 1789661050.2839522
-  },
-  {
-   "stage": "dethroned",
-   "t": 1789661069.2318246
-  },
-  {
-   "stage": "announce",
-   "t": 1789661081.122982
-  },
-  {
-   "stage": "export",
-   "t": 1789661081.1389105
+   "t": 1789661084.4534488
   }
  ],
  "window": {
-  "opens_at": 1789644184.2225778,
-  "closes_at": 1789651384.2225778,
+  "opens_at": 1789661084.4532137,
+  "closes_at": 1789668284.4532137,
   "seconds": 7200
  },
- "submissions": [
-  {
-   "pr": 129,
-   "hotkey": "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c",
-   "created_at": "2026-09-17T11:23:33Z",
-   "updated_at": "2026-09-17T11:23:36Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/129"
-  },
-  {
-   "pr": 128,
-   "hotkey": "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT",
-   "created_at": "2026-09-17T11:23:28Z",
-   "updated_at": "2026-09-17T11:23:37Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/128"
-  },
-  {
-   "pr": 127,
-   "hotkey": "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra",
-   "created_at": "2026-09-17T11:23:22Z",
-   "updated_at": "2026-09-17T11:23:39Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/127"
-  },
-  {
-   "pr": 126,
-   "hotkey": "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC",
-   "created_at": "2026-09-17T11:23:17Z",
-   "updated_at": "2026-09-17T11:23:41Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/126"
-  },
-  {
-   "pr": 125,
-   "hotkey": "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8",
-   "created_at": "2026-09-17T11:23:12Z",
-   "updated_at": "2026-09-17T11:23:42Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/125"
-  }
- ],
+ "submissions": [],
  "github": {},
  "standings": {
   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
@@ -207,226 +75,19 @@
  },
  "last_round": "r0005",
  "tasks": 6,
- "active": {
-  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
-   "pr": null,
-   "head": "origin/main",
-   "bundle_sha256": "1931157ea1be3df1ba6f894851b3afa6c23d77f61223ba19b0bb24f3f04fa016",
-   "incumbent": true
-  },
-  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
-   "pr": 125,
-   "head": "277e5546cb9a290514ec96931154cd95f99bef2f",
-   "bundle_sha256": "bd5d7d2ec04153083a48fde33c149df46b34d3a7ea15709f86dfa33eaf3d9dab",
-   "incumbent": false
-  },
-  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
-   "pr": 126,
-   "head": "05c72ad0b7c786e8cd6f8a275cf6ece34f7278e8",
-   "bundle_sha256": "4c490c109f8ef2045de835184755a059087d91aa2e28df59c9139d7e4e850024",
-   "incumbent": false
-  },
-  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
-   "pr": 127,
-   "head": "53c49b755c26bea7383931b0e4d6f45dffe11dde",
-   "bundle_sha256": "e26dcd4bddb12b77ac11a45f6435796fafdc24d418e718b11ac0dcf87154619b",
-   "incumbent": false
-  },
-  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
-   "pr": 128,
-   "head": "697e338bc05456f26cd53f950f1fc6413783dd84",
-   "bundle_sha256": "d81aa18146c34c3eb540d98bd46f0218443881f248d6490c88c0051ca57a7782",
-   "incumbent": false
-  },
-  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
-   "pr": 129,
-   "head": "4bc90006f02d78687c962925fea1b7f1b8ee9358",
-   "bundle_sha256": "8b8bbdbd45c5bb7c2dd08c44d75809e0d5213dd836c09bc043631ddd75b20986",
-   "incumbent": false
-  }
- },
+ "active": {},
  "rejected": {},
- "progress": {
-  "done": 42,
-  "total": 42,
-  "by_surface": {
-   "null": {
-    "n": 6,
-    "verified": 2,
-    "credit": 0.4167
-   },
-   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
-    "n": 6,
-    "verified": 2,
-    "credit": 0.4167
-   },
-   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
-    "n": 6,
-    "verified": 1,
-    "credit": 0.1667
-   },
-   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
-    "n": 6,
-    "verified": 0,
-    "credit": 0.0
-   },
-   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
-    "n": 6,
-    "verified": 1,
-    "credit": 0.25
-   },
-   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
-    "n": 6,
-    "verified": 1,
-    "credit": 0.25
-   },
-   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
-    "n": 6,
-    "verified": 1,
-    "credit": 0.25
-   }
+ "progress": {},
+ "crown": null,
+ "scores": null,
+ "queue": [
+  {
+   "round_id": "r0007",
+   "tasks_sha256": "0ad98af89c45c3c9cf006a139243f8fe75bd5c48a1b5fde88816fcc70a71b33c",
+   "tasks": 3,
+   "minted_at": 1789660667.4520006
   }
- },
- "crown": {
-  "schema": "sh-crown-v1",
-  "round_id": "r0005",
-  "king": null,
-  "standings": {
-   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
-    "n": 6,
-    "verified": 2,
-    "dq": 0,
-    "credit": 0.416667,
-    "delta": 0.0
-   },
-   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
-    "n": 6,
-    "verified": 1,
-    "dq": 0,
-    "credit": 0.25,
-    "delta": -0.166667
-   },
-   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
-    "n": 6,
-    "verified": 1,
-    "dq": 0,
-    "credit": 0.25,
-    "delta": -0.166667
-   },
-   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
-    "n": 6,
-    "verified": 1,
-    "dq": 0,
-    "credit": 0.25,
-    "delta": -0.166667
-   },
-   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
-    "n": 6,
-    "verified": 0,
-    "dq": 0,
-    "credit": 0.0,
-    "delta": -0.416667
-   },
-   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
-    "n": 6,
-    "verified": 1,
-    "dq": 0,
-    "credit": 0.166667,
-    "delta": -0.25
-   }
-  },
-  "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired, not disqualified; a tie does not dethrone the incumbent; other ties by pooled \u0394c then a round-keyed hash"
- },
- "scores": {
-  "weights": {
-   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": 0.0,
-   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": 0.0,
-   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": 0.0,
-   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": 0.0,
-   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": 0.0,
-   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": 0.0
-  },
-  "king": null,
-  "per_hotkey": {
-   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
-    "n": 11,
-    "score": 0.0,
-    "mean_d": 0.090909,
-    "se": 0.180262,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 +0.091 \u00b1 0.180 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
-    "n": 11,
-    "score": 0.0,
-    "mean_d": -0.090909,
-    "se": 0.15566,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 -0.091 \u00b1 0.156 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
-    "n": 11,
-    "score": 0.0,
-    "mean_d": 0.0,
-    "se": 0.170847,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 +0.000 \u00b1 0.171 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
-    "n": 11,
-    "score": 0.0,
-    "mean_d": -0.090909,
-    "se": 0.15566,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 -0.091 \u00b1 0.156 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
-    "n": 11,
-    "score": 0.0,
-    "mean_d": -0.272727,
-    "se": 0.117895,
-    "delta_c": 0.0,
-    "gate": false,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "below the baseline: \u0394 -0.273 \u00b1 0.118"
-   },
-   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
-    "n": 11,
-    "score": 0.0,
-    "mean_d": -0.045455,
-    "se": 0.170847,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 -0.045 \u00b1 0.171 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   }
-  },
-  "family_stats": {
-   "swe_fix": {
-    "null_p": 0.18181818181818182,
-    "canon_p": 0.0,
-    "null_credit": 0.2727,
-    "canon_credit": 0.0,
-    "label": "frontier"
-   }
-  },
-  "commitments_ok": true
- },
- "queue": [],
+ ],
  "history": [
   {
    "round_id": "s1",

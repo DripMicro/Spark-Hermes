@@ -1,0 +1,33 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0006-p06",
+ "round_id": "r0006",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDecode command fails with 'NoneType' object is not callable error\n\n#### Description\n\nThe `cantools decode` command is broken and fails with a `'NoneType' object is not callable` error when trying to decode CAN messages.\n\n#### Steps/Code to Reproduce\n\n```bash\ncantools decode tests/files/dbc/socialledge.dbc\n```\n\nWith input data like:\n```\n  vcan0  0C8   [8]  F0 00 00 00 00 00 00 00\n  vcan0  064   [10]  F0 01 FF FF FF FF FF FF FF FF\n  vcan0  1F4   [4]  01 02 03 04\n```\n\nThe command should decode the CAN messages but instead crashes with:\n```\nSystemExit: error: 'NoneType' object is not callable\n```\n\nThis affects all decode functionality including:\n- Basic decoding\n- Single line output (`--single-line`)\n- CAN FD decoding\n- Muxed data decoding\n- Timestamp handling\n\nThe decode subcommand appears to be completely non-functional.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__yokgwxr0",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_decode_can_fd",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_decode_log_format",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_decode_muxed_data",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_decode_single_line_muxed_data",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_decode_timestamp_absolute",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_decode_timestamp_zero",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_single_line_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_single_line_decode_log_format"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

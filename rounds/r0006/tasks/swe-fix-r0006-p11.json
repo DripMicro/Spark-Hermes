@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0006-p11",
+ "round_id": "r0006",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTokenizer line and column tracking broken after recent changes\n\n#### Description\n\nThe tokenizer is no longer correctly tracking line and column positions for tokens. Line numbers and column positions are being reported incorrectly, which breaks functionality that depends on accurate token positioning.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom sqlglot.tokens import Tokenizer\n\n# Test basic line/column tracking\ntokens = Tokenizer().tokenize(\"SELECT /*\\nline break\\n*/\\n'x\\n y',\\nx\")\nprint(f\"Token 0 line: {tokens[0].line}, col: {tokens[0].col}\")  # Expected: line=1, col=6\nprint(f\"Token 1 line: {tokens[1].line}, col: {tokens[1].col}\")  # Expected: line=5, col=3\n\n# Test with CRLF line breaks\ntokens = Tokenizer().tokenize('SELECT\\r\\n  1,\\r\\n  2')\nprint(f\"Token 0 line: {tokens[0].line}\")  # Expected: line=1\nprint(f\"Token 1 line: {tokens[1].line}\")  # Expected: line=2\nprint(f\"Token 3 line: {tokens[3].line}\")  # Expected: line=3\n```\n\nThe line and column numbers are not being updated correctly during tokenization, causing incorrect position information to be returned.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_cond__5e5h1vdf",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_tokens.py::TestTokens::test_token_line_col"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
