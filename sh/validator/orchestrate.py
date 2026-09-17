@@ -1058,7 +1058,7 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: d
         "dpo_pairs": exported["manifest"]["dpo_pairs"],
         "hf": exported["upload"].get("url"),
     }
-    gh = (_read(cfg.repo / LIVE, {}).get("github") or {})  # hotkey -> GitHub login, accumulated live this round
+    gh = _read(cfg.repo / LIVE, {}).get("github") or {}  # hotkey -> GitHub login, accumulated live this round
     shown_hk = set(entry["scores"]) | set(crowned.get("standings", {})) | ({king} if king else set())
     entry["github"] = {h: gh[h] for h in shown_hk if gh.get(h)}  # a published artefact, so the page stays recomputable
     index_path = cfg.repo / "rounds" / "index.json"
