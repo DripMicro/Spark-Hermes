@@ -312,3 +312,54 @@ def test_a_previewing_family_shows_miners_its_previews_and_publishes_the_evaluat
     (rd / "preview").mkdir()
     (rd / "preview" / "swe-fix-r0005-p00.json").write_text("{}")
     assert o.shown(rd) == rd / "preview"
+
+
+def test_evaluation_claims_the_engine_before_it_waits_and_releases_the_claim_once_its_batch_runs(tmp_path, monkeypatch):
+    """The daemon screens buffered candidates seconds apart; the claim stops it starting another while this side
+    waits for the running one to end, and is held until the batch is visible."""
+    import sh.validator.orchestrate as o
+
+    cfg = _cfg(tmp_path)
+    rd = cfg.rounds / "r0005"
+    (rd / "tasks").mkdir(parents=True)
+    (rd / "tasks" / "swe-fix-r0005-00.json").write_text("{}")
+    calls, state = [], {"screen": 2, "batch": False}
+
+    def worker(cfg, cmd):
+        if "pgrep -f '[b]atch --round /root/sh/screen/'" in cmd:
+            calls.append("screen?")
+            state["screen"] -= 1
+            return "1" if state["screen"] > 0 else "0"
+        if "pgrep -f '[b]atch --round /root/sh/rounds/r0005'" in cmd:
+            calls.append("batch?")
+            return "1" if state["batch"] else "0"
+        if "engine-claim" in cmd:
+            calls.append("claim" if "touch" in cmd else "release")
+        return ""
+
+    def launch(cfg, cmd):
+        calls.append("launch")
+        state["batch"] = True
+
+    def rsync_back(src, dst, cfg):
+        if "episodes" in src:  # the batch finished: one episode came back
+            ep = rd / "episodes" / "null" / "swe-fix-r0005-00"
+            ep.mkdir(parents=True, exist_ok=True)
+            (ep / "episode.json").write_text("{}")
+            state["batch"] = False
+
+    ticks = iter([True, False])  # the batch runs for one poll, then ends with everything done
+    monkeypatch.setattr(o, "_worker", worker)
+    monkeypatch.setattr(o, "_worker_launch", launch)
+    monkeypatch.setattr(o, "_rsync", rsync_back)
+    monkeypatch.setattr(o, "_progress", lambda cfg, remote, total: {"done": total, "total": total, "by_surface": {}})
+    monkeypatch.setattr(o, "live", lambda *a, **k: None)
+    monkeypatch.setattr(o.time, "sleep", lambda s: state.__setitem__("batch", next(ticks, False)) if s == 45 else None)
+    o.evaluate(cfg, rd, {"active": []})
+    first = calls.index("claim")
+    assert calls[first + 1] == "screen?" and calls.index("launch") > calls.index("screen?")
+    assert (
+        calls.index("release") > calls.index("launch")
+        and "batch?" in calls[calls.index("launch") : calls.index("release")]
+    )
+    assert calls.count("claim") == calls.count("release") == 1

@@ -54,6 +54,7 @@ BRANCH = "main"
 LABEL_STRATEGY, LABEL_SCORED, LABEL_CROWN = "sh:strategy", "sh:round:scored", "sh:round:crown"
 HF_REPO = "gittensor-model-hub/spark-hermes-rounds"
 LIVE = "docs/live/live.json"  # what the dashboard polls; committed on every stage change
+CLAIM_GRACE_S = 30  # after claiming the engine, how long a screen the daemon had just started is given to show up
 STAGES = ("open", "window", "seal", "evaluate", "close", "crown", "announce", "export", "publish_close", "done")
 
 
@@ -664,12 +665,30 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
             log(rd, "evaluate_wait", note="screen still running after 90 min; ending it")
             _worker(cfg, f"pkill -f 'batch --round {cfg.worker_root}/screen/' ; true")
 
+    def launch_batch() -> None:
+        # Claim the engine first. The daemon screens buffered candidates back to back, seconds apart, and a poll
+        # alone would rarely see the engine free between two of them; the claim makes the daemon stop starting
+        # screens (supply.baseline.Screen.evaluating). The grace lets a screen started just before the claim show
+        # up; the claim is held until the batch is visible, so the daemon always sees one or the other. A claim
+        # left by a killed loop goes stale after 2 h.
+        claim = f"{cfg.worker_root}/state/engine-claim"
+        _worker(cfg, f"mkdir -p {cfg.worker_root}/state && touch {claim}")
+        try:
+            time.sleep(CLAIM_GRACE_S)
+            wait_for_screen()
+            _worker_launch(cfg, launch)
+            for _ in range(12):
+                if running():
+                    break
+                time.sleep(5)
+        finally:
+            _worker(cfg, f"rm -f {claim}")
+
     launches = 0
     if running():
         log(rd, "evaluate_resume", note="batch already running on the worker; polling")
     else:
-        wait_for_screen()
-        _worker_launch(cfg, launch)
+        launch_batch()
         launches = 1
     last_push = 0.0
     while True:
@@ -683,8 +702,7 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
             continue
         if prog["done"] < total and launches < 3:
             log(rd, "evaluate_relaunch", done=prog["done"], total=total)
-            wait_for_screen()
-            _worker_launch(cfg, launch)
+            launch_batch()
             launches += 1
             continue
         break
