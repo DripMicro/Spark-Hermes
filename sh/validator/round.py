@@ -115,7 +115,8 @@ def close(
     for task_id, task in tasks.items():
         path = reveal_dir / f"{task_id}.json"
         if not path.exists():
-            verified[task_id] = None  # nothing to reveal (a probe, or an unsealed round)
+            # a committed task with no reveal is a broken close (the criteria cannot be checked), not a probe
+            verified[task_id] = False if task.get("withheld_commitment") else None
             continue
         sealed = json.loads(path.read_text())
         withheld, salt = sealed["withheld"], sealed["salt"]

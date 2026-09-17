@@ -399,3 +399,30 @@ def test_a_strategy_pr_that_touches_anything_but_its_own_submission_directory_is
     active, rejected = o.candidates(cfg, "r0009", tmp_path / "bundles")
     assert set(active) == {HK} and active[HK]["pr"] == 5
     assert "outside" in rejected["3"] and "ss58" in rejected["4"]
+
+
+def test_a_resubmitting_incumbent_that_loses_is_still_dethroned():
+    from sh.validator.orchestrate import dethroned
+
+    sealed = {
+        "active": {
+            "5A": {"incumbent": True},  # a plain incumbent
+            "5B": {"incumbent": False, "was_incumbent": True, "pr": 9},  # incumbent that resubmitted and lost
+            "5C": {"incumbent": False, "pr": 10},  # a fresh challenger, never an incumbent
+        }
+    }
+    assert dethroned(sealed, king="5C") == ["5A", "5B"]  # both old bundles leave submissions/; the fresh king stays
+    assert dethroned(sealed, king="5A") == ["5B"]
+
+
+def test_a_hugging_face_failure_does_not_block_the_round(tmp_path, monkeypatch):
+    import sh.validator.orchestrate as o
+
+    cfg = _cfg(tmp_path)
+    rd = cfg.rounds / "r0009"
+    (rd / "export").mkdir(parents=True)
+    monkeypatch.setattr(o, "build_exports", lambda *a, **k: {"sft_rows": 1, "dpo_pairs": 0})
+    monkeypatch.setattr(o, "upload_exports", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("HF 401")))
+    monkeypatch.setenv("HF_TOKEN", "tok")
+    result = o.export_and_upload(cfg, "r0009", rd, king="5A")  # must return, not raise
+    assert result["upload"]["uploaded"] is False and "HF 401" in result["upload"]["reason"]
