@@ -1,0 +1,170 @@
+{
+ "schema": "sh-round-close-v3",
+ "scoring": "sh-scoring-v3 (credit)",
+ "round_id": "r0006",
+ "era": "e0",
+ "tasks": [
+  "swe-fix-r0006-04",
+  "swe-fix-r0006-05",
+  "swe-fix-r0006-06",
+  "swe-fix-r0006-07",
+  "swe-fix-r0006-08",
+  "swe-fix-r0006-11"
+ ],
+ "episodes": 124,
+ "family_stats": {
+  "swe_fix": {
+   "schema": "sh-family-stats-v2",
+   "family": "swe_fix",
+   "era": "e0",
+   "window": [
+    "r0004",
+    "r0005",
+    "r0006"
+   ],
+   "null": {
+    "n": 17,
+    "successes": 4,
+    "p": 0.23529411764705882,
+    "mean_credit": 0.3109,
+    "wilson": [
+     0.0956,
+     0.4726
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 19.0,
+      "p25": 15.0,
+      "n": 4
+     },
+     "tool_calls": {
+      "median": 20.0,
+      "p25": 17.0,
+      "n": 4
+     }
+    }
+   },
+   "canon": {
+    "n": 5,
+    "successes": 0,
+    "p": 0.0,
+    "mean_credit": 0.0,
+    "wilson": [
+     0.0,
+     0.4345
+    ],
+    "efficiency": {},
+    "delta_c": -0.3109,
+    "delta_e": {},
+    "delta_e_paired_instances": 0
+   },
+   "label": "frontier",
+   "partial_rate": 0.0909,
+   "in_rotation": true,
+   "retirement": null
+  }
+ },
+ "scores": {
+  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+   "hotkey": "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ",
+   "n": 17,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.40010498758889634,
+    "tool_calls": -0.4226399979653853
+   },
+   "gate": true,
+   "se": 0.148805,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 +0.059 \u00b1 0.149 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": 0.058824
+  },
+  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+   "hotkey": "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra",
+   "n": 17,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.2718312596175144,
+    "tool_calls": -0.2353608597690292
+   },
+   "gate": true,
+   "se": 0.144806,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.000 \u00b1 0.145 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.0
+  },
+  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+   "hotkey": "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c",
+   "n": 17,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.139148,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.059 \u00b1 0.139 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.058824
+  },
+  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+   "hotkey": "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT",
+   "n": 17,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.139148,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.059 \u00b1 0.139 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.058824
+  },
+  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
+   "hotkey": "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC",
+   "n": 17,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": false,
+   "se": 0.129189,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "below the baseline: \u0394 -0.176 \u00b1 0.129",
+   "mean_d": -0.176471
+  },
+  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+   "hotkey": "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8",
+   "n": 17,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.138982,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.088 \u00b1 0.139 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.088235
+  }
+ },
+ "weights": {
+  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": 0.0,
+  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": 0.0,
+  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": 0.0,
+  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": 0.0,
+  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": 0.0,
+  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": 0.0
+ },
+ "commitments_verified": {
+  "swe-fix-r0006-04": true,
+  "swe-fix-r0006-05": true,
+  "swe-fix-r0006-06": true,
+  "swe-fix-r0006-07": true,
+  "swe-fix-r0006-08": true,
+  "swe-fix-r0006-11": true
+ },
+ "commitments_ok": true
+}
