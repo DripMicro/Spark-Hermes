@@ -227,7 +227,7 @@
     const kingScore = (h, src) => src && src[h] ? " · score " + num(src[h].score, 4) + " · weight " + num(src[h].weight, 3) : "";
     const nowScores = live.scores && live.scores.per_hotkey ? Object.fromEntries(Object.entries(live.scores.per_hotkey).map(([h, s]) => [h, { ...s, weight: live.scores.weights[h] || 0 }])) : null;
     if (king) { $("king-now").innerHTML = "👑 " + ident(live, king); $("king-sub").textContent = "this round" + kingScore(king, nowScores || live.standings); }
-    else if (last && last.king) { $("king-now").innerHTML = hk(last.king); $("king-sub").textContent = "since " + last.round_id + kingScore(last.king, last.scores); }
+    else if (last && last.king) { $("king-now").innerHTML = "👑 " + ident({ github: last.github || live.github, repo: live.repo }, last.king); $("king-sub").textContent = "since " + last.round_id + kingScore(last.king, last.scores); }
     else { $("king-now").textContent = "—"; $("king-sub").textContent = ""; }
     paint();
     submissions(live);
@@ -241,7 +241,7 @@
     $("history").innerHTML = hist.length ? hist.map((h) => {
       const ks = h.king && h.scores ? h.scores[h.king] : null, kc = h.king && h.crown ? h.crown[h.king] : null;
       return "<tr" + (h.king ? "" : "") + "><td class='l'><a href='../rounds/" + esc(h.round_id) + "/'>" + esc(h.round_id) + "</a></td>" +
-        "<td class='l'>" + (h.king ? "<span class='crown'>👑</span> " + hk(h.king) : "<span class='zero'>none</span>") + "</td>" +
+        "<td class='l'>" + (h.king ? "<span class='crown'>👑</span> " + ident({ github: h.github || live.github, repo: live.repo }, h.king) + (h.pr ? " " + pr(live, h.pr) : "") : "<span class='zero'>none</span>") + "</td>" +
         "<td class='" + cls(kc && kc.delta) + "'>" + signed(kc && kc.delta, 3) + "</td><td>" + num(ks && ks.score, 4) + "</td><td>" + num(ks && ks.weight, 3) + "</td>" +
         "<td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
         "<td class='l'>" + (h.commitments_ok ? "<span class='pos'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td>" +

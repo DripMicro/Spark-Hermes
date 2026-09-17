@@ -1061,6 +1061,8 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: d
     gh = _read(cfg.repo / LIVE, {}).get("github") or {}  # hotkey -> GitHub login, accumulated live this round
     shown_hk = set(entry["scores"]) | set(crowned.get("standings", {})) | ({king} if king else set())
     entry["github"] = {h: gh[h] for h in shown_hk if gh.get(h)}  # a published artefact, so the page stays recomputable
+    sealed_active = _read(rd / "seal.json", {}).get("active") or {}  # hotkey -> {pr, head, ...}
+    entry["pr"] = (sealed_active.get(king) or {}).get("pr") if king else None  # the king's PR this round, if any
     index_path = cfg.repo / "rounds" / "index.json"
     index = _read(index_path, {"schema": "sh-rounds-index-v2", "rounds": []})
     index["rounds"] = [r for r in index["rounds"] if r["round_id"] != round_id] + [entry]
