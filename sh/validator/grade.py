@@ -356,6 +356,9 @@ def grade(
     void = bool(result.get("failed")) and (
         result.get("failure_retryable") or any(k in reason.lower() for k in PROVIDER_FAILURES)
     )
+    if finish.get("budget_spent"):  # the episode used its budget: an ending, graded like any other, never a void
+        signals.append("token_budget_spent")
+        void = False
     if void:
         signals.append("inference_unavailable")
     published_pass = bool(g["published_pass"]) and not finish.get("timed_out")
@@ -405,6 +408,8 @@ def grade(
         "api_calls": finish.get("proxy_calls", finish.get("api_calls")),
         "agent_reported_api_calls": finish.get("api_calls"),
         "tokens": finish.get("proxy_tokens"),
+        "queued_s": finish.get("proxy_queued_s"),
+        "budget_spent": finish.get("budget_spent"),
         "dropped_packets": finish.get("dropped_packets"),
         "tool_calls": finish.get("tool_calls"),
         "tool_errors": finish.get("tool_errors"),
