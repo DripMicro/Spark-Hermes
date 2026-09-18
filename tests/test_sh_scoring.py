@@ -177,10 +177,9 @@ def test_a_delta_is_measured_against_the_baseline_on_the_same_instance():
     """The board and the round pages have always called this 'per instance'. Pairing is free — the baseline runs
     on the instances the miners run — and it removes the instance's own difficulty from the spread, which is most
     of it: on r0007 the baseline scored [0, 0, 0, 0, 1, 1]."""
-    import math
     import statistics
 
-    from sh.scoring.v2 import FamilyReference, MinerWindow, score, stat
+    from sh.scoring.v2 import FamilyReference, stat
 
     hard, easy = "t-hard", "t-easy"
     ref = FamilyReference(
