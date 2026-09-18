@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0001-p19",
+ "round_id": "r0001",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPythonConsoleLexer constructor arguments swapped causing delegation issues\n\n#### Description\n\nThe PythonConsoleLexer is not working correctly due to swapped constructor arguments in the DelegatingLexer initialization. This affects syntax highlighting for Python console sessions and tracebacks.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pygments import highlight\nfrom pygments.lexers import get_lexer_by_name\nfrom pygments.formatters import TerminalFormatter\n\ncode = \"\"\"\n>>> import sys\n>>> print(\"Hello World\")\nHello World\n>>> 1/0\nTraceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\nZeroDivisionError: division by zero\n\"\"\"\n\nlexer = get_lexer_by_name('pycon')\nformatter = TerminalFormatter()\nresult = highlight(code, lexer, formatter)\nprint(result)\n```\n\nThe lexer fails to properly delegate between the console lexer and Python lexer components, resulting in incorrect syntax highlighting or errors during lexing.\n\n#### Expected Behavior\n\nThe PythonConsoleLexer should properly highlight Python console sessions including prompts, code, output, and tracebacks with appropriate syntax coloring.\n\n#### Actual Behavior\n\nThe lexer delegation is broken due to incorrect argument order in the constructor call, causing improper highlighting or lexing failures.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pygments__pygments.27649ebb.combine_file__pxsysw8k",
+  "environment": "jyangballin/swesmith.x86_64.pygments_1776_pygments.27649ebb",
+  "fail_to_pass": [
+   "tests/examplefiles/pycon/pycon_ctrlc_traceback::",
+   "tests/examplefiles/pycon/pycon_test.pycon::",
+   "tests/snippets/pycon/broken_tb.txt::",
+   "tests/snippets/pycon/multiple_tb.txt::",
+   "tests/snippets/pycon/unterminated_tb.txt::",
+   "tests/test_basic_api.py::test_get_lexers",
+   "tests/test_cmdline.py::test_C_opt",
+   "tests/test_latex_formatter.py::test_embedded_lexer"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

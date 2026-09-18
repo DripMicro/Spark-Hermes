@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0001-p17",
+ "round_id": "r0001",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nList command output incorrect after recent changes\n\n#### Description\n\nThe `cantools list` command is producing incorrect output. When listing nodes or buses, the output format appears to be wrong and some filtering logic seems broken.\n\n#### Steps/Code to Reproduce\n\n```bash\n# Try listing nodes from an ARXML file\ncantools list --nodes some_arxml_file.arxml\n\n# Try listing buses from an ARXML file  \ncantools list --buses some_arxml_file.arxml\n\n# Try listing messages with frame type filtering\ncantools list --exclude-extended some_dbc_file.dbc\n```\n\nThe output doesn't match what's expected - node names and comments appear in wrong order, and message filtering by frame type isn't working properly.\n\n#### Expected vs Actual Behavior\n\nExpected: Node names should appear before their comments, buses and nodes should be listed correctly when their respective flags are used, and frame type filtering should work as intended.\n\nActual: The output format is jumbled with comments appearing before node names, and the wrong listing mode is being used (nodes when buses requested, etc.).\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_file__8xk3cdbf",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_list.py::CanToolsListTest::test_arxml3",
+   "tests/test_list.py::CanToolsListTest::test_arxml4",
+   "tests/test_list.py::CanToolsListTest::test_kcd"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

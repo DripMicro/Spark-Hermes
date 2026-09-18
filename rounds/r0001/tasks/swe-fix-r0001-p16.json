@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0001-p16",
+ "round_id": "r0001",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nVersion property gets reversed when set\n\n#### Description\n\nWhen setting the version property on CorePropertiesPart, the string value gets reversed unexpectedly.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx.parts.coreprops import CorePropertiesPart\nfrom pptx.oxml.coreprops import CT_CoreProperties\n\n# Create a core properties part\ncoreProperties = CT_CoreProperties.new()\ncore_properties = CorePropertiesPart.load(None, None, None, coreProperties)\n\n# Set version property\ncore_properties.version = \"81.2.8\"\n\n# Check the actual value stored\nprint(f\"Expected: 81.2.8\")\nprint(f\"Actual: {core_properties.version}\")\n```\n\nExpected output:\n```\nExpected: 81.2.8\nActual: 81.2.8\n```\n\nActual output:\n```\nExpected: 81.2.8\nActual: 8.2.18\n```\n\nThe version string is being reversed when set, which breaks document metadata handling.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.func_basic__pbgsjnp9",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/parts/test_coreprops.py::DescribeCorePropertiesPart::it_can_change_the_string_property_values[version-cp:version-81.2.8]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0001-p08",
+ "round_id": "r0001",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### Issue with Table Cell Spanning\n\nHello, I've encountered an issue with table cell spanning in the latest update. When attempting to create a span between two cells, the operation fails under certain conditions, which previously worked fine.\n\nHere's a minimal example to reproduce the issue:\n\n```python\nfrom docx import Document\nfrom docx.oxml.table import CT_Tc\n\n# Create a new document and add a table\ndoc = Document()\ntable = doc.add_table(rows=2, cols=2)\n\n# Attempt to span cells in a way that should be valid\ncell_a = table.cell(0, 0)\ncell_b = table.cell(1, 1)\n\ntry:\n    CT_Tc.raise_on_inverted_L(cell_a, cell_b)\n    print(\"Span created successfully.\")\nexcept Exception as e:\n    print(f\"Failed to create span: {e}\")\n```\n\nExpected behavior: The span should be created without any exceptions.\n\nActual behavior: The code raises an `InvalidSpanError` with the message \"requested span not rectangular.\"\n\nThis seems to be related to the recent changes in the `raise_on_inverted_L` function. Could someone please look into this? Thank you!\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.lm_rewrite__mpj44qbs",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_raises_on_invalid_span[1-0-0-1-0]",
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_raises_on_invalid_span[1-1-0-0-0]",
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_raises_on_invalid_span[2-0-2-0-1]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

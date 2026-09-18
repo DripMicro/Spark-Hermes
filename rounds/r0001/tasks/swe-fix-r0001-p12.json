@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0001-p12",
+ "round_id": "r0001",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nUnboundLocalError in PRQL and SQLite dialect parsers\n\n#### Description\n\nWhen parsing certain SQL expressions, the PRQL and SQLite dialect parsers are throwing `UnboundLocalError` exceptions due to variables being referenced before assignment.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot.dialects import prql, sqlite\n\n# This will raise UnboundLocalError: cannot access local variable 'sql' where it is not defined\ntry:\n    sqlglot.parse(\"from x\", dialect=\"prql\")\nexcept UnboundLocalError as e:\n    print(f\"PRQL error: {e}\")\n\n# This will also raise UnboundLocalError for SQLite dialect\ntry:\n    sqlglot.parse(\"SELECT * FROM GENERATE_SERIES(1, 5)\", dialect=\"sqlite\") \nexcept UnboundLocalError as e:\n    print(f\"SQLite error: {e}\")\n```\n\nThe error occurs when trying to parse basic PRQL queries or SQLite queries that use certain functions like `GENERATE_SERIES`. The parsers are failing with variable scope issues where local variables are being accessed before they're defined in the execution flow.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.combine_module__dxpfb1m8",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_duckdb.py::TestDuckDB::test_duckdb",
+   "tests/dialects/test_prql.py::TestPRQL::test_prql",
+   "tests/dialects/test_sqlite.py::TestSQLite::test_sqlite"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

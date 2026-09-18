@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0001-p06",
+ "round_id": "r0001",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nUnboundLocalError in unnest_subqueries optimizer\n\n#### Description\n\nThe unnest_subqueries optimizer is throwing an UnboundLocalError when processing certain SQL queries. Variables are being referenced before assignment in the unnest function.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# This will trigger the UnboundLocalError\nsql = \"SELECT * FROM table1 WHERE EXISTS (SELECT 1 FROM table2 WHERE table2.id = table1.id)\"\nresult = optimizer.unnest_subqueries.unnest_subqueries(sqlglot.parse_one(sql))\n```\n\nThe error occurs when the optimizer tries to process subqueries for unnesting but encounters undefined variables like `predicate`, `column`, `value`, `join_key`, and `join_key_not_null` that are referenced before being assigned.\n\n#### Expected Behavior\n\nThe optimizer should successfully process the SQL query and perform subquery unnesting where appropriate without throwing UnboundLocalError.\n\n#### Actual Behavior\n\n```\nUnboundLocalError: local variable 'predicate' referenced before assignment\n```\n\nSimilar errors occur for other variables that are used before being defined in the unnest function.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.combine_module__qauh81n0",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_optimize",
+   "tests/test_optimizer.py::TestOptimizer::test_optimize_joins",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds",
+   "tests/test_optimizer.py::TestOptimizer::test_tpch",
+   "tests/test_optimizer.py::TestOptimizer::test_unnest_subqueries"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
