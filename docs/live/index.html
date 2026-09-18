@@ -255,7 +255,7 @@
     const stale = Date.now() / 1000 - live.updated > 900;
     document.body.classList.toggle("stale", stale);
     const king = live.crown && live.crown.king;
-    $("round").textContent = live.round_id;
+    $("round").textContent = live.round_id || "—";  // before the first round opens there is none
     $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale · " : "") + "updated " + ago(live.updated);
     const ph = PHASE[live.stage] || ["evaluate", LABEL[live.stage] || live.stage];
     const wn = live.window && live.window.reopened ? live.window.reopened + 1 : 1;
