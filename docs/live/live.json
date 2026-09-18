@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789765773.2365525,
+ "updated": 1789765889.2099633,
  "round_id": "r0001",
  "stage": "window",
  "stages": [
@@ -35,12 +35,12 @@
   }
  ],
  "window": {
-  "opens_at": 1789758685.8205757,
-  "closes_at": 1789765885.8205757,
+  "opens_at": 1789765889.1553454,
+  "closes_at": 1789773089.1553454,
   "seconds": 7200,
-  "reopened": 2,
+  "reopened": 3,
   "first_opened_at": 1789744277.0080988,
-  "reason": "no submissions in window 2"
+  "reason": "no submissions in window 3"
  },
  "submissions": [],
  "github": {},
