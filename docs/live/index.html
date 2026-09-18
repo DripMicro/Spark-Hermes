@@ -82,7 +82,8 @@
 
 <script>
 (function () {
-  let LIVE = null, deepLinked = false, lastHistory = "", lastKing = "", lastFocus = null;
+  let LIVE = null, deepLinked = false, lastHistory = "", lastKing = "", lastFocus = null
+  const opened = new Set();  // surfaces whose per-instance detail is expanded
   const ROUND_ID = /^[a-z]\d{1,4}$/;  // r0004, s1 — what a deep link or a row may name
   const $ = (id) => document.getElementById(id);
   const LABEL = { open: "open", window: "window", seal: "seal", evaluate: "evaluate", close: "score", crown: "crown",
@@ -114,6 +115,35 @@
   const th = (label, title, left) => "<th" + (left ? ' class="l"' : "") + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + "</th>";
   const pr = (live, n) => { const k = Number(n); return '<a href="https://github.com/' + esc(live.repo) + "/pull/" + k + '">#' + k + "</a>"; };
   let current = null;
+
+  // Every episode a score is made of: this surface's credit on each instance beside the baseline's on the same
+  // one. The score is a mean of these numbers, so a reader can add them up rather than take the total on trust.
+  function taskRows(live, s) {
+    const by = (live.progress || {}).by_surface || {};
+    const mine = (by[s] || {}).tasks || {}, base = (by["null"] || {}).tasks || {};
+    const ids = [...new Set([...Object.keys(mine), ...Object.keys(base)])].sort();
+    if (!ids.length) return '<p class="note">no episodes recorded for this strategy yet</p>';
+    const isRef = s === "null" || s === "canon";
+    const body = ids.map((t) => {
+      const m = mine[t], b = base[t], d = m && b && !isRef ? m.credit - b.credit : null;
+      const flag = !m ? '<span class="muted">not run</span>'
+        : m.dq ? '<span class="neg">disqualified</span>'
+        : m.void ? '<span class="muted">void — re-run</span>'
+        : m.verified ? '<span class="pos">every check held</span>'
+        : '<span class="muted">partial</span>';
+      return '<tr><td class="l"><span class="hk">' + esc(t) + "</span></td><td>" + (m ? pct(m.credit) : "—") + "</td>" +
+        (isRef ? "" : '<td>' + (b ? pct(b.credit) : "—") + '</td><td class="' + cls(d) + '">' +
+          (d == null ? "—" : signed(100 * d, 0, " pts")) + "</td>") +
+        '<td class="l">' + flag + "</td></tr>";
+    }).join("");
+    return '<table class="sub"><thead><tr><th class="l">instance</th><th>checks passed</th>' +
+      (isRef ? "" : '<th>baseline</th><th title="this strategy minus the baseline, on the same instance">Δ</th>') +
+      '<th class="l">outcome</th></tr></thead><tbody>' + body + "</tbody></table>";
+  }
+  const caretCell = (cell, s) => cell.replace('<td class="l">', '<td class="l"><span class="caret" aria-hidden="true"></span>');
+  const detailRow = (live, s, cols) =>
+    '<tr class="detail" data-for="' + esc(s) + '"' + (opened.has(s) ? "" : " hidden") + '><td colspan="' + cols + '">' +
+    taskRows(live, s) + "</td></tr>";
 
   function surfaceCell(live, s, crowned) {
     const info = (live.active || {})[s];
@@ -157,17 +187,20 @@
         th("Δ round", "mean of (share of checks passed − the baseline's) per instance, this round only") + th("checks", "mean share of withheld checks passed, this round") +
         th("episodes", "pooled window") + th("Δ window", "mean paired delta over the pooled window") +
         th("Δc", "one-sided 90% lower bound of Δ window — what is paid") + th("score") + th("weight") + "</tr>";
-      const refs = ["null", "canon"].map((s) => "<tr class='ref'>" + surfaceCell(live, s) + "<td></td><td></td><td>" + pct(share(by[s])) + "</td><td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
-        "</td><td colspan='3'></td></tr>");
+      const refs = ["null", "canon"].map((s) =>
+        '<tr class="ref expandable" data-surface="' + s + '" tabindex="0">' + caretCell(surfaceCell(live, s), s) +
+        "<td></td><td></td><td>" + pct(share(by[s])) + "</td><td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
+        "</td><td colspan='3'></td></tr>" + detailRow(live, s, 9));
       const all = [...new Set([...miners, ...Object.keys(sc.per_hotkey)])];
       const ranked = all.sort((a, b) => ((st[a] || {}).rank || 1e6) - ((st[b] || {}).rank || 1e6) || (sc.weights[b] || 0) - (sc.weights[a] || 0) || a.localeCompare(b));
       const rows = ranked.map((h) => {
         const s = sc.per_hotkey[h], w = sc.weights[h] || 0, t = st[h] || {}, isKing = h === (cr && cr.king);
         const why = s && w === 0 && s.reason ? '<span class="why">' + esc(s.reason) + "</span>" : "";
         const cell = surfaceCell(live, h, isKing).replace("</td>", why + "</td>");
-        return "<tr" + (isKing ? " class='king'" : "") + ">" + cell + "<td>" + (t.rank || "—") + "</td><td class='" + cls(t.delta) + "'>" + signed(t.delta, 3) + "</td><td>" + pct(t.credit) + "</td>" +
+        return '<tr class="expandable' + (isKing ? " king" : "") + '" data-surface="' + esc(h) + '" tabindex="0">' + caretCell(cell, h) +
+          "<td>" + (t.rank || "—") + "</td><td class='" + cls(t.delta) + "'>" + signed(t.delta, 3) + "</td><td>" + pct(t.credit) + "</td>" +
           "<td>" + (s ? s.n : 0) + "</td><td class='" + cls(s && s.mean_d) + "'>" + signed(s && s.mean_d, 3) + "</td><td>" + (s ? num(s.delta_c || 0, 3) : "—") + "</td>" +
-          "<td>" + (s ? num(s.score || 0, 4) : "—") + "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>";
+          "<td>" + (s ? num(s.score || 0, 4) : "—") + "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>" + detailRow(live, h, 9);
       });
       $("board").innerHTML = refs.join("") + (rows.join("") || '<tr><td class="empty" colspan="9">no strategies were sealed</td></tr>');
       return;
@@ -183,8 +216,10 @@
     $("board").innerHTML = miners.length || evaluating ? order.map((s) => {
       const r = by[s] || { n: 0, verified: 0 }, p = rate(s);
       const d = s === "null" || s === "canon" || p == null || nullRate == null ? null : p - nullRate;
-      return "<tr" + (s === "null" || s === "canon" ? " class='ref'" : "") + ">" + surfaceCell(live, s) + "<td>" + r.n + "</td><td>" + r.verified +
-        "</td><td>" + pct(p) + "</td><td class='" + cls(d) + "'>" + (s === "null" || s === "canon" ? "" : signed(d == null ? null : 100 * d, 0, " pts")) + "</td></tr>";
+      return '<tr class="expandable' + (s === "null" || s === "canon" ? " ref" : "") + '" data-surface="' + esc(s) + '" tabindex="0">' +
+        caretCell(surfaceCell(live, s), s) + "<td>" + r.n + "</td><td>" + r.verified +
+        "</td><td>" + pct(p) + "</td><td class='" + cls(d) + "'>" + (s === "null" || s === "canon" ? "" : signed(d == null ? null : 100 * d, 0, " pts")) + "</td></tr>" +
+        detailRow(live, s, 5);
     }).join("") : '<tr><td class="empty" colspan="5">waiting for the seal</td></tr>';
   }
 
@@ -334,6 +369,24 @@
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;  // let new-tab clicks through
     e.preventDefault();
     openRound(a.dataset.round);
+  });
+  function toggleRow(tr) {
+    const s = tr.dataset.surface, d = tr.nextElementSibling;
+    if (!s || !d || !d.classList.contains("detail")) return;
+    const show = d.hidden;
+    d.hidden = !show;
+    tr.classList.toggle("open", show);
+    show ? opened.add(s) : opened.delete(s);
+  }
+  $("board").addEventListener("click", (e) => {
+    if (e.target.closest("a")) return;  // the PR chip and the @login are links, not a toggle
+    const tr = e.target.closest("tr.expandable");
+    if (tr) toggleRow(tr);
+  });
+  $("board").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const tr = e.target.closest("tr.expandable");
+    if (tr) { e.preventDefault(); toggleRow(tr); }
   });
   $("round-modal").addEventListener("click", (e) => { if (e.target.matches("[data-close]")) closeRound(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("round-modal").hidden) closeRound(); });

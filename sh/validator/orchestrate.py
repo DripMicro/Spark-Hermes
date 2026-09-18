@@ -633,7 +633,8 @@ def seal(cfg: Config, round_id: str, rd: Path) -> dict:
 
 
 def _progress(cfg: Config, remote: str, total: int) -> dict:
-    """Per-surface counts and mean credit from the worker's episode records so far — what the board shows."""
+    """Per-surface counts and mean credit from the worker's episode records so far — what the board shows, plus
+    each surface's credit on each instance, so a reader can open a row and see the episodes a score is made of."""
     script = (
         "import glob, json, sys\n"
         "out = {}\n"
@@ -642,10 +643,13 @@ def _progress(cfg: Config, remote: str, total: int) -> dict:
         "        e = json.load(open(p))\n"
         "    except (OSError, ValueError):\n"
         "        continue\n"
-        "    s = out.setdefault(p.split('/')[-3], {'n': 0, 'verified': 0, 'credit': 0.0})\n"
+        "    s = out.setdefault(p.split('/')[-3], {'n': 0, 'verified': 0, 'credit': 0.0, 'tasks': {}})\n"
         "    c = e.get('credit')\n"
+        "    c = float(c) if isinstance(c, (int, float)) and not isinstance(c, bool) else float(bool(e.get('verified_success')))\n"
         "    s['n'] += 1; s['verified'] += bool(e.get('verified_success'))\n"
-        "    s['credit'] += float(c) if isinstance(c, (int, float)) else float(bool(e.get('verified_success')))\n"
+        "    s['credit'] += c\n"
+        "    s['tasks'][p.split('/')[-2]] = {'credit': round(c, 4), 'verified': bool(e.get('verified_success')),\n"
+        "                                    'void': bool(e.get('void')), 'dq': bool(e.get('disqualified'))}\n"
         "print(json.dumps(out))\n"
     )
     raw = _worker(cfg, f'python3 -c "$(echo {base64.b64encode(script.encode()).decode()} | base64 -d)"')
