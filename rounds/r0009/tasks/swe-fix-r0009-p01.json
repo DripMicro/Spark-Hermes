@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0009-p01",
+ "round_id": "r0009",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSchema validation decorators not working properly\n\n#### Description\n\nWhen using `@validates` decorators on schema fields, the validation is not being triggered and errors are not being raised as expected. The decorators seem to be completely ignored during the validation process.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom marshmallow import Schema, fields, validates, ValidationError\n\nclass TestSchema(Schema):\n    name = fields.String()\n    \n    @validates('name')\n    def validate_name(self, value):\n        raise ValidationError('This should always fail')\n\n# This should raise ValidationError but doesn't\nschema = TestSchema()\nresult = schema.load({'name': 'test'})\nprint(result)  # Expected: ValidationError, Actual: {'name': 'test'}\n```\n\nAlso affects schemas with field attributes:\n\n```python\nclass TestSchemaWithAttribute(Schema):\n    name = fields.String(attribute='full_name')\n    \n    @validates('name')\n    def validate_name(self, value):\n        raise ValidationError('This should fail')\n\nschema = TestSchemaWithAttribute()\nresult = schema.load({'name': 'test'})  # Should raise but doesn't\n```\n\nAnd schemas with data_key:\n\n```python\nclass TestSchemaWithDataKey(Schema):\n    name = fields.String(data_key='user-name')\n    \n    @validates('name')\n    def validate_name(self, value):\n        raise ValidationError('Should fail')\n\nschema = TestSchemaWithDataKey()\nerrors = schema.validate({'user-name': 'test'})\nprint(errors)  # Expected: {'user-name': ['Should fail']}, Actual: {}\n```\n\nThe validation decorators are completely bypassed and no validation errors are being collected or raised.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "marshmallow-code__marshmallow.9716fc62.func_basic__grftne5m",
+  "environment": "jyangballin/swesmith.x86_64.marshmallow-code_1776_marshmallow.9716fc62",
+  "fail_to_pass": [
+   "tests/test_decorators.py::TestValidatesDecorator::test_field_not_present",
+   "tests/test_decorators.py::TestValidatesDecorator::test_precedence",
+   "tests/test_decorators.py::TestValidatesDecorator::test_validates",
+   "tests/test_decorators.py::TestValidatesDecorator::test_validates_decorator",
+   "tests/test_decorators.py::TestValidatesDecorator::test_validates_with_attribute",
+   "tests/test_decorators.py::TestValidatesDecorator::test_validates_with_data_key",
+   "tests/test_schema.py::TestFieldValidation::test_ignored_if_not_in_only",
+   "tests/test_schema.py::TestNestedSchema::test_all_errors_on_many_nested_field_with_validates_decorator"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

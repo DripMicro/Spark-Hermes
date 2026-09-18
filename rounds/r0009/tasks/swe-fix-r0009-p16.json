@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0009-p16",
+ "round_id": "r0009",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nIdentityConversion.scaled_to_raw returns incorrect values for numeric inputs\n\n#### Description\n\nThe `IdentityConversion.scaled_to_raw` method is not behaving as expected for numeric inputs. When passing a numeric value, the method returns a value that is off by 1 from what should be returned.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom cantools.database.conversion import IdentityConversion\n\nconversion = IdentityConversion(is_float=True)\nresult = conversion.scaled_to_raw(42)\nprint(f\"Expected: 42, Got: {result}\")\n```\n\nExpected output: `Expected: 42, Got: 42`\nActual output: `Expected: 42, Got: 43`\n\nThe identity conversion should return the same value that was passed in, but it's returning the input value plus 1.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__kqfjcmwq",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_bit_fields",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_generate_fuzzer",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_no_signal_encode_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node_no_signal_encode_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sym",
+   "tests/test_conversion.py::TestConversions::test_identity_conversion"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

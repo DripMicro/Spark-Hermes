@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0009-p02",
+ "round_id": "r0009",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nChart style setter adds style before removing existing style\n\n#### Description\n\nWhen setting a chart style to a non-None value, the new style is added before the existing style is removed, causing both styles to be present in the XML output.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx import Presentation\nfrom pptx.chart.data import CategoryChartData\n\n# Create a presentation with a chart\nprs = Presentation()\nslide = prs.slides.add_slide(prs.slide_layouts[5])\n\n# Add some chart data\nchart_data = CategoryChartData()\nchart_data.categories = ['East', 'West', 'Midwest']\nchart_data.add_series('Series 1', (19.2, 21.4, 16.7))\n\n# Create a chart\ngraphic_frame = slide.shapes.add_chart(\n    XL_CHART_TYPE.COLUMN_CLUSTERED, \n    Inches(2), Inches(2), Inches(6), Inches(4.5), \n    chart_data\n)\nchart = graphic_frame.chart\n\n# Set chart style - this should replace any existing style\nchart.chart_style = 10\nprint(chart._chartSpace.xml)  # Shows both old and new style elements\n```\n\nThe XML output contains duplicate style elements instead of just the new style.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.func_basic__5loa2owv",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/chart/test_chart.py::DescribeChart::it_can_change_its_style[style_set_fixture0]",
+   "tests/chart/test_chart.py::DescribeChart::it_can_change_its_style[style_set_fixture2]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

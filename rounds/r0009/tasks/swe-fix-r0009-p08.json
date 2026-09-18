@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0009-p08",
+ "round_id": "r0009",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTitle text gets swapped case when set\n\n#### Description\n\nWhen setting the title property on core properties, the text gets its case swapped unexpectedly. Uppercase letters become lowercase and vice versa.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx import Presentation\nfrom pptx.parts.coreprops import CorePropertiesPart\n\n# Create a presentation and set title\nprs = Presentation()\nprs.core_properties.title = \"My Presentation Title\"\n\n# Check what the title actually became\nprint(f\"Expected: My Presentation Title\")\nprint(f\"Actual: {prs.core_properties.title}\")\n\n# Or using CorePropertiesPart directly\ncore_props = CorePropertiesPart.default(None)\ncore_props.title = \"Test Title\"\nprint(f\"Expected: Test Title\") \nprint(f\"Actual: {core_props.title}\")\n```\n\nExpected output:\n```\nExpected: My Presentation Title\nActual: My Presentation Title\nExpected: Test Title\nActual: Test Title\n```\n\nActual output:\n```\nExpected: My Presentation Title\nActual: mY pRESENTATION tITLE\nExpected: Test Title\nActual: tEST tITLE\n```\n\nThe title text is having its case swapped - uppercase becomes lowercase and lowercase becomes uppercase.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.func_basic__ozc96h8r",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/parts/test_coreprops.py::DescribeCorePropertiesPart::it_can_change_the_string_property_values[title-dc:title-Dissertation]",
+   "tests/parts/test_coreprops.py::DescribeCorePropertiesPart::it_can_construct_a_default_core_props"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
