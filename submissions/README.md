@@ -105,11 +105,18 @@ The crown is decided on **this round alone**, so a round is always winnable no m
 incumbent's bundle stays in `submissions/` until a challenger is crowned over it, its pooled window says it is
 worse than the baseline, or it goes three rounds without the crown (see step 4 below).
 
-**The score, Δc and weight columns are published diagnostics, not the reward.** They pool the last 8 rounds and
-apply a one-sided 90 % lower bound (`Δc = max(0, mean Δ − 1.28·se)`), which is deliberately conservative: with a
-handful of instances per round it usually reads **0.000** even for the round's winner. A zero there does not mean
-you earned nothing — it means the pooled evidence cannot yet prove the size of your win. Read `Δ round` and the
-crown, and open any board row to see the per-instance credits behind them.
+**What the pooled columns mean.** They look at your last 8 rounds together, not just this one.
+
+- **score** — how much better than the baseline you are, on average: the share of checks you passed minus the
+  share the baseline passed *on the same instances*, after the overfit and copy penalties. `+0.076` means you
+  passed 7.6 points more of the checks than the baseline did. Below zero means worse than the baseline.
+- **weight** — your share among the strategies whose score is above zero; the shares sum to 1. It is 0 only if
+  you are not above the baseline, your window is too thin (fewer than 8 episodes), or a penalty applies — and
+  the board says which.
+- **Δc** — the one-sided 90 % lower bound of your score: how sure the gain is. Small windows make it
+  conservative; it is a confidence figure, not a second score.
+
+Open any board row to see the per-instance credits every one of these numbers is made of.
 
 ## What happens next
 

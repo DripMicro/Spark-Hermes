@@ -16,8 +16,14 @@ Three things carry most of the design:
   * **Efficiency is gated on correctness and never pays for cheaper failures.** It is measured only on verified
     successes, against the family's *measured* NULL median — never against `efficiency_reference`, which is an
     author's guess and would otherwise be a reward the author sets.
+  * **The score is the measured gain; the lower bound is published as confidence.** `score` is the paired mean
+    Δ of credit against the baseline over the window, after the overfit and copy penalties — signed, so a strategy
+    below the baseline reads below zero. `weight` is a score's share among the strategies above the baseline.
+    Δc, the one-sided 90 % lower bound of that mean, is published beside it as a statement of how sure the gain
+    is; it was the score itself until 2026-09-18, and at six instances a round it read 0.000 for every miner,
+    including each round's winner.
   * **Nothing is paid on thin evidence.** Below 8 window episodes a miner scores 0; below 4 NULL successes a
-    family contributes no efficiency term; a one-sided 90 % lower bound is taken on every mean.
+    family contributes no efficiency term.
 """
 
 from __future__ import annotations
@@ -235,9 +241,7 @@ def score(miner: MinerWindow, references: dict, params: Params = PARAMS_V2, *, s
             se_m = math.sqrt((statistics.variance(values) / len(values) if len(values) > 1 else 0.0) + ref_median_var)
             detail["delta_e"][metric] = max(-1.0, min(1.0, statistics.mean(values) - params.z * se_m))
 
-    raw = params.w_c * detail["delta_c"] + params.w_e * sum(
-        params.w_m.get(m, 0.0) * x for m, x in detail["delta_e"].items()
-    )
+    raw = params.w_c * mean_d + params.w_e * sum(params.w_m.get(m, 0.0) * x for m, x in detail["delta_e"].items())
 
     ofr = miner.overfit / max(1, miner.public_passers)
     detail["overfit_rate"] = round(ofr, 4)
@@ -251,14 +255,9 @@ def score(miner: MinerWindow, references: dict, params: Params = PARAMS_V2, *, s
         detail["reason"] = "bundle is a near-duplicate"
         return detail
 
-    detail["score"] = max(0.0, raw * (1 - ofr) ** 2 * (1 - params.copy_penalty * miner.prior_copy))
-    if detail["score"] == 0.0:  # a zero always says why — the common case is the bound, not a penalty
-        if not detail["gate"]:
-            detail["reason"] = f"below the baseline: Δ {mean_d:+.3f} ± {se:.3f}"
-        elif detail["delta_c"] == 0.0:
-            detail["reason"] = f"Δ {mean_d:+.3f} ± {se:.3f} does not clear zero at 90 % — Δc = 0, nothing to pay"
-        else:
-            detail["reason"] = "the efficiency term outweighs Δc"
+    detail["score"] = round(raw * (1 - ofr) ** 2 * (1 - params.copy_penalty * miner.prior_copy), 6)
+    if detail["score"] <= 0.0:  # a score that earns no weight always says why
+        detail["reason"] = f"at or below the baseline: Δ {mean_d:+.3f} ± {se:.3f}"
     return detail
 
 
