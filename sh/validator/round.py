@@ -21,7 +21,7 @@ import json
 import sys
 from pathlib import Path
 
-from sh.scoring.v2 import PARAMS_V2, FamilyReference, MinerWindow, score, weights
+from sh.scoring.v2 import PARAMS_V2, FamilyReference, MinerWindow, credit, score, weights
 from sh.validator.stats import family_stats, load_episodes
 
 RESERVED_SURFACES = ("null", "canon")
@@ -65,6 +65,7 @@ def reference_stats(episodes: list[dict], families: set[str], window: list[str],
             requires_self_check=any(e.get("requires_self_check") for e in st.null.episodes),
             mean_credit=st.null.mean_credit,
             var_credit=st.null.var_credit,
+            baseline={str(e["task_id"]): credit(e) for e in st.null.episodes if e.get("task_id") and not e.get("void")},
         )
     return records, refs
 

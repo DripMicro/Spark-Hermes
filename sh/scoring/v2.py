@@ -73,6 +73,10 @@ class FamilyReference:
     requires_self_check: bool = False
     mean_credit: float | None = None  # the NULL arm's mean credit; None -> the binary success rate
     var_credit: float | None = None  # the variance of that credit; None -> p(1 - p)
+    # The NULL arm's credit on each instance, task id -> credit. Every round runs the baseline on exactly the
+    # instances the miners run, so the comparison can be made instance by instance instead of against the family
+    # mean; that cancels how hard each instance happened to be, which is most of the spread. Empty -> unpaired.
+    baseline: dict = field(default_factory=dict)
 
     @property
     def p(self) -> float:
@@ -95,17 +99,26 @@ class FamilyReference:
         return max(raw, floor)
 
 
-def stat(episode: dict, reference: FamilyReference, params: Params = PARAMS_V2) -> tuple[float, dict]:
-    """One episode's contribution: `d` against the family's NULL rate, and log-ratios per efficiency metric.
+def stat(episode: dict, reference: FamilyReference, params: Params = PARAMS_V2) -> tuple[float, dict, bool]:
+    """One episode's contribution: `d` against the baseline, and log-ratios per efficiency metric. Returns
+    `(d, ratios, paired)`.
+
+    `d` is measured against the baseline's credit **on the same instance** when the window recorded one, and
+    against the family's mean NULL credit otherwise. Pairing is what the board and the round pages have always
+    said this number is, and it is free: the baseline runs on the same instances. It also removes the instance's
+    own difficulty from the spread — on r0007 the baseline scored [0, 0, 0, 0, 1, 1], so unpaired differences
+    carried that swing and the standard error was 40 % larger than the same episodes paired.
 
     The log ratio is symmetric in the sense that matters here — halving the calls and doubling them are equal and
     opposite — so a single outlier cannot dominate the mean the way a raw ratio would.
     """
     won = bool(episode.get("verified_success"))
-    d = credit(episode) - reference.p
+    base = reference.baseline.get(str(episode.get("task_id")))
+    paired = base is not None
+    d = credit(episode) - (base if paired else reference.p)
     ratios: dict = {}
     if not won or reference.successes < params.min_null_successes:
-        return d, ratios
+        return d, ratios, paired
     for metric in params.metrics:
         ref = reference.medians.get(metric)
         got = episode.get(metric)
@@ -115,7 +128,7 @@ def stat(episode: dict, reference: FamilyReference, params: Params = PARAMS_V2) 
     # skipping the verification the task requires is not efficiency.
     if reference.requires_self_check and not episode.get("self_checked"):
         ratios = {m: 0.0 for m in ratios}
-    return d, ratios
+    return d, ratios, paired
 
 
 def _median_variance(samples: list[float], resamples: int, rng: random.Random) -> float:
@@ -185,16 +198,19 @@ def score(miner: MinerWindow, references: dict, params: Params = PARAMS_V2, *, s
     if not pairs:
         detail["reason"] = "no episode belongs to a family with reference statistics"
         return detail
-    ds, rs = zip(*(stat(e, ref, params) for e, ref in pairs))
+    ds, rs, paired_flags = zip(*(stat(e, ref, params) for e, ref in pairs))
     n = len(ds)
+    detail["paired"] = sum(paired_flags)
 
-    # The family NULL rate is shared by every episode of that family, so its error is not reduced by √n.
+    # The family NULL rate is shared by every episode measured against it, so its error is not reduced by √n.
+    # An episode paired against the baseline on its own instance never uses that shared estimate, so only the
+    # unpaired remainder carries this term — and when every episode is paired it vanishes.
     ref_var = 0.0
     for family in {ref.family for _, ref in pairs}:
         ref = next(r for _, r in pairs if r.family == family)
-        share = sum(1 for _, r in pairs if r.family == family) / n
-        if ref.n:
-            ref_var += share**2 * ref.var / ref.n
+        unpaired = sum(1 for (_, r), was in zip(pairs, paired_flags) if r.family == family and not was)
+        if ref.n and unpaired:
+            ref_var += (unpaired / n) ** 2 * ref.var / ref.n
     se = math.sqrt((statistics.variance(ds) / n if n > 1 else 0.0) + ref_var)
     mean_d = statistics.mean(ds)
     detail["se"] = round(se, 6)
