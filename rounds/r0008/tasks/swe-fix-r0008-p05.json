@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0008-p05",
+ "round_id": "r0008",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nColumn indexing broken - cannot access first column with index 0\n\n#### Description\n\nTable column indexing is broken. When trying to access the first column using `columns[0]`, it raises an IndexError saying the index is out of range, even though the table has columns.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx import Presentation\nfrom pptx.util import Inches\n\n# Create a presentation with a table\nprs = Presentation()\nslide = prs.slides.add_slide(prs.slide_layouts[5])\n\n# Add a table with 2 rows and 3 columns\ntable = slide.shapes.add_table(2, 3, Inches(1), Inches(1), Inches(8), Inches(2)).table\n\n# Try to access the first column - this should work but raises IndexError\nfirst_column = table.columns[0]\n```\n\nThe error message is:\n```\nIndexError: column index [0] out of range\n```\n\nThis happens even though `len(table.columns)` returns the correct number of columns. You can iterate through columns using a for loop, but direct indexing with `[0]` fails.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.func_basic__9ki14erd",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/test_table.py::DescribeTable::it_updates_graphic_frame_width_on_width_change",
+   "tests/test_table.py::Describe_ColumnCollection::it_can_iterate_over_the_columns_it_contains[a:tbl/a:tblGrid/a:gridCol]",
+   "tests/test_table.py::Describe_ColumnCollection::it_supports_indexed_access[a:tbl/a:tblGrid/a:gridCol]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

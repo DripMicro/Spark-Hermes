@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789704152.9170353,
- "round_id": "r0007",
- "stage": "done",
+ "updated": 1789704155.6169481,
+ "round_id": "r0008",
+ "stage": "window",
  "stages": [
   "open",
   "window",
@@ -15,131 +15,19 @@
   "publish_close",
   "done"
  ],
- "started": 1789686074.8674114,
+ "started": 1789704155.5905347,
  "phases": [
   {
    "stage": "start",
-   "t": 1789686074.8674114
-  },
-  {
-   "stage": "open",
-   "t": 1789686077.526857
-  },
-  {
-   "stage": "mock_submit",
-   "t": 1789686109.164378
-  },
-  {
-   "stage": "resume",
-   "t": 1789690546.190333
-  },
-  {
-   "stage": "resume",
-   "t": 1789690819.286228
-  },
-  {
-   "stage": "resume",
-   "t": 1789691190.379984
-  },
-  {
-   "stage": "window",
-   "t": 1789693277.6029391
-  },
-  {
-   "stage": "seal",
-   "t": 1789693289.5412219
-  },
-  {
-   "stage": "images",
-   "t": 1789693299.0732427
-  },
-  {
-   "stage": "evaluate_wait",
-   "t": 1789693331.509606
-  },
-  {
-   "stage": "resume",
-   "t": 1789694963.7529173
-  },
-  {
-   "stage": "images",
-   "t": 1789694980.8171196
-  },
-  {
-   "stage": "evaluate_resume",
-   "t": 1789694982.1832142
-  },
-  {
-   "stage": "evaluate",
-   "t": 1789704113.224739
-  },
-  {
-   "stage": "close",
-   "t": 1789704116.2442474
-  },
-  {
-   "stage": "crown",
-   "t": 1789704116.2522964
-  },
-  {
-   "stage": "merge",
-   "t": 1789704135.3337858
-  },
-  {
-   "stage": "dethroned",
-   "t": 1789704138.2136047
-  },
-  {
-   "stage": "announce",
-   "t": 1789704147.9483817
-  },
-  {
-   "stage": "export",
-   "t": 1789704152.4229977
+   "t": 1789704155.5905347
   }
  ],
  "window": {
-  "opens_at": 1789686074.8599298,
-  "closes_at": 1789693274.8599298,
+  "opens_at": 1789704155.5879009,
+  "closes_at": 1789711355.5879009,
   "seconds": 7200
  },
- "submissions": [
-  {
-   "pr": 158,
-   "hotkey": "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c",
-   "created_at": "2026-09-17T23:01:48Z",
-   "updated_at": "2026-09-17T23:01:51Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/158"
-  },
-  {
-   "pr": 157,
-   "hotkey": "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT",
-   "created_at": "2026-09-17T23:01:42Z",
-   "updated_at": "2026-09-17T23:01:53Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/157"
-  },
-  {
-   "pr": 156,
-   "hotkey": "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ",
-   "created_at": "2026-09-17T23:01:36Z",
-   "updated_at": "2026-09-17T23:01:55Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/156"
-  },
-  {
-   "pr": 155,
-   "hotkey": "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC",
-   "created_at": "2026-09-17T23:01:29Z",
-   "updated_at": "2026-09-17T23:01:57Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/155"
-  },
-  {
-   "pr": 154,
-   "hotkey": "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8",
-   "created_at": "2026-09-17T23:01:24Z",
-   "updated_at": "2026-09-17T23:01:58Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/154"
-  }
- ],
+ "submissions": [],
  "github": {
   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": "ai-hpc",
   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": "ai-hpc",
@@ -194,237 +82,11 @@
  },
  "last_round": "r0007",
  "tasks": 6,
- "active": {
-  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
-   "pr": null,
-   "head": "origin/main",
-   "bundle_sha256": "e26dcd4bddb12b77ac11a45f6435796fafdc24d418e718b11ac0dcf87154619b",
-   "incumbent": true
-  },
-  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
-   "pr": 154,
-   "head": "8a90776dabc61d9ea9ccc569bbbe8149b28dc6e3",
-   "bundle_sha256": "bd5d7d2ec04153083a48fde33c149df46b34d3a7ea15709f86dfa33eaf3d9dab",
-   "incumbent": false,
-   "was_incumbent": false,
-   "github": "ai-hpc"
-  },
-  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
-   "pr": 155,
-   "head": "9f3306c0eb182ba357520ea644dcdb230c53fa7b",
-   "bundle_sha256": "4c490c109f8ef2045de835184755a059087d91aa2e28df59c9139d7e4e850024",
-   "incumbent": false,
-   "was_incumbent": false,
-   "github": "ai-hpc"
-  },
-  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
-   "pr": 156,
-   "head": "3e235d1a253f5b524948284f0c9c2fc10569065b",
-   "bundle_sha256": "1931157ea1be3df1ba6f894851b3afa6c23d77f61223ba19b0bb24f3f04fa016",
-   "incumbent": false,
-   "was_incumbent": false,
-   "github": "ai-hpc"
-  },
-  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
-   "pr": 157,
-   "head": "ca0fbf3f9c123fffcf1002cea110cdd3f73e4bb1",
-   "bundle_sha256": "d81aa18146c34c3eb540d98bd46f0218443881f248d6490c88c0051ca57a7782",
-   "incumbent": false,
-   "was_incumbent": false,
-   "github": "ai-hpc"
-  },
-  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
-   "pr": 158,
-   "head": "792c3dfebfd7d13a1ffa6bd65f3c8eae6dbb4487",
-   "bundle_sha256": "8b8bbdbd45c5bb7c2dd08c44d75809e0d5213dd836c09bc043631ddd75b20986",
-   "incumbent": false,
-   "was_incumbent": false,
-   "github": "ai-hpc"
-  }
- },
+ "active": {},
  "rejected": {},
- "progress": {
-  "done": 42,
-  "total": 42,
-  "by_surface": {
-   "null": {
-    "n": 6,
-    "verified": 2,
-    "credit": 0.3333
-   },
-   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
-    "n": 6,
-    "verified": 1,
-    "credit": 0.2917
-   },
-   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
-    "n": 6,
-    "verified": 1,
-    "credit": 0.2917
-   },
-   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
-    "n": 6,
-    "verified": 1,
-    "credit": 0.2917
-   },
-   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
-    "n": 6,
-    "verified": 2,
-    "credit": 0.4583
-   },
-   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
-    "n": 6,
-    "verified": 2,
-    "credit": 0.4583
-   },
-   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
-    "n": 6,
-    "verified": 2,
-    "credit": 0.3333
-   }
-  }
- },
- "crown": {
-  "schema": "sh-crown-v1",
-  "round_id": "r0007",
-  "king": "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ",
-  "standings": {
-   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
-    "n": 6,
-    "verified": 2,
-    "dq": 0,
-    "credit": 0.458333,
-    "delta": 0.125,
-    "rank": 1
-   },
-   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
-    "n": 6,
-    "verified": 1,
-    "dq": 0,
-    "credit": 0.291667,
-    "delta": -0.041667
-   },
-   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
-    "n": 6,
-    "verified": 2,
-    "dq": 0,
-    "credit": 0.333333,
-    "delta": 0.0
-   },
-   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
-    "n": 6,
-    "verified": 2,
-    "dq": 0,
-    "credit": 0.458333,
-    "delta": 0.125,
-    "rank": 2
-   },
-   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
-    "n": 6,
-    "verified": 1,
-    "dq": 0,
-    "credit": 0.291667,
-    "delta": -0.041667
-   },
-   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
-    "n": 6,
-    "verified": 1,
-    "dq": 0,
-    "credit": 0.291667,
-    "delta": -0.041667
-   }
-  },
-  "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired, not disqualified; a tie does not dethrone the incumbent; other ties by pooled \u0394c then a round-keyed hash"
- },
- "scores": {
-  "weights": {
-   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": 0.0,
-   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": 0.0,
-   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": 0.0,
-   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": 0.0,
-   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": 0.0,
-   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": 0.0
-  },
-  "king": "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ",
-  "per_hotkey": {
-   "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
-    "n": 23,
-    "score": 0.0,
-    "mean_d": 0.076087,
-    "se": 0.130991,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 +0.076 \u00b1 0.131 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
-    "n": 23,
-    "score": 0.0,
-    "mean_d": -0.01087,
-    "se": 0.126365,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 -0.011 \u00b1 0.126 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
-    "n": 23,
-    "score": 0.0,
-    "mean_d": -0.043478,
-    "se": 0.125359,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 -0.043 \u00b1 0.125 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
-    "n": 23,
-    "score": 0.0,
-    "mean_d": -0.01087,
-    "se": 0.126365,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 -0.011 \u00b1 0.126 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
-    "n": 23,
-    "score": 0.0,
-    "mean_d": -0.141304,
-    "se": 0.117819,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 -0.141 \u00b1 0.118 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   },
-   "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
-    "n": 23,
-    "score": 0.0,
-    "mean_d": -0.076087,
-    "se": 0.122955,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": "\u0394 -0.076 \u00b1 0.123 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay"
-   }
-  },
-  "family_stats": {
-   "swe_fix": {
-    "null_p": 0.2608695652173913,
-    "canon_p": 0.0,
-    "null_credit": 0.3168,
-    "canon_credit": 0.0,
-    "label": "frontier"
-   }
-  },
-  "commitments_ok": true
- },
+ "progress": {},
+ "crown": null,
+ "scores": null,
  "queue": [],
  "history": [
   {

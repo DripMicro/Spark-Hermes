@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0008-p01",
+ "round_id": "r0008",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nUnboundLocalError in MySQL dialect _has_time_specifier function\n\n#### Description\n\nThe `_has_time_specifier` function in the MySQL dialect throws an `UnboundLocalError` when called, preventing proper date format processing.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot.dialects.mysql import MySQL\n\n# This will trigger the error when processing date formats\nsql = \"SELECT STR_TO_DATE(x, '%Y-%m-%d')\"\nresult = sqlglot.transpile(sql, read=\"mysql\", write=\"presto\")\n```\n\nThe error occurs because the function tries to use variables `i` and `length` in a while loop before they are defined. The variables are initialized after the loop that uses them.\n\n#### Expected Behavior\n\nThe function should properly check for time specifiers in date format strings without throwing an error.\n\n#### Actual Behavior\n\n```\nUnboundLocalError: local variable 'i' referenced before assignment\n```\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__8p0css4a",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_mysql.py::TestMySQL::test_mysql_time"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

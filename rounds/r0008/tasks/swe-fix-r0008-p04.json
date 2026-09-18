@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0008-p04",
+ "round_id": "r0008",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCommonLispLexer fails with NameError: name 'stack' is not defined\n\n#### Description\n\nThe CommonLispLexer is throwing a NameError when trying to tokenize Common Lisp code. The error occurs because the `stack` variable is referenced but not defined in the `get_tokens_unprocessed` method.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pygments.lexers import CommonLispLexer\n\nlexer = CommonLispLexer()\ncode = \"(defun hello-world () (print \\\"Hello, World!\\\"))\"\ntokens = list(lexer.get_tokens(code))\n```\n\nThis will raise:\n```\nNameError: name 'stack' is not defined\n```\n\nThe issue affects any attempt to use the CommonLispLexer for syntax highlighting of Common Lisp code.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pygments__pygments.27649ebb.func_pm_remove_assign__yugltulc",
+  "environment": "jyangballin/swesmith.x86_64.pygments_1776_pygments.27649ebb",
+  "fail_to_pass": [
+   "tests/examplefiles/common-lisp/type.lisp::",
+   "tests/test_basic_api.py::test_lexer_options[CommonLispLexer]",
+   "tests/test_basic_api.py::test_random_input[CommonLispLexer]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

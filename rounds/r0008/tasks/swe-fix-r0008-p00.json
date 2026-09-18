@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0008-p00",
+ "round_id": "r0008",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSQL lexer lookahead iterator breaks with string concatenation\n\n#### Description\n\nThe SQL lexer's lookahead iterator is causing a TypeError when processing certain SQL syntax that involves string operations. The error occurs during lexing of PostgreSQL session files.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pygments.lexers import PostgresLexer\nfrom pygments import highlight\nfrom pygments.formatters import TerminalFormatter\n\n# This SQL content triggers the issue\nsql_content = \"\"\"\nSELECT 'hello' || ' world';\n\"\"\"\n\nlexer = PostgresLexer()\nformatter = TerminalFormatter()\n\n# This will raise TypeError: can only concatenate str (not \"int\") to str\nresult = highlight(sql_content, lexer, formatter)\nprint(result)\n```\n\nThe error occurs when the lexer's lookahead mechanism tries to process tokens and encounters a type mismatch where it attempts to concatenate a string with an integer.\n\n#### Expected Behavior\n\nThe SQL should be lexed and highlighted without errors, properly handling string concatenation operators and similar constructs.\n\n#### Actual Behavior\n\n```\nTypeError: can only concatenate str (not \"int\") to str\n```\n\nThis appears to be related to the internal lookahead iterator implementation in the SQL lexer module.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pygments__pygments.27649ebb.func_basic__tn08b5yd",
+  "environment": "jyangballin/swesmith.x86_64.pygments_1776_pygments.27649ebb",
+  "fail_to_pass": [
+   "tests/examplefiles/psql/psql_session.txt::"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
