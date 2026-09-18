@@ -188,11 +188,13 @@
       const st = (cr && cr.standings) || {};
       $("board-title").firstChild.textContent = "Final ";
       const nullShare = fs.null_credit != null ? fs.null_credit : fs.null_p, canonShare = fs.canon_credit != null ? fs.canon_credit : fs.canon_p;
-      $("board-sub").textContent = "baseline passes " + pct(nullShare) + " of checks · canon " + pct(canonShare) + " — the crown is this round's and is what the reward follows; score and weight are pooled diagnostics";
+      $("board-sub").textContent = "baseline passes " + pct(nullShare) + " of checks · canon " + pct(canonShare) + " — the crown is this round's and is what the reward follows; score is Δ over the window, weight its share among strategies above the baseline";
       $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("rank", "this round: by Δ vs baseline on these instances") +
         th("Δ round", "mean of (share of checks passed − the baseline's) per instance, this round only") + th("checks", "mean share of withheld checks passed, this round") +
         th("episodes", "pooled window") + th("Δ window", "mean paired delta over the pooled window") +
-        th("Δc", "one-sided 90% lower bound of Δ window — what is paid") + th("score") + th("weight") + "</tr>";
+        th("Δc", "one-sided 90% lower bound of Δ window — how sure the gain is") +
+        th("score", "Δ window after the overfit and copy penalties — above zero means better than the baseline") +
+        th("weight", "share among the strategies above the baseline; the shares sum to 1") + "</tr>";
       const refs = ["null", "canon"].map((s) =>
         '<tr class="ref expandable' + (opened.has(s) ? " open" : "") + '" data-surface="' + s + '" tabindex="0">' +
         caretCell(surfaceCell(live, s), s) +

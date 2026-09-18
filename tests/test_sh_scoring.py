@@ -35,7 +35,7 @@ def _eps(n, wins, *, calls=10, family="f", **extra):
 def test_a_miner_at_the_baseline_rate_is_paid_nothing():
     """The whole design: passing tasks is not the achievement, beating the reference is."""
     s = score(MinerWindow("m", _eps(16, 8)), {"f": REF})
-    assert s["score"] == 0.0 and s["delta_c"] == 0.0
+    assert s["score"] <= 0.0 and s["delta_c"] == 0.0 and "at or below the baseline" in s["reason"]
 
 
 def test_a_miner_clearly_above_the_baseline_is_paid():
@@ -154,8 +154,8 @@ def test_credit_is_scored_against_the_baseline_s_mean_credit():
     )
     s_good, s_flat = score(good, {"f": ref}), score(flat, {"f": ref})
     # the reference-variance floor makes 8 tightly-clustered null samples less than certain, so Δc is conservative
-    assert s_good["delta_c"] > 0.25 and s_good["score"] == s_good["delta_c"]  # efficiency is off: score is Δc alone
-    assert s_flat["delta_c"] == 0.0 and s_flat["score"] == 0.0
+    assert s_good["delta_c"] > 0.25 and s_good["score"] == s_good["mean_d"]  # the score is the measured gain itself
+    assert s_flat["delta_c"] == 0.0 and s_flat["score"] == 0.0 and "at or below" in s_flat["reason"]
     assert credit({"verified_success": True}) == 1.0 and credit({"credit": 0.25, "verified_success": True}) == 0.25
 
 
