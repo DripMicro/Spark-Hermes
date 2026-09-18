@@ -8,7 +8,7 @@ deliberate, dated act — and a new era when it changes the reference arms' comp
 | Component | Pin | Where |
 |---|---|---|
 | hermes-agent | commit `d84ece48b8552501660be229797e2d2aa4cee8db` (main, 2026-09-15T16:29Z, v0.21.3) | `sh/validator/images/hermes-ubuntu/Dockerfile` |
-| model | `gittensor-model-hub/Qwen3.8-27B-NVFP4-RTX5090` — the weights actually served are pinned by the engine image digest below (baked into `sparkinfer-qwen38:0.5.7`); the HF revision is the upstream reference and is **not resolved** — record its commit sha here when the image is next rebuilt | HF |
+| model | `gittensor-model-hub/Qwen3.8-27B-NVFP4-RTX5090` at revision `5b7a687fc8211a5d631c8ca6a593dd37eb26ce33` (2026-09-10; resolved 2026-09-18 — never `main`). The weights actually served are pinned harder still, by the engine image digest below, which bakes them in | HF |
 | inference engine | `ghcr.io/gittensor-ai-lab/sparkinfer-qwen38:0.5.7` = `sha256:c919d647e8ae873837ad2cbcb83935cb9949765f1480637f9495c1ae7643d85b` | ghcr |
 | context | **65536** — Hermes requires ≥ 64K advertised; 262144 OOMed at concurrency 4 | engine |
 | sampling | **`temperature 0.7`**, `top_p 0.95`, `max_tokens 8192`, proxy-enforced (a bundle cannot change them), and the proxy's own default since 2026-09-17: a proxy started without `--sampling` on the new worker ran at the retired 0.2 from the worker move until r0004's evaluation ended (r0003's re-evaluation, the SWE-smith pilot, r0004 and every screen until then — each round internally consistent). The proxy logs its sampling at start. 0.2 drives the model into repetition loops that burn 6× the decode and kill episodes on the timeout (`docs/spikes.md`; whole-round A/B: timeouts 5/12 → 2/12, canon 0/3 → 3/3) | `sh/validator/proxy.py` |
