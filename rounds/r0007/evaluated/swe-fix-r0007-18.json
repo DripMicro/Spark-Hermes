@@ -1,0 +1,45 @@
+{
+ "schema": "sh-instance-v2",
+ "task_id": "swe-fix-r0007-18",
+ "family": "swe_fix",
+ "behaviour": "act",
+ "round_id": "r0007",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPluck field deserialization broken for single values and many=True collections\n\n#### Description\n\nThe Pluck field is not working correctly during deserialization. When deserializing single values (many=False), it's treating them as collections, and when deserializing collections (many=True), it's failing with validation errors.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom marshmallow import Schema, fields\n\nclass ANestedSchema(Schema):\n    pk = fields.Str()\n\nclass MainSchema(Schema):\n    pk = fields.Str()\n    child = fields.Pluck(ANestedSchema, 'pk')\n    children = fields.Pluck(ANestedSchema, 'pk', many=True)\n\nsch = MainSchema()\n\n# This should work but fails\nresult = sch.load({'pk': '123', 'child': '456'})\nprint(result)  # Expected: {'pk': '123', 'child': {'pk': '456'}}\n\n# This should also work but fails  \nresult = sch.load({'pk': '123', 'children': ['456', '789']})\nprint(result)  # Expected: {'pk': '123', 'children': [{'pk': '456'}, {'pk': '789'}]}\n```\n\nThe first case raises a ValidationError about unknown fields, and the second case raises a ValidationError about invalid input type.\n</issue>\n",
+ "fixture": {},
+ "setup_commands": [],
+ "protected_paths": [
+  "pyproject.toml",
+  "tests/__init__.py",
+  "tests/base.py",
+  "tests/conftest.py",
+  "tests/foo_serializer.py",
+  "tests/mypy_test_cases/test_validation_error.py",
+  "tests/test_decorators.py",
+  "tests/test_error_store.py",
+  "tests/test_exceptions.py",
+  "tests/test_fields.py",
+  "tests/test_options.py",
+  "tests/test_registry.py",
+  "tests/test_serialization.py",
+  "tests/test_utils.py",
+  "tests/test_validate.py",
+  "tests/test_version_attributes.py",
+  "tox.ini"
+ ],
+ "commands": [],
+ "published": {
+  "predicates": []
+ },
+ "withheld_commitment": "hmac-sha256:e986394210a64d8be4933580f56752d9f870a353ec40595dd5e69732cae7b070",
+ "image": "swe-task:ce9898dc5a5072a7",
+ "network": "none",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "workdir": "/testbed",
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "requires_self_check": false
+}

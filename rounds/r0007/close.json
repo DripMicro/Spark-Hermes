@@ -1,0 +1,180 @@
+{
+ "schema": "sh-round-close-v3",
+ "scoring": "sh-scoring-v3 (credit)",
+ "round_id": "r0007",
+ "era": "e0",
+ "tasks": [
+  "swe-fix-r0007-10",
+  "swe-fix-r0007-12",
+  "swe-fix-r0007-16",
+  "swe-fix-r0007-17",
+  "swe-fix-r0007-18",
+  "swe-fix-r0007-21"
+ ],
+ "episodes": 166,
+ "family_stats": {
+  "swe_fix": {
+   "schema": "sh-family-stats-v2",
+   "family": "swe_fix",
+   "era": "e0",
+   "window": [
+    "r0004",
+    "r0005",
+    "r0006",
+    "r0007"
+   ],
+   "null": {
+    "n": 23,
+    "successes": 6,
+    "p": 0.2608695652173913,
+    "mean_credit": 0.3168,
+    "wilson": [
+     0.1255,
+     0.4647
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 24.0,
+      "p25": 15.0,
+      "n": 6
+     },
+     "tool_calls": {
+      "median": 24.0,
+      "p25": 17.0,
+      "n": 6
+     }
+    }
+   },
+   "canon": {
+    "n": 5,
+    "successes": 0,
+    "p": 0.0,
+    "mean_credit": 0.0,
+    "wilson": [
+     0.0,
+     0.4345
+    ],
+    "efficiency": {},
+    "delta_c": -0.3168,
+    "delta_e": {},
+    "delta_e_paired_instances": 0
+   },
+   "label": "frontier",
+   "partial_rate": 0.0714,
+   "in_rotation": true,
+   "retirement": null
+  }
+ },
+ "scores": {
+  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+   "hotkey": "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ",
+   "n": 23,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.05974356552228999,
+    "tool_calls": -0.13718861534308685
+   },
+   "gate": true,
+   "se": 0.130991,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 +0.076 \u00b1 0.131 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": 0.076087
+  },
+  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+   "hotkey": "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra",
+   "n": 23,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": 0.12196846245841148,
+    "tool_calls": 0.11906481817682629
+   },
+   "gate": true,
+   "se": 0.126365,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.011 \u00b1 0.126 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.01087
+  },
+  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+   "hotkey": "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c",
+   "n": 23,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.047295945946131734,
+    "tool_calls": -0.1192268282804888
+   },
+   "gate": true,
+   "se": 0.125359,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.043 \u00b1 0.125 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.043478
+  },
+  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+   "hotkey": "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT",
+   "n": 23,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.10771670449072984,
+    "tool_calls": -0.22132285801429036
+   },
+   "gate": true,
+   "se": 0.126365,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.011 \u00b1 0.126 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.01087
+  },
+  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
+   "hotkey": "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC",
+   "n": 23,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.117819,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.141 \u00b1 0.118 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.141304
+  },
+  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+   "hotkey": "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8",
+   "n": 23,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.41104016351841666,
+    "tool_calls": -0.49100335068532347
+   },
+   "gate": true,
+   "se": 0.122955,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "\u0394 -0.076 \u00b1 0.123 does not clear zero at 90 % \u2014 \u0394c = 0, nothing to pay",
+   "mean_d": -0.076087
+  }
+ },
+ "weights": {
+  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": 0.0,
+  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": 0.0,
+  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": 0.0,
+  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": 0.0,
+  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": 0.0,
+  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": 0.0
+ },
+ "commitments_verified": {
+  "swe-fix-r0007-10": true,
+  "swe-fix-r0007-12": true,
+  "swe-fix-r0007-16": true,
+  "swe-fix-r0007-17": true,
+  "swe-fix-r0007-18": true,
+  "swe-fix-r0007-21": true
+ },
+ "commitments_ok": true
+}

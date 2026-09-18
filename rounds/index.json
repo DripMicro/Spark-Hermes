@@ -506,6 +506,100 @@
    "sft_rows": 3,
    "dpo_pairs": 3,
    "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0006"
+  },
+  {
+   "round_id": "r0007",
+   "closed_at": 1789704152.9134164,
+   "window": {
+    "opens_at": 1789686074.8599298,
+    "closes_at": 1789693274.8599298,
+    "seconds": 7200
+   },
+   "episodes": 166,
+   "king": "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ",
+   "weights": {
+    "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": 0.0,
+    "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": 0.0,
+    "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": 0.0,
+    "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": 0.0,
+    "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": 0.0,
+    "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": 0.0
+   },
+   "scores": {
+    "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": 0.076087,
+     "delta_c": 0.0,
+     "n": 23
+    },
+    "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.01087,
+     "delta_c": 0.0,
+     "n": 23
+    },
+    "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.043478,
+     "delta_c": 0.0,
+     "n": 23
+    },
+    "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.01087,
+     "delta_c": 0.0,
+     "n": 23
+    },
+    "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.141304,
+     "delta_c": 0.0,
+     "n": 23
+    },
+    "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": -0.076087,
+     "delta_c": 0.0,
+     "n": 23
+    }
+   },
+   "crown": {
+    "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+     "n": 6,
+     "verified": 2,
+     "dq": 0,
+     "credit": 0.458333,
+     "delta": 0.125,
+     "rank": 1
+    },
+    "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+     "n": 6,
+     "verified": 2,
+     "dq": 0,
+     "credit": 0.458333,
+     "delta": 0.125,
+     "rank": 2
+    }
+   },
+   "commitments_ok": true,
+   "sft_rows": 2,
+   "dpo_pairs": 1,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0007",
+   "github": {
+    "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": "ai-hpc",
+    "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": "ai-hpc",
+    "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": "ai-hpc",
+    "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": "ai-hpc",
+    "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": "ai-hpc",
+    "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": "ai-hpc"
+   },
+   "pr": 156
   }
  ]
 }
