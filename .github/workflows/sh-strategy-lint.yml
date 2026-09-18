@@ -54,7 +54,8 @@ jobs:
         if: env.BUNDLE != ''
         # Structure, digest and the attestation's binding to the directory are checked here; the signature
         # itself is verified by the seal, which has the signing library and knows the round.
-        run: python -m sh.cli.lint "$BUNDLE" --require-attestation --hotkey "$(basename "$BUNDLE")"
+        run: if [ ! -d "$BUNDLE" ]; then echo "$BUNDLE was removed by this PR — nothing to lint"; exit 0; fi
+          python -m sh.cli.lint "$BUNDLE" --require-attestation --hotkey "$(basename "$BUNDLE")"
 
       - name: Digest for the commitment
         if: env.BUNDLE != ''
