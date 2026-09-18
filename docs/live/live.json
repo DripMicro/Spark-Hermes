@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789713933.8855321,
+ "updated": 1789714022.9628344,
  "round_id": "r0008",
  "stage": "evaluate",
  "stages": [
@@ -44,6 +44,18 @@
   {
    "stage": "evaluate_wait",
    "t": 1789711414.8079004
+  },
+  {
+   "stage": "resume",
+   "t": 1789713963.4678235
+  },
+  {
+   "stage": "images",
+   "t": 1789713974.3410583
+  },
+  {
+   "stage": "evaluate_resume",
+   "t": 1789713975.5934339
   }
  ],
  "window": {
@@ -198,12 +210,70 @@
    "null": {
     "n": 5,
     "verified": 1,
-    "credit": 0.2
+    "credit": 0.2,
+    "tasks": {
+     "swe-fix-r0008-00": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     },
+     "swe-fix-r0008-03": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     },
+     "swe-fix-r0008-04": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     },
+     "swe-fix-r0008-05": {
+      "credit": 1.0,
+      "verified": true,
+      "void": false,
+      "dq": false
+     },
+     "swe-fix-r0008-08": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     }
+    }
    },
    "canon": {
     "n": 4,
     "verified": 0,
-    "credit": 0.0
+    "credit": 0.0,
+    "tasks": {
+     "swe-fix-r0008-00": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     },
+     "swe-fix-r0008-01": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     },
+     "swe-fix-r0008-04": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     },
+     "swe-fix-r0008-05": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     }
+    }
    }
   }
  },
