@@ -40,7 +40,7 @@ _REFUSAL_PHRASES = (b"overloaded", b"no capacity")  # in a 200: the engine's wor
 
 def refusal(payload: bytes) -> bool:
     """A 200 that is really a capacity refusal: the engine puts its overload message where the answer should be and
-    generates nothing (r0004–r0006 voided a fifth of their episodes this way, unseen by the 429/503 hold). A
+    generates nothing (in testing a fifth of a round's episodes were voided this way, unseen by the 429/503 hold). A
     completion that merely mentions capacity has completion tokens. For a stream, `payload` is the first data chunk."""
     if not any(p in payload.lower() for p in _REFUSAL_PHRASES):
         return False

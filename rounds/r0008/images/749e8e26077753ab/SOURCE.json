@@ -1,6 +1,0 @@
-{
- "dataset": "SWE-bench/SWE-smith",
- "license": "MIT",
- "repository": "https://github.com/pygments/pygments",
- "environment": "jyangballin/swesmith.x86_64.pygments_1776_pygments.27649ebb"
-}

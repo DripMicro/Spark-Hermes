@@ -48,6 +48,9 @@ jobs:
           if [ -z "$changed" ]; then echo "no submission directory changed; nothing to lint"; exit 0; fi
           test "$(echo "$changed" | grep -c .)" -eq 1 || {
             echo "::error::a pull request may add or change exactly one submissions/<hotkey>/ directory"; exit 1; }
+          if [ -n "$changed" ] && [ ! -d "$changed" ]; then
+            echo "$changed was removed by this PR — nothing to lint"; changed=""
+          fi
           echo "BUNDLE=$changed" >> "$GITHUB_ENV"
 
       - name: Lint the bundle and print its canonical digest

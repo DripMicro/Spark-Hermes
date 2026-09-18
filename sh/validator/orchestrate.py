@@ -72,12 +72,12 @@ class Config:
     repo: Path  # a checkout of BRANCH the loop commits to
     queue: Path  # the private queue daemon's directory of minted rounds
     pkg: Path  # the public package's parent
-    worker: str = "root@91.224.44.85"
-    worker_port: int = 20100
+    worker: str = "root@91.224.44.223"
+    worker_port: int = 50200
     worker_root: str = "/root/sh"  # holds pkg/ (the public package), state/tokens, state/usage
     image: str = "hermes-ubuntu:pin"  # the fallback; an image-defined task names its own
     window: int = 8  # rounds pooled for payment
-    window_from: str = "r0004"  # the first round scored on credit (sh-scoring-v3); earlier rounds are not pooled
+    window_from: str = "r0001"  # the first round pooled; every round since launch is scored on credit (sh-scoring-v3)
     window_s: int = 2 * 3600  # the submission window
     min_paired: int = 4  # instances a strategy must share with the baseline to be crowned
     concurrency: int = 2
@@ -782,7 +782,7 @@ def evaluate(cfg: Config, rd: Path, sealed: dict) -> None:
 
 def window_archive(cfg: Config, round_id: str) -> Path:
     """The last W rounds' episode *records*, pooled: what the scorer sees. Only `episode.json` is archived — the
-    scorer reads nothing else, and a round's snapshots and trajectories are gigabytes (r0004: 2.9 GB) that stored
+    scorer reads nothing else, and a round's snapshots and trajectories are gigabytes (measured in testing: 2.9 GB) that stored
     twice and re-copied every close would fill the disk in ~15 rounds. Each round is archived once (a temp dir
     renamed into place, so a kill never leaves a partial archive a later run would skip)."""
     archive = cfg.state / "archive"
@@ -798,7 +798,7 @@ def window_archive(cfg: Config, round_id: str) -> Path:
             shutil.copy(ej, out)
         tmp.mkdir(exist_ok=True)  # a round with no episode.json at all still archives (empty), never re-copied
         tmp.rename(dst)
-    # The round being closed is always in its own window, even one scored before the window's start (r0003).
+    # The round being closed is always in its own window.
     rounds = sorted(
         p.name
         for p in archive.iterdir()
@@ -884,7 +884,7 @@ def dethroned(
           cannot squat for free at the validator's expense.
 
     A round that crowns nobody does not by itself dethrone: on six instances a genuinely better strategy ties the
-    baseline by noise in about a third of rounds (r0005: the incumbent's Δ was exactly 0.0). `history` is the
+    baseline by noise in about a third of rounds (seen in testing: an incumbent's Δ of exactly 0.0). `history` is the
     published `rounds/index.json` entries, oldest first, without this round. Pure."""
     scores = scores or {}
     gone = []
@@ -1194,11 +1194,11 @@ def main(argv=None) -> int:
     ap.add_argument("--queue", default=str(Path(__file__).resolve().parents[3] / "Spark-Hermes-Withheld" / "queue"))
     ap.add_argument("--pkg", default=str(Path(__file__).resolve().parents[2]))
     ap.add_argument(
-        "--worker", default=os.environ.get("SH_WORKER", "root@91.224.44.85"), help="the GPU worker, user@host"
+        "--worker", default=os.environ.get("SH_WORKER", "root@91.224.44.223"), help="the GPU worker, user@host"
     )
-    ap.add_argument("--worker-port", type=int, default=int(os.environ.get("SH_WORKER_PORT", "20100")))
+    ap.add_argument("--worker-port", type=int, default=int(os.environ.get("SH_WORKER_PORT", "50200")))
     ap.add_argument("--window", type=int, default=8, help="rounds pooled for payment")
-    ap.add_argument("--window-from", default="r0004", help="the first round pooled (the credit scoring era)")
+    ap.add_argument("--window-from", default="r0001", help="the first round pooled")
     ap.add_argument("--window-minutes", type=int, default=120, help="the submission window")
     ap.add_argument("--min-paired", type=int, default=4)
     ap.add_argument("--canon-every", type=int, default=8, help="run the reference strategy every n-th round")
