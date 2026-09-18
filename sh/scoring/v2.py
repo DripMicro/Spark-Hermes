@@ -20,8 +20,8 @@ Three things carry most of the design:
     Δ of credit against the baseline over the window, after the overfit and copy penalties — signed, so a strategy
     below the baseline reads below zero. `weight` is a score's share among the strategies above the baseline.
     Δc, the one-sided 90 % lower bound of that mean, is published beside it as a statement of how sure the gain
-    is; it was the score itself until 2026-09-18, and at six instances a round it read 0.000 for every miner,
-    including each round's winner.
+    is. It is deliberately not the score: at six instances a round that bound is out of reach for every miner,
+    including a round's winner, and a number that never moves tells nobody anything.
   * **Nothing is paid on thin evidence.** Below 8 window episodes a miner scores 0; below 4 NULL successes a
     family contributes no efficiency term.
 """
@@ -53,7 +53,7 @@ class Params:
     min_metric_samples: int = 4
     metrics: tuple[str, ...] = ("api_calls", "tool_calls")
     w_c: float = 1.0
-    # The efficiency term is off (w_e = 0) from 2026-09-17: on the review's simulations it subtracted a negative
+    # The efficiency term is off (w_e = 0): on the design review's simulations it subtracted a negative
     # lower bound from honest improvers' pay and paid strategies slightly worse than the baseline for using fewer
     # calls, and calls are not what the token budget limits. Correctness (Δc) is the whole score until an
     # efficiency measure that compares paired, budget-aware token cost is designed.
@@ -112,7 +112,7 @@ def stat(episode: dict, reference: FamilyReference, params: Params = PARAMS_V2) 
     `d` is measured against the baseline's credit **on the same instance** when the window recorded one, and
     against the family's mean NULL credit otherwise. Pairing is what the board and the round pages have always
     said this number is, and it is free: the baseline runs on the same instances. It also removes the instance's
-    own difficulty from the spread — on r0007 the baseline scored [0, 0, 0, 0, 1, 1], so unpaired differences
+    own difficulty from the spread — in testing a baseline scored [0, 0, 0, 0, 1, 1] on a round, so unpaired differences
     carried that swing and the standard error was 40 % larger than the same episodes paired.
 
     The log ratio is symmetric in the sense that matters here — halving the calls and doubling them are equal and
