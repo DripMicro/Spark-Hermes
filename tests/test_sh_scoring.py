@@ -68,15 +68,15 @@ def test_efficiency_needs_the_correctness_gate():
 def test_efficiency_is_measured_against_a_measurement_not_an_author_s_guess():
     """With fewer than 4 NULL successes the family's median is not a measurement, so no efficiency is paid."""
     unmeasured = FamilyReference(family="f", n=16, successes=2, medians={"api_calls": 10}, samples={})
-    d, ratios = stat({"family": "f", "verified_success": True, "api_calls": 5}, unmeasured)
+    d, ratios, _ = stat({"family": "f", "verified_success": True, "api_calls": 5}, unmeasured)
     assert ratios == {}
 
 
 def test_skipping_a_required_self_check_earns_no_efficiency():
     """The cheapest way to spend fewer calls is to skip the verification the family asks for."""
     checking = FamilyReference(**{**REF.__dict__, "requires_self_check": True})
-    _, with_check = stat({"family": "f", "verified_success": True, "api_calls": 5, "self_checked": True}, checking)
-    _, without = stat({"family": "f", "verified_success": True, "api_calls": 5, "self_checked": False}, checking)
+    _, with_check, _ = stat({"family": "f", "verified_success": True, "api_calls": 5, "self_checked": True}, checking)
+    _, without, _ = stat({"family": "f", "verified_success": True, "api_calls": 5, "self_checked": False}, checking)
     assert with_check["api_calls"] > 0
     assert without["api_calls"] == 0.0
 
@@ -171,3 +171,53 @@ def test_a_task_with_no_published_half_is_not_a_public_passer():
         {"published_fraction": 0.25},
     ]
     assert w.public_passers == 2
+
+
+def test_a_delta_is_measured_against_the_baseline_on_the_same_instance():
+    """The board and the round pages have always called this 'per instance'. Pairing is free — the baseline runs
+    on the instances the miners run — and it removes the instance's own difficulty from the spread, which is most
+    of it: on r0007 the baseline scored [0, 0, 0, 0, 1, 1]."""
+    import statistics
+
+    from sh.scoring.v2 import FamilyReference, stat
+
+    hard, easy = "t-hard", "t-easy"
+    ref = FamilyReference(
+        family="f", n=2, successes=1, medians={}, samples={}, mean_credit=0.5, var_credit=0.25,
+        baseline={hard: 0.0, easy: 1.0},
+    )  # fmt: skip
+    # a miner that is exactly the baseline everywhere: zero delta and, paired, zero spread
+    same = [stat({"family": "f", "task_id": t, "credit": c}, ref)[0] for t, c in ((hard, 0.0), (easy, 1.0))]
+    assert same == [0.0, 0.0]
+    # unpaired, the same episodes look like ±0.5 — the instance's difficulty, not the miner's doing
+    blind = FamilyReference(**{**ref.__dict__, "baseline": {}})
+    assert [stat({"family": "f", "task_id": t, "credit": c}, blind)[0] for t, c in ((hard, 0.0), (easy, 1.0))] == [
+        -0.5,
+        0.5,
+    ]
+    assert statistics.pstdev(same) < statistics.pstdev(
+        [stat({"family": "f", "task_id": t, "credit": c}, blind)[0] for t, c in ((hard, 0.0), (easy, 1.0))]
+    )
+    # a miner that beats the baseline on the hard instance is credited for exactly that
+    assert stat({"family": "f", "task_id": hard, "credit": 0.75}, ref)[0] == 0.75
+    assert stat({"family": "f", "task_id": hard, "credit": 0.75}, ref)[2] is True
+    # an instance the window has no baseline for falls back to the family mean, and says so
+    d, _, paired = stat({"family": "f", "task_id": "t-unseen", "credit": 0.5}, ref)
+    assert d == 0.0 and paired is False
+
+
+def test_the_shared_baseline_error_is_charged_only_to_unpaired_episodes():
+    """That term exists because every unpaired episode leans on one estimate of the NULL rate. A paired episode
+    never touches it, so with everything paired the term is gone and the standard error is the miner's own."""
+    from sh.scoring.v2 import FamilyReference, MinerWindow, score
+
+    tasks = {f"t{i}": float(i % 2) for i in range(10)}
+    ref = FamilyReference(
+        family="f", n=10, successes=5, medians={}, samples={}, mean_credit=0.5, var_credit=0.25, baseline=tasks
+    )
+    eps = [{"family": "f", "task_id": t, "credit": c, "round_id": "r1"} for t, c in tasks.items()]
+    paid = score(MinerWindow("5F", eps), {"f": ref})
+    assert paid["paired"] == 10
+    blind = score(MinerWindow("5F", eps), {"f": FamilyReference(**{**ref.__dict__, "baseline": {}})})
+    assert blind["paired"] == 0
+    assert paid["se"] < blind["se"]  # the same episodes, without the instance difficulty and the shared estimate
