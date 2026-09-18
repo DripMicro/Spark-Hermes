@@ -175,3 +175,14 @@ body.modal-open { overflow: hidden; }
 .stat .gh-av { width: 1.7rem; height: 1.7rem; }
 .stat b .crown-badge { font-size: .6rem; }  /* `.stat b span { font-size: inherit }` would otherwise win */
 @media (max-width: 520px) { .modal { padding: 1rem .5rem; } .modal-card { padding: 1.1rem 1rem; } }
+
+/* A board row opens onto the episodes its score is made of: one line per instance, the baseline beside it. */
+tr.expandable { cursor: pointer; }
+tr.expandable:hover > td { background: rgba(167, 139, 250, .06); }
+.caret { display: inline-block; width: .7rem; margin-right: .35rem; color: var(--muted); vertical-align: middle; }
+.caret::before { content: "▸"; font-size: .7rem; transition: transform .15s ease; display: inline-block; }
+tr.expandable.open .caret::before { transform: rotate(90deg); }
+tr.detail > td { background: var(--bg); padding: .35rem .75rem .9rem 1.9rem; }
+table.sub { width: auto; min-width: min(34rem, 100%); }
+table.sub th, table.sub td { padding: .35rem .7rem; border-bottom: 1px solid var(--line); font-size: .85rem; }
+table.sub tbody tr:last-child td { border-bottom: 0; }
