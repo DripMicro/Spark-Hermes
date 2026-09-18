@@ -1,5 +1,0 @@
-{
- "dataset": "hamishivi/agent-task-facet-terminal-6k",
- "license": "Apache-2.0",
- "base_image": "hermes-ubuntu:pin"
-}
