@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789693166.0473118,
+ "updated": 1789693287.3308995,
  "round_id": "r0007",
- "stage": "window",
+ "stage": "evaluate",
  "stages": [
   "open",
   "window",
@@ -40,6 +40,10 @@
   {
    "stage": "resume",
    "t": 1789691190.379984
+  },
+  {
+   "stage": "window",
+   "t": 1789693277.6029391
   }
  ],
  "window": {
@@ -138,9 +142,60 @@
  },
  "last_round": "r0006",
  "tasks": 6,
- "active": {},
+ "active": {
+  "5Et36r4pj4KZVb6rxWYsNt9bkWH8FTsn4eGq19A7eidw5cra": {
+   "pr": null,
+   "head": "origin/main",
+   "bundle_sha256": "e26dcd4bddb12b77ac11a45f6435796fafdc24d418e718b11ac0dcf87154619b",
+   "incumbent": true
+  },
+  "5He9NNZSMkE4gYhqLs5jieNPr5HXJ18nbfp8LQYAcstBkAn8": {
+   "pr": 154,
+   "head": "8a90776dabc61d9ea9ccc569bbbe8149b28dc6e3",
+   "bundle_sha256": "bd5d7d2ec04153083a48fde33c149df46b34d3a7ea15709f86dfa33eaf3d9dab",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "ai-hpc"
+  },
+  "5FmyFrBu81UP5ed7vtr9DKatxdmtRDLPuduwz1yJ9eunESLC": {
+   "pr": 155,
+   "head": "9f3306c0eb182ba357520ea644dcdb230c53fa7b",
+   "bundle_sha256": "4c490c109f8ef2045de835184755a059087d91aa2e28df59c9139d7e4e850024",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "ai-hpc"
+  },
+  "5E4Rn6qxCAzsKh7Q4c6FU6DSGf2yf1LJETtDjprkzeVXiawQ": {
+   "pr": 156,
+   "head": "3e235d1a253f5b524948284f0c9c2fc10569065b",
+   "bundle_sha256": "1931157ea1be3df1ba6f894851b3afa6c23d77f61223ba19b0bb24f3f04fa016",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "ai-hpc"
+  },
+  "5FNENzASi4aamJmr1R7YRC2usvLvDd14q24YQYS2sgxAPNmT": {
+   "pr": 157,
+   "head": "ca0fbf3f9c123fffcf1002cea110cdd3f73e4bb1",
+   "bundle_sha256": "d81aa18146c34c3eb540d98bd46f0218443881f248d6490c88c0051ca57a7782",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "ai-hpc"
+  },
+  "5F4bmQWEFPZH9bxtrgmKtKQFFrZvsxZKfvhNmqhnc3VBku5c": {
+   "pr": 158,
+   "head": "792c3dfebfd7d13a1ffa6bd65f3c8eae6dbb4487",
+   "bundle_sha256": "8b8bbdbd45c5bb7c2dd08c44d75809e0d5213dd836c09bc043631ddd75b20986",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "ai-hpc"
+  }
+ },
  "rejected": {},
- "progress": {},
+ "progress": {
+  "done": 0,
+  "total": 0,
+  "by_surface": {}
+ },
  "crown": null,
  "scores": null,
  "queue": [],
