@@ -176,13 +176,41 @@ body.modal-open { overflow: hidden; }
 .stat b .crown-badge { font-size: .6rem; }  /* `.stat b span { font-size: inherit }` would otherwise win */
 @media (max-width: 520px) { .modal { padding: 1rem .5rem; } .modal-card { padding: 1.1rem 1rem; } }
 
-/* A board row opens onto the episodes its score is made of: one line per instance, the baseline beside it. */
+/* A board row opens onto the episodes its score is made of: a panel that belongs to the row it came from, one
+   line per instance, the bar filled to the credit that held with a tick where the baseline landed. */
 tr.expandable { cursor: pointer; }
 tr.expandable:hover > td { background: rgba(167, 139, 250, .06); }
-.caret { display: inline-block; width: .7rem; margin-right: .35rem; color: var(--muted); vertical-align: middle; }
-.caret::before { content: "▸"; font-size: .7rem; transition: transform .15s ease; display: inline-block; }
+.caret { display: inline-block; width: .8rem; margin-right: .2rem; color: var(--muted); vertical-align: middle; }
+.caret::before { content: "\25B8"; font-size: .75rem; display: inline-block; transition: transform .15s ease; }
 tr.expandable.open .caret::before { transform: rotate(90deg); }
-tr.detail > td { background: var(--bg); padding: .35rem .75rem .9rem 1.9rem; }
-table.sub { width: auto; min-width: min(34rem, 100%); }
-table.sub th, table.sub td { padding: .35rem .7rem; border-bottom: 1px solid var(--line); font-size: .85rem; }
-table.sub tbody tr:last-child td { border-bottom: 0; }
+tr.expandable.open > td { background: rgba(167, 139, 250, .05); }
+.why { display: block; font-size: .74rem; color: var(--muted); margin-top: .15rem; max-width: 24rem;
+       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+tr.expandable.open .why { display: none; }  /* the open panel shows it in full */
+
+tr.detail > td { padding: 0; background: var(--soft); border-left: 3px solid var(--accent); }
+/* The board table can be wider than the screen and scrolls sideways; the panel must not inherit that width or
+   its right-hand columns land off-screen. Fixed tracks keep every instance readable in the first screenful. */
+.eps { display: flex; flex-direction: column; padding: .55rem 1.1rem .7rem; max-width: 52rem; }
+.eps-why { font-size: .78rem; color: var(--muted); margin: 0 0 .5rem; max-width: 60ch; white-space: normal; }
+.ep { display: grid; align-items: center; gap: .9rem; padding: .32rem 0; border-bottom: 1px solid var(--line);
+      grid-template-columns: 10.5rem minmax(5rem, 20rem) 3.2rem 3.2rem 6rem; }
+.ep:last-child { border-bottom: 0; }
+.ep-head { border-bottom: 1px solid var(--line); padding-bottom: .35rem; font-size: .62rem; color: var(--muted);
+           text-transform: uppercase; letter-spacing: .09em; }
+.ep-head span:nth-child(3), .ep-head span:nth-child(4) { text-align: right; }
+.ep-id { font-family: var(--mono); font-size: .76rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ep-bar { position: relative; height: .45rem; border-radius: 999px; background: var(--line); }
+.ep-bar > i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 999px; background: var(--muted); }
+.ep-bar.pos > i { background: var(--good); }
+.ep-bar.neg > i { background: var(--bad); }
+.ep-bar > b { position: absolute; top: -.2rem; bottom: -.2rem; width: 2px; background: var(--ink); opacity: .7; }
+.ep-pct, .ep-d { font-family: var(--mono); font-size: .78rem; text-align: right; font-variant-numeric: tabular-nums; }
+.ep-d.pos { color: var(--good); } .ep-d.neg { color: var(--bad); } .ep-d { color: var(--muted); }
+.ep-flag { font-size: .62rem; padding: .05rem .45rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.ep-flag.dq { color: var(--bad); border-color: rgba(248, 113, 113, .45); }
+.ep-flag.win { color: var(--good); border-color: rgba(74, 222, 128, .45); }
+@media (max-width: 720px) {
+  .ep { grid-template-columns: minmax(6rem, 1fr) 2.9rem 3rem; gap: .5rem; }
+  .ep-bar, .ep-head span:nth-child(2) { display: none; }
+}
