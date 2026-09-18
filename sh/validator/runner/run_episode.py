@@ -92,6 +92,7 @@ def main() -> int:
     finish = {"started": time.time(), "stage": "init"}
     before, ep_before, home_before = {}, {}, {}
     system_prompt = ""
+    result, traj = None, None  # the runner's own outputs; written to OUT only after the agent's stray writes are read
     try:
         task = json.loads((EP / "task.json").read_text())
         global WS
@@ -165,10 +166,8 @@ def main() -> int:
         result = agent.run_conversation(user_message=task["prompt"], task_id=task["task_id"])
         finish["agent_wall_s"] = round(time.time() - t0, 1)
         messages = result.get("messages", [])
-        json.dump(result, open(OUT / "result.json", "w"), default=str)
-        try:
+        try:  # held in memory; written to OUT in the finally, after _reset_out reads what the agent left there
             traj = agent._convert_to_trajectory_format(messages, task["prompt"], bool(result.get("completed", True)))
-            json.dump(traj, open(OUT / "trajectory.json", "w"), default=str)
         except Exception as e:
             finish["trajectory_error"] = repr(e)[:300]
         finish.update(
@@ -205,8 +204,12 @@ def main() -> int:
             pass
         stray: list[str] = []
         try:
-            stray = _reset_out()
+            stray = _reset_out()  # what the AGENT left in /ep/out — the runner has written nothing there yet
             (OUT / "system_prompt.txt").write_text(system_prompt)
+            if result is not None:  # the runner's outputs, into the clean OUT: never mistaken for the agent's writes
+                json.dump(result, open(OUT / "result.json", "w"), default=str)
+            if traj is not None:
+                json.dump(traj, open(OUT / "trajectory.json", "w"), default=str)
         except Exception as e:  # the outputs go wherever OUT now is; the grader sees what it sees
             finish["reset_error"] = repr(e)[:300]
         try:
