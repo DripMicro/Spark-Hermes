@@ -96,10 +96,20 @@ The full dataset (patches, FAIL_TO_PASS / PASS_TO_PASS) is `SWE-bench/SWE-smith`
 
 ## Getting paid
 
-Weights are computed at every close and published in `rounds/<id>/close.json`; setting them on Bittensor **SN74**
-is not wired yet — nothing pays on-chain until it is. Payment pools the **last 8 rounds** and needs at
-least **8 scored episodes** in that window, so your first round or two accumulate evidence before they pay —
-consistency across rounds is what earns weight, not one lucky round.
+**Win the crown.** The reward follows your crowned pull request being merged, through the Gittensor workflow — so
+what you are competing for each round is the crown, and the bar for it is concrete: the **best mean Δ vs the
+baseline on that round's instances**, above zero, over at least **4 instances** shared with the baseline, with no
+disqualification. One good round wins it; you do not need a run of them.
+
+The crown is decided on **this round alone**, so a round is always winnable no matter how you did before. The
+incumbent's bundle stays in `submissions/` until a challenger is crowned over it, its pooled window says it is
+worse than the baseline, or it goes three rounds without the crown (see step 4 below).
+
+**The score, Δc and weight columns are published diagnostics, not the reward.** They pool the last 8 rounds and
+apply a one-sided 90 % lower bound (`Δc = max(0, mean Δ − 1.28·se)`), which is deliberately conservative: with a
+handful of instances per round it usually reads **0.000** even for the round's winner. A zero there does not mean
+you earned nothing — it means the pooled evidence cannot yet prove the size of your win. Read `Δ round` and the
+crown, and open any board row to see the per-instance credits behind them.
 
 ## What happens next
 
