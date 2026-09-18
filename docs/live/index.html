@@ -116,34 +116,40 @@
   const pr = (live, n) => { const k = Number(n); return '<a href="https://github.com/' + esc(live.repo) + "/pull/" + k + '">#' + k + "</a>"; };
   let current = null;
 
-  // Every episode a score is made of: this surface's credit on each instance beside the baseline's on the same
-  // one. The score is a mean of these numbers, so a reader can add them up rather than take the total on trust.
-  function taskRows(live, s) {
+  // Every episode a score is made of: one line per instance, the bar filled to the credit that held with a tick
+  // where the baseline landed, so six instances can be read at a glance instead of compared digit by digit.
+  function taskRows(live, s, reason) {
     const by = (live.progress || {}).by_surface || {};
     const mine = (by[s] || {}).tasks || {}, base = (by["null"] || {}).tasks || {};
     const ids = [...new Set([...Object.keys(mine), ...Object.keys(base)])].sort();
-    if (!ids.length) return '<p class="note">no episodes recorded for this strategy yet</p>';
+    if (!ids.length) return '<div class="eps"><p class="note">no episodes recorded for this strategy yet</p></div>';
     const isRef = s === "null" || s === "canon";
+    const head = '<div class="ep ep-head"><span>instance</span><span>' +
+      (isRef ? "checks that held" : "checks that held · tick = baseline") + "</span><span>credit</span>" +
+      (isRef ? "" : "<span>Δ</span>") + "<span></span></div>";
     const body = ids.map((t) => {
-      const m = mine[t], b = base[t], d = m && b && !isRef ? m.credit - b.credit : null;
-      const flag = !m ? '<span class="muted">not run</span>'
-        : m.dq ? '<span class="neg">disqualified</span>'
-        : m.void ? '<span class="muted">void — re-run</span>'
-        : m.verified ? '<span class="pos">every check held</span>'
-        : '<span class="muted">partial</span>';
-      return '<tr><td class="l"><span class="hk">' + esc(t) + "</span></td><td>" + (m ? pct(m.credit) : "—") + "</td>" +
-        (isRef ? "" : '<td>' + (b ? pct(b.credit) : "—") + '</td><td class="' + cls(d) + '">' +
-          (d == null ? "—" : signed(100 * d, 0, " pts")) + "</td>") +
-        '<td class="l">' + flag + "</td></tr>";
+      const m = mine[t], b = base[t];
+      if (!m) return '<div class="ep"><span class="ep-id">' + esc(t) + '</span><span class="ep-bar"></span>' +
+        '<span class="ep-pct">—</span>' + (isRef ? "" : '<span class="ep-d">—</span>') +
+        '<span><span class="ep-flag">not run</span></span></div>';
+      const d = b && !isRef ? m.credit - b.credit : null;
+      const tone = d == null || Math.abs(d) < 1e-9 ? "" : d > 0 ? " pos" : " neg";
+      const tick = b && !isRef ? '<b style="left:' + (100 * b.credit).toFixed(1) + '%"></b>' : "";
+      const flag = m.dq ? '<span class="ep-flag dq">disqualified</span>'
+        : m.void ? '<span class="ep-flag">void · re-run</span>'
+        : m.verified ? '<span class="ep-flag win">all held</span>' : "";
+      return '<div class="ep"><span class="ep-id" title="' + esc(t) + '">' + esc(t) + "</span>" +
+        '<span class="ep-bar' + tone + '"><i style="width:' + (100 * m.credit).toFixed(1) + '%"></i>' + tick + "</span>" +
+        '<span class="ep-pct">' + pct(m.credit) + "</span>" +
+        (isRef ? "" : '<span class="ep-d' + tone + '">' + (d == null ? "—" : signed(100 * d, 0)) + "</span>") +
+        "<span>" + flag + "</span></div>";
     }).join("");
-    return '<table class="sub"><thead><tr><th class="l">instance</th><th>checks passed</th>' +
-      (isRef ? "" : '<th>baseline</th><th title="this strategy minus the baseline, on the same instance">Δ</th>') +
-      '<th class="l">outcome</th></tr></thead><tbody>' + body + "</tbody></table>";
+    return '<div class="eps">' + (reason ? '<p class="eps-why">' + esc(reason) + "</p>" : "") + head + body + "</div>";
   }
   const caretCell = (cell, s) => cell.replace('<td class="l">', '<td class="l"><span class="caret" aria-hidden="true"></span>');
-  const detailRow = (live, s, cols) =>
+  const detailRow = (live, s, cols, reason) =>
     '<tr class="detail" data-for="' + esc(s) + '"' + (opened.has(s) ? "" : " hidden") + '><td colspan="' + cols + '">' +
-    taskRows(live, s) + "</td></tr>";
+    taskRows(live, s, reason) + "</td></tr>";
 
   function surfaceCell(live, s, crowned) {
     const info = (live.active || {})[s];
@@ -188,19 +194,22 @@
         th("episodes", "pooled window") + th("Δ window", "mean paired delta over the pooled window") +
         th("Δc", "one-sided 90% lower bound of Δ window — what is paid") + th("score") + th("weight") + "</tr>";
       const refs = ["null", "canon"].map((s) =>
-        '<tr class="ref expandable" data-surface="' + s + '" tabindex="0">' + caretCell(surfaceCell(live, s), s) +
+        '<tr class="ref expandable' + (opened.has(s) ? " open" : "") + '" data-surface="' + s + '" tabindex="0">' +
+        caretCell(surfaceCell(live, s), s) +
         "<td></td><td></td><td>" + pct(share(by[s])) + "</td><td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
         "</td><td colspan='3'></td></tr>" + detailRow(live, s, 9));
       const all = [...new Set([...miners, ...Object.keys(sc.per_hotkey)])];
       const ranked = all.sort((a, b) => ((st[a] || {}).rank || 1e6) - ((st[b] || {}).rank || 1e6) || (sc.weights[b] || 0) - (sc.weights[a] || 0) || a.localeCompare(b));
       const rows = ranked.map((h) => {
         const s = sc.per_hotkey[h], w = sc.weights[h] || 0, t = st[h] || {}, isKing = h === (cr && cr.king);
-        const why = s && w === 0 && s.reason ? '<span class="why">' + esc(s.reason) + "</span>" : "";
+        const reason = s && w === 0 && s.reason ? s.reason : "";
+        const why = reason ? '<span class="why" title="' + esc(reason) + '">' + esc(reason) + "</span>" : "";
         const cell = surfaceCell(live, h, isKing).replace("</td>", why + "</td>");
-        return '<tr class="expandable' + (isKing ? " king" : "") + '" data-surface="' + esc(h) + '" tabindex="0">' + caretCell(cell, h) +
+        return '<tr class="expandable' + (isKing ? " king" : "") + (opened.has(h) ? " open" : "") +
+          '" data-surface="' + esc(h) + '" tabindex="0">' + caretCell(cell, h) +
           "<td>" + (t.rank || "—") + "</td><td class='" + cls(t.delta) + "'>" + signed(t.delta, 3) + "</td><td>" + pct(t.credit) + "</td>" +
           "<td>" + (s ? s.n : 0) + "</td><td class='" + cls(s && s.mean_d) + "'>" + signed(s && s.mean_d, 3) + "</td><td>" + (s ? num(s.delta_c || 0, 3) : "—") + "</td>" +
-          "<td>" + (s ? num(s.score || 0, 4) : "—") + "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>" + detailRow(live, h, 9);
+          "<td>" + (s ? num(s.score || 0, 4) : "—") + "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>" + detailRow(live, h, 9, reason);
       });
       $("board").innerHTML = refs.join("") + (rows.join("") || '<tr><td class="empty" colspan="9">no strategies were sealed</td></tr>');
       return;
@@ -216,7 +225,8 @@
     $("board").innerHTML = miners.length || evaluating ? order.map((s) => {
       const r = by[s] || { n: 0, verified: 0 }, p = rate(s);
       const d = s === "null" || s === "canon" || p == null || nullRate == null ? null : p - nullRate;
-      return '<tr class="expandable' + (s === "null" || s === "canon" ? " ref" : "") + '" data-surface="' + esc(s) + '" tabindex="0">' +
+      return '<tr class="expandable' + (s === "null" || s === "canon" ? " ref" : "") + (opened.has(s) ? " open" : "") +
+        '" data-surface="' + esc(s) + '" tabindex="0">' +
         caretCell(surfaceCell(live, s), s) + "<td>" + r.n + "</td><td>" + r.verified +
         "</td><td>" + pct(p) + "</td><td class='" + cls(d) + "'>" + (s === "null" || s === "canon" ? "" : signed(d == null ? null : 100 * d, 0, " pts")) + "</td></tr>" +
         detailRow(live, s, 5);
