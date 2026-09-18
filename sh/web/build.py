@@ -166,7 +166,7 @@ def render(close: dict, meta: dict | None = None) -> str:
     </table></div>
   </section>
   <section class="panel">
-    <h2>Payment <small>pooled over the window — Δc, the one-sided 90% lower bound of Δ vs baseline, is what pays</small></h2>
+    <h2>Pooled statistics <small>over the last 8 rounds — a conservative lower bound, published as evidence; the round's reward follows the crown above</small></h2>
     <div class="wrap"><table>
       <thead><tr><th class="l">strategy</th><th>#</th><th>episodes</th><th title="mean of (share of checks passed − the baseline's) per instance">Δ vs baseline</th><th title="one-sided 90% lower bound of Δ vs baseline">Δc</th><th title="correctness gate: the pooled window is not below the baseline (mean Δ + z·se ≥ 0)">gate</th><th title="passed the published check while failing the withheld one (families with a published half; swe_fix has none)">overfit</th><th title="disqualified episodes">dq</th><th>score</th><th>weight</th></tr></thead>
       <tbody>{"".join(body) or '<tr><td class="empty" colspan="10">no strategies were sealed</td></tr>'}</tbody>

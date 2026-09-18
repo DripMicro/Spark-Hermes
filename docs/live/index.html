@@ -182,7 +182,7 @@
       const st = (cr && cr.standings) || {};
       $("board-title").firstChild.textContent = "Final ";
       const nullShare = fs.null_credit != null ? fs.null_credit : fs.null_p, canonShare = fs.canon_credit != null ? fs.canon_credit : fs.canon_p;
-      $("board-sub").textContent = "baseline passes " + pct(nullShare) + " of checks · canon " + pct(canonShare) + " — the crown is this round's; weight pools the window";
+      $("board-sub").textContent = "baseline passes " + pct(nullShare) + " of checks · canon " + pct(canonShare) + " — the crown is this round's and is what the reward follows; score and weight are pooled diagnostics";
       $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("rank", "this round: by Δ vs baseline on these instances") +
         th("Δ round", "mean of (share of checks passed − the baseline's) per instance, this round only") + th("checks", "mean share of withheld checks passed, this round") +
         th("episodes", "pooled window") + th("Δ window", "mean paired delta over the pooled window") +
