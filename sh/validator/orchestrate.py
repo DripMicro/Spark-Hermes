@@ -52,7 +52,7 @@ from sh.web.build import render as render_leaderboard
 
 REPO = "gittensor-model-hub/Spark-Hermes"
 BRANCH = "main"
-LABEL_STRATEGY, LABEL_SCORED, LABEL_CROWN = "sh:strategy", "sh:round:scored", "sh:round:crown"
+LABEL_STRATEGY, LABEL_SCORED = "sh:strategy", "sh:round:scored"
 # A hotkey directory name is an ss58 address: base58, 47–48 chars. Everything downstream trusts it as a directory
 # name and as a shell word in the worker's `--surfaces` argument; a name like `$(...)` or `../x` must never reach
 # there. Anything else in submissions/ is not a submission.
@@ -948,13 +948,11 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
             body += f"\n\n---\nNot crowned in `{round_id}`; this PR is closed with the round. Submit again in the next window."
         gh("pr", "comment", str(info["pr"]), "--repo", REPO, "--body", body)
         _label(info["pr"], LABEL_SCORED)
-    # One crown. Remove it wherever it was; place it on the king's PR.
-    for pr in json.loads(
-        gh("pr", "list", "--repo", REPO, "--label", LABEL_CROWN, "--state", "all", "--json", "number", "--limit", "100")
-    ):
-        sh(["gh", "api", "-X", "DELETE", f"repos/{REPO}/issues/{pr['number']}/labels/{LABEL_CROWN}"], check=False)
+    # The round's crown, applied to the merged PR and never moved: each round's winner keeps its own
+    # `sh:<round>:crown` label. A reader — and the SN74 reward, which scores a merged PR by this label — sees
+    # exactly which round a PR won, and a defending incumbent (no new merge) keeps the label from when it won.
     if plan["merge"]:
-        _label(plan["merge"], LABEL_CROWN)
+        _label(plan["merge"], f"sh:{round_id}:crown")
         sealed_head = sealed["active"][king]["head"]  # the head the round evaluated; a push after the seal changes it
         merged = subprocess.run(
             [

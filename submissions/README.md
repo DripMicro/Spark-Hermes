@@ -129,7 +129,7 @@ Open any board row to see the per-instance credits every one of these numbers is
    the same instances (the CANON reference strategy runs every 8th round, for calibration). The board shows
    progress live.
 4. **Crown**: the strategy with the best Δ vs baseline *on this round's instances* — if it beat the baseline —
-   is labelled `sh:round:crown`, merged into `submissions/`, and defends as the incumbent next round. Every
+   is labelled `sh:<round>:crown` (e.g. `sh:r0001:crown`), merged into `submissions/`, and defends as the incumbent next round. Every
    other competition PR is closed with the reason. The incumbent is **dethroned** (removed from `submissions/`)
    only when a challenger is crowned over it, when its pooled 8-round window says it is worse than the baseline
    (the correctness gate fails on enough evidence), or after 3 rounds in a row without the crown — a single
