@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1789996419.980865,
+ "updated": 1789996441.0680652,
  "round_id": "r0001",
- "stage": "window",
+ "stage": "evaluate",
  "stages": [
   "open",
   "window",
@@ -160,6 +160,10 @@
   {
    "stage": "reopen",
    "t": 1789989233.6669297
+  },
+  {
+   "stage": "window",
+   "t": 1789996437.564049
   }
  ],
  "window": {
@@ -179,13 +183,28 @@
    "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/181"
   }
  ],
- "github": {},
+ "github": {
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": "dato-bitar"
+ },
  "standings": {},
  "last_round": null,
  "tasks": 6,
- "active": {},
+ "active": {
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": 181,
+   "head": "e7a9fe896ad7d770fde4fe70b3b70845e08c906b",
+   "bundle_sha256": "c294f252a21d92bd24a2f327b26872e8ae67d7e3e2f0c49361b5413f7754b59e",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "dato-bitar"
+  }
+ },
  "rejected": {},
- "progress": {},
+ "progress": {
+  "done": 0,
+  "total": 0,
+  "by_surface": {}
+ },
  "crown": null,
  "scores": null,
  "queue": [],
