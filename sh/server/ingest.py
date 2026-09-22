@@ -97,7 +97,14 @@ def validate(payload: dict, *, round_id: str, round_dir: Path, is_registered: Ga
     answers = similarity.load(round_dir)
     if answers and (why := answers.refuse(similarity.bundle_text(files))):
         return _reject([why], code="s1")
-    return {"ok": True, "hotkey": hotkey, "digest": digest, "signed_at": int(att["signed_at"]), "files": files, "attestation": att}
+    return {
+        "ok": True,
+        "hotkey": hotkey,
+        "digest": digest,
+        "signed_at": int(att["signed_at"]),
+        "files": files,
+        "attestation": att,
+    }
 
 
 # ─── storage + receipt ────────────────────────────────────────────────────────────────────────────
@@ -161,7 +168,9 @@ def ingest(payload: dict, *, state: Path, store: Path, is_registered: Gate, now:
         return _reject(["no round is open"], code="closed")
     if not window_open(state, round_id, now):
         return _reject([f"the submission window for {round_id} is not open"], code="closed")
-    result = validate(payload, round_id=round_id, round_dir=state / "rounds" / round_id, is_registered=is_registered, now=now)
+    result = validate(
+        payload, round_id=round_id, round_dir=state / "rounds" / round_id, is_registered=is_registered, now=now
+    )
     if not result["ok"]:
         return result
     return {"ok": True, "receipt": store_upload(result, store=store, round_id=round_id, now=now, secret=secret)}
@@ -182,6 +191,7 @@ def allow_all(_hotkey: str) -> bool:  # tests, or a deliberately open deployment
 
 def allowlist_gate(path: Path) -> Gate:
     """Registered hotkeys, one ss58 per line. Re-read per call so the list can be edited live."""
+
     def gate(hotkey: str) -> bool:
         try:
             return hotkey in {ln.strip() for ln in path.read_text().splitlines() if ln.strip()}
@@ -247,7 +257,9 @@ def make_handler(*, state: Path, store: Path, gate: Gate, secret: bytes | None, 
                 if not attest.SS58.match(hotkey):
                     self._send(400, {"ok": False, "problems": ["hotkey query is not an ss58 address"]})
                     return
-                self._send(200, {"ok": True, **status(state, store, hotkey=hotkey, round_id=(q.get("round") or [None])[0])})
+                self._send(
+                    200, {"ok": True, **status(state, store, hotkey=hotkey, round_id=(q.get("round") or [None])[0])}
+                )
                 return
             self._send(404, {"ok": False, "problems": ["not found"]})
 
@@ -269,8 +281,14 @@ def make_handler(*, state: Path, store: Path, gate: Gate, secret: bytes | None, 
             if rid and attest.SS58.match(str(hotkey or "")) and not limiter.check(rid, str(hotkey)):
                 self._send(429, {"ok": False, "code": "rate_limited", "problems": ["too many uploads this round"]})
                 return
-            result = ingest(payload if isinstance(payload, dict) else {}, state=state, store=store,
-                            is_registered=gate, now=time.time(), secret=secret)
+            result = ingest(
+                payload if isinstance(payload, dict) else {},
+                state=state,
+                store=store,
+                is_registered=gate,
+                now=time.time(),
+                secret=secret,
+            )
             if result["ok"]:  # charged only once the hotkey's own signature carried the upload
                 limiter.record(result["receipt"]["round_id"], result["receipt"]["hotkey"])
             self._send(200 if result["ok"] else 400, result)
@@ -315,10 +333,13 @@ def main(argv=None) -> int:
     if secret is None:
         print(f"[ingest] no receipt secret at {secret_path}; receipts will be unsigned", file=sys.stderr)
     gate = build_gate(a.gate, Path(a.allowlist) if a.allowlist else None, a.netuid, a.network)
-    handler = make_handler(state=state, store=store, gate=gate,
-                           secret=secret, limiter=_RateLimiter(a.max_per_hotkey, a.max_total))
+    handler = make_handler(
+        state=state, store=store, gate=gate, secret=secret, limiter=_RateLimiter(a.max_per_hotkey, a.max_total)
+    )
     httpd = ThreadingHTTPServer((a.host, a.port), handler)
-    print(f"[ingest] {a.host}:{a.port} state={state} store={store} gate={a.gate} round={current_round(state)}", flush=True)
+    print(
+        f"[ingest] {a.host}:{a.port} state={state} store={store} gate={a.gate} round={current_round(state)}", flush=True
+    )
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

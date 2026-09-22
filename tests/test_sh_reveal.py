@@ -93,7 +93,9 @@ def test_commit_without_reveal_is_rejected(tmp_path):
     hk = kp.ss58_address
     att = attest.sign(kp, "r0001", bundle_digest(PROSE))
     ref = _commit_submission(repo, hk, _attestation_only(att))  # committed, but nothing in the store
-    b = o._reveal_challenger(_cfg(tmp_path, repo), ref, hk, tmp_path / "staged", round_id="r0001", store=tmp_path / "empty")
+    b = o._reveal_challenger(
+        _cfg(tmp_path, repo), ref, hk, tmp_path / "staged", round_id="r0001", store=tmp_path / "empty"
+    )
     assert b["problems"] and "no revealed bundle" in b["problems"][0]
 
 
@@ -101,8 +103,12 @@ def test_legacy_prose_pr_still_seals(tmp_path):
     repo, kp = _repo(tmp_path), _kp()
     hk, digest = kp.ss58_address, bundle_digest(PROSE)
     att = attest.sign(kp, "r0001", digest)
-    ref = _commit_submission(repo, hk, {**PROSE, attest.FILE: (json.dumps(att) + "\n").encode()})  # prose still in the PR
-    b = o._reveal_challenger(_cfg(tmp_path, repo), ref, hk, tmp_path / "staged", round_id="r0001", store=tmp_path / "empty")
+    ref = _commit_submission(
+        repo, hk, {**PROSE, attest.FILE: (json.dumps(att) + "\n").encode()}
+    )  # prose still in the PR
+    b = o._reveal_challenger(
+        _cfg(tmp_path, repo), ref, hk, tmp_path / "staged", round_id="r0001", store=tmp_path / "empty"
+    )
     assert b and not b["problems"] and b["digest"] == digest
 
 
@@ -124,7 +130,9 @@ def test_incumbent_resolves_from_the_private_store(tmp_path):
     kept.mkdir(parents=True)
     (kept / "SOUL.md").write_bytes(PROSE["SOUL.md"])
     (kept / attest.FILE).write_text(json.dumps(att))
-    b = o._incumbent_bundle(_cfg(tmp_path, repo), "HEAD", hk, tmp_path / "staged", incumbents=tmp_path / "state" / "incumbents")
+    b = o._incumbent_bundle(
+        _cfg(tmp_path, repo), "HEAD", hk, tmp_path / "staged", incumbents=tmp_path / "state" / "incumbents"
+    )
     assert b and not b["problems"] and b["digest"] == digest
 
 
@@ -132,7 +140,9 @@ def test_incumbent_falls_back_to_the_tree_when_not_in_the_store(tmp_path):
     repo, kp = _repo(tmp_path), _kp()
     hk, digest = kp.ss58_address, bundle_digest(PROSE)
     att = attest.sign(kp, "r0001", digest)
-    ref = _commit_submission(repo, hk, {**PROSE, attest.FILE: (json.dumps(att) + "\n").encode()})  # legacy: prose in tree
+    ref = _commit_submission(
+        repo, hk, {**PROSE, attest.FILE: (json.dumps(att) + "\n").encode()}
+    )  # legacy: prose in tree
     b = o._incumbent_bundle(_cfg(tmp_path, repo), ref, hk, tmp_path / "staged", incumbents=tmp_path / "none")
     assert b and not b["problems"] and b["digest"] == digest
 

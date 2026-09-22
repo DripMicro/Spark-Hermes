@@ -477,7 +477,12 @@ def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_
     digest = att.get("bundle_sha256") if isinstance(att, dict) else None
     signed_at = att.get("signed_at") if isinstance(att, dict) else None
     prose_in_pr = [n for n in names if n not in ("attestation.json", "receipt.json")]
-    if isinstance(digest, str) and DIGEST.match(digest) and isinstance(signed_at, int) and not isinstance(signed_at, bool):
+    if (
+        isinstance(digest, str)
+        and DIGEST.match(digest)
+        and isinstance(signed_at, int)
+        and not isinstance(signed_at, bool)
+    ):
         src = store / round_id / hotkey / "uploads" / f"{signed_at}-{digest}"
         if src.is_dir():  # the revealed bundle the commitment points to
             shutil.rmtree(dest, ignore_errors=True)
@@ -487,13 +492,19 @@ def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_
                     continue
                 out = dest / f.relative_to(src)
                 if not str(out.resolve()).startswith(str(dest.resolve()) + os.sep):
-                    return {"problems": [f"stored path escapes the bundle: {f.name[:60]}"], "digest": digest, "attestation": None}
+                    return {
+                        "problems": [f"stored path escapes the bundle: {f.name[:60]}"],
+                        "digest": digest,
+                        "attestation": None,
+                    }
                 out.parent.mkdir(parents=True, exist_ok=True)
                 out.write_bytes(f.read_bytes())
             return _check_bundle_dir(dest, hotkey, round_id)
         if not prose_in_pr:  # committed on the PR but never revealed to the store (or a different digest)
             return {
-                "problems": [f"committed digest {str(digest)[:12]}… has no revealed bundle (upload it to the submission server)"],
+                "problems": [
+                    f"committed digest {str(digest)[:12]}… has no revealed bundle (upload it to the submission server)"
+                ],
                 "digest": digest,
                 "attestation": None,
             }

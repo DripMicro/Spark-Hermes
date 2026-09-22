@@ -27,6 +27,7 @@ def _bundle(tmp_path: Path, text: str = "# Soul\n\nReproduce the failing test, t
 
 def _fake_git_gh(recorder: dict):
     """Stand in for git+gh: record what `git add` staged under submissions/<hotkey>/, and open PR #7."""
+
     def fake_run(cmd, cwd=None, check_rc=True):
         if cmd[:2] == ["git", "add"] and cwd is not None:
             hotkey_dir = next((Path(cwd) / "submissions").iterdir())
@@ -120,7 +121,11 @@ def test_upload_reaches_a_real_ingest_server(tmp_path):
     store = tmp_path / "store"
     store.mkdir()
     handler = ingest.make_handler(
-        state=tmp_path / "state", store=store, gate=ingest.allow_all, secret=None, limiter=ingest._RateLimiter(200, 5000)
+        state=tmp_path / "state",
+        store=store,
+        gate=ingest.allow_all,
+        secret=None,
+        limiter=ingest._RateLimiter(200, 5000),
     )
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()

@@ -194,7 +194,12 @@ def submit_bundle(
         _run(["git", "worktree", "add", "-q", "--detach", str(wt), f"{remote}/{base}"], cwd=checkout)
         dest = wt / "submissions" / hotkey
         if _committed_digest(dest, private) == digest:
-            return {"ok": True, "hotkey": hotkey, "bundle_sha256": digest, "skipped": "already submitted, byte for byte"}
+            return {
+                "ok": True,
+                "hotkey": hotkey,
+                "bundle_sha256": digest,
+                "skipped": "already submitted, byte for byte",
+            }
         _run(["git", "checkout", "-q", "-B", branch, f"{remote}/{base}"], cwd=wt)
         shutil.rmtree(dest, ignore_errors=True)
         dest.mkdir(parents=True, exist_ok=True)
@@ -207,7 +212,9 @@ def submit_bundle(
         if private and receipt is not None:
             (dest / "receipt.json").write_text(json.dumps(receipt, indent=1) + "\n")
         if private:  # the prose is not here to lint; check the commitment binds this hotkey, round and digest
-            binding = attest.problems(json.loads((dest / attest.FILE).read_text()), digest=digest, hotkey=hotkey, round_id=round_id)
+            binding = attest.problems(
+                json.loads((dest / attest.FILE).read_text()), digest=digest, hotkey=hotkey, round_id=round_id
+            )
             if binding:
                 return {"ok": False, "problems": binding}
         else:
@@ -228,8 +235,19 @@ def submit_bundle(
             )
             create = _run(
                 [
-                    "gh", "pr", "create", "--repo", repo, "--base", base, "--head", head, "--title", f"miner: {hotkey}",
-                    "--body", f"Strategy for round `{round_id}` by hotkey `{hotkey}`.\n\n`bundle_sha256` `{digest}`, {reveal}",
+                    "gh",
+                    "pr",
+                    "create",
+                    "--repo",
+                    repo,
+                    "--base",
+                    base,
+                    "--head",
+                    head,
+                    "--title",
+                    f"miner: {hotkey}",
+                    "--body",
+                    f"Strategy for round `{round_id}` by hotkey `{hotkey}`.\n\n`bundle_sha256` `{digest}`, {reveal}",
                 ],  # fmt: skip
                 check_rc=False,
             ).strip()
@@ -240,7 +258,14 @@ def submit_bundle(
                 created = False
                 if number is None:
                     return {"ok": False, "problems": [f"pushed {branch} but could not open or find its PR"]}
-        return {"ok": True, "hotkey": hotkey, "pr": number, "bundle_sha256": digest, "created": created, "private": private}
+        return {
+            "ok": True,
+            "hotkey": hotkey,
+            "pr": number,
+            "bundle_sha256": digest,
+            "created": created,
+            "private": private,
+        }
     finally:
         _run(["git", "worktree", "remove", "--force", str(wt)], cwd=checkout, check_rc=False)
         shutil.rmtree(tmp, ignore_errors=True)

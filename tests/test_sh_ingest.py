@@ -30,7 +30,9 @@ def _payload(kp, round_id: str, files: dict[str, bytes], *, signed_at: int | Non
     return {"attestation": att, "files": raw}, digest
 
 
-def _state(tmp_path: Path, *, round_id: str = "r0001", closes_in: float = 3600, answers: list[str] | None = None) -> Path:
+def _state(
+    tmp_path: Path, *, round_id: str = "r0001", closes_in: float = 3600, answers: list[str] | None = None
+) -> Path:
     rd = tmp_path / "state" / "rounds" / round_id
     for sub in ("private", "withheld", "tasks", "preview"):
         (rd / sub).mkdir(parents=True)
@@ -57,7 +59,9 @@ def test_accepts_and_stores_a_valid_upload(tmp_path):
 def test_receipt_is_hmac_signed_when_a_secret_is_configured(tmp_path):
     state, store, secret = _state(tmp_path), tmp_path / "store", b"server-secret"
     payload, digest = _payload(_kp(), "r0001", SOUL, signed_at=1000)
-    r = ingest.ingest(payload, state=state, store=store, is_registered=ingest.allow_all, now=2000.0, secret=secret)["receipt"]
+    r = ingest.ingest(payload, state=state, store=store, is_registered=ingest.allow_all, now=2000.0, secret=secret)[
+        "receipt"
+    ]
     body = f"r0001:{_kp().ss58_address}:{digest}:{r['signed_at']}:{r['received_at']}".encode()
     assert r["server_sig"] == hmac.new(secret, body, hashlib.sha256).hexdigest()
 
@@ -65,7 +69,9 @@ def test_receipt_is_hmac_signed_when_a_secret_is_configured(tmp_path):
 def test_rejects_when_window_closed(tmp_path):
     state = _state(tmp_path, closes_in=-1)
     payload, _ = _payload(_kp(), "r0001", SOUL)
-    out = ingest.ingest(payload, state=state, store=tmp_path / "store", is_registered=ingest.allow_all, now=time.time(), secret=None)
+    out = ingest.ingest(
+        payload, state=state, store=tmp_path / "store", is_registered=ingest.allow_all, now=time.time(), secret=None
+    )
     assert not out["ok"] and out["code"] == "closed"
 
 
@@ -125,7 +131,9 @@ def test_reupload_is_idempotent(tmp_path):
     state, store = _state(tmp_path), tmp_path / "store"
     payload, digest = _payload(_kp(), "r0001", SOUL)
     for _ in range(2):
-        assert ingest.ingest(payload, state=state, store=store, is_registered=ingest.allow_all, now=time.time(), secret=None)["ok"]
+        assert ingest.ingest(
+            payload, state=state, store=store, is_registered=ingest.allow_all, now=time.time(), secret=None
+        )["ok"]
     uploads = list((store / "r0001" / _kp().ss58_address / "uploads").iterdir())
     assert len(uploads) == 1
 
