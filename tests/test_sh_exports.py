@@ -119,3 +119,41 @@ def test_the_crowned_prose_never_enters_an_exported_row(tmp_path):
     assert "distinctive line of the crowned strategy" not in _json.dumps(row)
     # and with no bundle named, the captured prompt is still preferred, as before
     assert _rows_for(ep, {"task_id": "t"}, {}, "x")["conversations"][0]["value"].startswith("You are Hermes.")
+
+
+def _episode(dirpath, soul_echo=""):
+    import json as _json
+
+    dirpath.mkdir(parents=True, exist_ok=True)
+    (dirpath / "trajectory.json").write_text(
+        _json.dumps(
+            [
+                {"from": "system", "value": "generic"},
+                {"from": "human", "value": "fix it"},
+                {"from": "gpt", "value": f"running tests\n{soul_echo}\ndone"},
+            ]
+        )
+    )
+    (dirpath / "system_prompt.txt").write_text("You are Hermes.\n")
+    return dirpath
+
+
+def test_the_bundles_own_lines_are_struck_from_a_row_not_the_row_from_the_dataset(tmp_path):
+    """The crowned miner writes the bundle, so refusing any row that echoes it would let them empty the round's
+    dataset with one line certain to appear in every trajectory. Strike the text, keep the row."""
+    import json as _json
+
+    from sh.exports.build import _bundle_secrets, _redact, _rows_for
+
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    poison = "Traceback (most recent call last): a line any terminal session prints"
+    (bundle / "SOUL.md").write_text(f"# Soul\n\n{poison}\n")
+    secrets = _bundle_secrets(bundle)
+
+    ep = _episode(tmp_path / "ep", soul_echo=f"  {poison}  ")
+    row = _rows_for(ep, {"task_id": "t"}, {}, "SAFE", secrets)
+    assert _redact(row["conversations"], secrets) == 1  # struck once
+    blob = _json.dumps(row)
+    assert poison not in blob  # ...and the strategy's own text is gone
+    assert "fix it" in blob and "running tests" in blob  # while the row itself survives
