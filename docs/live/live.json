@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790050846.315817,
+ "updated": 1790050882.269206,
  "round_id": "r0002",
- "stage": "window",
+ "stage": "evaluate",
  "stages": [
   "open",
   "window",
@@ -24,6 +24,10 @@
   {
    "stage": "open",
    "t": 1790043674.0962749
+  },
+  {
+   "stage": "window",
+   "t": 1790050877.6658442
   }
  ],
  "window": {
@@ -77,9 +81,36 @@
  },
  "last_round": "r0001",
  "tasks": 6,
- "active": {},
+ "active": {
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": null,
+   "head": "origin/main",
+   "bundle_sha256": "c294f252a21d92bd24a2f327b26872e8ae67d7e3e2f0c49361b5413f7754b59e",
+   "incumbent": true
+  },
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "pr": 190,
+   "head": "446c7f6b73b30aa1b52d9468c577681f6a93e6b1",
+   "bundle_sha256": "4815bc6ab143fd8f7c5b72203d5e0e09a9426cdd57f3a073c30997ecacf27e2c",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "Tet-9"
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "pr": 191,
+   "head": "b0e9b36ba2c84e76d757566b5481f619353b430b",
+   "bundle_sha256": "d45c6e28da6431a7e146f3dbe9ea2f768e7e3c387af167da602fddae416215bf",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "harrythomasben"
+  }
+ },
  "rejected": {},
- "progress": {},
+ "progress": {
+  "done": 0,
+  "total": 0,
+  "by_surface": {}
+ },
  "crown": null,
  "scores": null,
  "queue": [
