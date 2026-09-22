@@ -271,6 +271,11 @@ def live(
         "hf_repo": HF_REPO,
         "submit_server": cfg.submit_server or None,  # where the CLI uploads the prose; None = legacy (prose in the PR)
     }
+    # Only the clock moved: the loop republishes the board on a timer, and while it waits for the daemon that is
+    # every tick. Writing would make `git status` dirty and push a commit, so an idle loop filled the public
+    # history with identical "live — waiting" commits (25 in six hours, once). Say nothing rather than that.
+    if prev and {k: v for k, v in prev.items() if k != "updated"} == {k: v for k, v in state.items() if k != "updated"}:
+        return
     out = cfg.repo / LIVE
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(state, indent=1))
@@ -557,26 +562,40 @@ def _release_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
     shutil.rmtree(kept, ignore_errors=True)
 
 
+def _defending_digest(cfg: Config, hotkey: str) -> str | None:
+    """The digest of the bundle this hotkey currently defends with, if it holds a crown privately."""
+    return (_read(cfg.state / "incumbents" / hotkey / attest.FILE, {}) or {}).get("bundle_sha256")
+
+
 def _reveal_bundles(cfg: Config, rd: Path, dest: Path, king: str | None) -> None:
     """Publish the prose of every bundle that is out of the competition, so anyone can match its committed digest
-    against its content. A bundle is out when it is neither the crown nor still held in the private incumbents
-    store — a hotkey that is still defending (including a reigning king that resubmitted and was not dethroned)
-    keeps its prose private. A dethroned king's previous bundle is staged under `rd/reveal` by
-    `_release_incumbent`; it is published beside, never on top of, that hotkey's bundle for this round, because
-    the two are different bundles and each must still match its own commitment."""
+    against its content. What is in or out is the **bundle**, not the hotkey: a bundle is out unless it is the
+    crown, or it is the very bundle its hotkey is still defending with. A reigning king that resubmits and is not
+    dethroned therefore keeps defending on its old bundle while the new one it just lost with is revealed. A
+    dethroned king's previous bundle is staged under `rd/reveal` by `_release_incumbent`; it is published beside
+    this round's bundle only when the two actually differ, so the ordinary dethronement publishes one copy."""
     out = dest / "revealed"
     sealed = _read(rd / "seal.json", {}).get("active") or {}
+    published: dict[str, str] = {}
     for hotkey, info in sealed.items():
-        if hotkey == king or (cfg.state / "incumbents" / hotkey).is_dir():
-            continue  # crowned, or still defending: its prose stays private
+        if hotkey == king:
+            continue  # the crown defends: never revealed
+        digest = info.get("bundle_sha256") or ""
+        if digest and digest == _defending_digest(cfg, hotkey):
+            continue  # this very bundle is the one still defending; anything else of theirs is out
         src = rd / "bundles" / hotkey
         if src.is_dir():
             shutil.copytree(src, out / hotkey, dirs_exist_ok=True)
+            published[hotkey] = digest
     if (rd / "reveal").is_dir():
         for staged in (rd / "reveal").iterdir():
-            if staged.is_dir():  # the bundle it was crowned on, distinct from anything it submitted this round
-                name = staged.name if not (out / staged.name).exists() else f"{staged.name}.dethroned"
-                shutil.copytree(staged, out / name, dirs_exist_ok=True)
+            if not staged.is_dir():
+                continue
+            digest = (_read(staged / attest.FILE, {}) or {}).get("bundle_sha256") or ""
+            if staged.name in published and digest and digest == published[staged.name]:
+                continue  # the ordinary dethronement: the sealed copy and the staged one are the same bundle
+            name = staged.name if staged.name not in published else f"{staged.name}.dethroned"
+            shutil.copytree(staged, out / name, dirs_exist_ok=True)
 
 
 def _changed_paths(cfg: Config, base: str, head: str) -> list[str]:
@@ -634,7 +653,7 @@ def one_per_hotkey(prs: list[dict], *, now: float | None = None) -> tuple[dict[s
     """Of several open PRs for one hotkey, the one whose bundle was **signed** last counts; the others are rejected
     as superseded. Signed bundles are public, so the PR number cannot decide: anyone could reopen a miner's older
     bundle as a newer PR. A signing time in the future is not a submission (it would win every tie). Ties fall to
-    the PR number. Pure: `signed_at` is read from each head's attestation before this is called."""
+    the lowest PR number, since a copy of a public attestation can only be opened after the original. Pure: `signed_at` is read from each head's attestation before this is called."""
     now = time.time() if now is None else now
     keep: dict[str, dict] = {}
     superseded: dict[int, str] = {}
@@ -1127,10 +1146,15 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
     elif king:
         log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown")
     if king:
-        # Unconditional and idempotent. Gating this on the merge's exit code lost the crowned bundle whenever
-        # announce re-ran after a crash (the second `gh pr merge` fails with "already merged"), and the king then
-        # silently dropped out of the next round with no bundle anywhere and no record of why.
-        _retain_incumbent(cfg, king, rd)
+        # Retained whenever the crown actually landed in `submissions/`, which is what the next round's seal reads.
+        # The exit code alone is the wrong test in both directions: a re-run after a crash fails with "already
+        # merged" although the marker is there (that lost the bundle and dropped the king out silently), while a
+        # merge that never landed would otherwise store a bundle whose commitment is not public.
+        sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo, check=False)
+        if _tree_names(cfg, f"origin/{BRANCH}", king):
+            _retain_incumbent(cfg, king, rd)
+        else:
+            log(rd, "retain_skipped", king=king, why="no submissions/<king>/ in the tree: the crown did not land")
     history = _read(cfg.repo / "rounds" / "index.json", {"rounds": []})["rounds"]  # closed rounds, this one not yet
     if gone := dethroned(sealed, king, record.get("scores"), history):  # after the merge: the tree is current
         sh(["git", "pull", "-q", "--rebase", "--autostash", "origin", BRANCH], cwd=cfg.repo, check=False)

@@ -16,7 +16,7 @@ and the digest, which every commitment is made over, is computed by the one froz
 
 Endpoints (all uploads are signature-gated by the hotkey; nothing returns another miner's prose):
     POST /submit    {"attestation": {...}, "files": {"<path>": "<base64>"}}   -> receipt | problems
-    GET  /status    ?hotkey=<ss58>[&round=<rNNNN>]                            -> the owner's verdict
+    GET  /status    ?hotkey=<ss58>[&round=<rNNNN>]                            -> whether that upload landed
     GET  /healthz                                                             -> {"ok": true, "round": ...}
 """
 
@@ -159,18 +159,22 @@ def store_upload(result: dict, *, store: Path, round_id: str, now: float, secret
         return receipt
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix=".staging-", dir=dest.parent))  # unique: two threads must not share it
-    for rel, data in result["files"].items():
-        f = tmp / rel
-        f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_bytes(data)
-    (tmp / attest.FILE).write_text(json.dumps(result["attestation"], indent=1) + "\n")
-    (tmp / "receipt.json").write_text(json.dumps(receipt, indent=1) + "\n")
-    with _STORE_LOCK:
-        if dest.exists():  # another thread won the race; its copy is the same bundle, so drop ours
-            shutil.rmtree(tmp, ignore_errors=True)
-        else:
-            tmp.rename(dest)
-        _update_index(store, round_id, hotkey, digest, signed_at, now)
+    try:
+        for rel, data in result["files"].items():
+            f = tmp / rel
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_bytes(data)
+        (tmp / attest.FILE).write_text(json.dumps(result["attestation"], indent=1) + "\n")
+        (tmp / "receipt.json").write_text(json.dumps(receipt, indent=1) + "\n")
+        with _STORE_LOCK:
+            if dest.exists():  # another thread won the race; its copy is the same bundle, so drop ours
+                shutil.rmtree(tmp, ignore_errors=True)
+            else:
+                tmp.rename(dest)
+            _update_index(store, round_id, hotkey, digest, signed_at, now)
+    except BaseException:  # a write that fails part way must not leave a staging tree nothing ever sweeps
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise
     return receipt
 
 
@@ -226,25 +230,27 @@ def metagraph_gate(_netuid: int, _network: str) -> Gate:  # TODO(phase-1-ops): w
 
 # ─── HTTP layer ───────────────────────────────────────────────────────────────────────────────────
 class _RateLimiter:
-    """Best-effort, in-memory caps on *accepted* uploads per round. Only an accepted upload is recorded, so a
-    forged request naming someone else's hotkey can never burn that miner's quota — which a cap charged before
-    the signature was checked would have allowed. Unauthenticated load is bounded instead by the registration
-    gate, the body-size cap and the reverse proxy. Resets on restart; this blunts a flood, it is not the Sybil gate."""
+    """Best-effort, in-memory caps, all **per round** so they roll over on their own. An *accepted* upload is
+    charged to its hotkey — only accepted, so a forged request naming someone else's hotkey cannot burn that
+    miner's quota. Every *request* is charged to the caller's address as well, because rejected work is the path
+    an attacker actually takes and an address cannot be spent on another miner's behalf. Resets on restart; this
+    blunts a flood, it is not the Sybil gate — the registration gate is."""
 
-    def __init__(self, per_hotkey: int, total: int, per_ip: int = 1000) -> None:
+    def __init__(self, per_hotkey: int, total: int, per_ip: int = 5000) -> None:
         self.per_hotkey, self.total, self.per_ip = per_hotkey, total, per_ip
         self._by: dict[tuple[str, str], int] = {}
         self._total: dict[str, int] = {}
-        self._attempts: dict[str, int] = {}
+        self._attempts: dict[tuple[str, str], int] = {}
         self._lock = threading.Lock()
 
-    def attempt(self, address: str) -> bool:
-        """Every request costs, charged to the caller's address. Charging only accepted uploads fixed the
-        targeted lockout but left rejected work — the attacker's actual path — free; an address cannot be spent
-        on another miner's behalf, so this meters abuse without reintroducing that."""
+    def attempt(self, round_id: str, address: str) -> bool:
+        """Charge one request to this caller, within this round. Keyed by round as well as address: a lifetime
+        counter bricked the channel for everyone once the total was reached — and behind a reverse proxy every
+        miner shares one address, so that total arrives quickly."""
         with self._lock:
-            self._attempts[address] = self._attempts.get(address, 0) + 1
-            return self._attempts[address] <= self.per_ip
+            key = (round_id, address)
+            self._attempts[key] = self._attempts.get(key, 0) + 1
+            return self._attempts[key] <= self.per_ip
 
     def check(self, round_id: str, hotkey: str) -> bool:
         with self._lock:
@@ -302,7 +308,9 @@ def make_handler(*, state: Path, store: Path, gate: Gate, secret: bytes | None, 
             except (ValueError, UnicodeDecodeError):
                 self._send(400, {"ok": False, "problems": ["body is not JSON"]})
                 return
-            if not limiter.attempt(self.client_address[0]):
+            # Behind the reverse proxy the socket's peer is the proxy, so every miner would share one counter.
+            forwarded = (self.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
+            if not limiter.attempt(current_round(state) or "-", forwarded or self.client_address[0]):
                 self._send(429, {"ok": False, "code": "rate_limited", "problems": ["too many requests"]})
                 return
             hotkey = (payload.get("attestation") or {}).get("hotkey") if isinstance(payload, dict) else None
@@ -353,7 +361,8 @@ def main(argv=None) -> int:
     ap.add_argument("--network", default="finney")
     ap.add_argument("--secret-file", help="HMAC key for receipts (default: $SH_STATE/server_secret if present)")
     ap.add_argument("--max-per-hotkey", type=int, default=200, help="upload cap per hotkey per window")
-    ap.add_argument("--max-total", type=int, default=5000, help="upload cap across all hotkeys per window")
+    ap.add_argument("--max-total", type=int, default=5000, help="upload cap across all hotkeys per round")
+    ap.add_argument("--max-per-ip", type=int, default=5000, help="request cap per caller address per round")
     a = ap.parse_args(argv)
 
     state = Path(a.state)
@@ -371,7 +380,11 @@ def main(argv=None) -> int:
         return 2
     gate = build_gate(a.gate, Path(a.allowlist) if a.allowlist else None, a.netuid, a.network)
     handler = make_handler(
-        state=state, store=store, gate=gate, secret=secret, limiter=_RateLimiter(a.max_per_hotkey, a.max_total)
+        state=state,
+        store=store,
+        gate=gate,
+        secret=secret,
+        limiter=_RateLimiter(a.max_per_hotkey, a.max_total, a.max_per_ip),
     )
     httpd = ThreadingHTTPServer((a.host, a.port), handler)
     print(

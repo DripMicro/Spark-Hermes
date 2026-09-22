@@ -185,37 +185,83 @@ def test_candidates_seals_a_private_incumbent_from_the_store(tmp_path, monkeypat
     assert rejected == {}
 
 
-def test_reveal_publishes_out_of_competition_bundles_but_not_the_king(tmp_path):
+def _sealed(rd, entries):
+    (rd / "seal.json").write_text(json.dumps({"active": entries}))
+    for hk in entries:
+        d = rd / "bundles" / hk
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "SOUL.md").write_text(f"soul {hk[:6]}\n")
+
+
+def _defends(cfg, hotkey, digest):
+    """Put a hotkey in the private incumbents store, defending the bundle named by `digest`."""
+    d = cfg.state / "incumbents" / hotkey
+    d.mkdir(parents=True, exist_ok=True)
+    (d / attest.FILE).write_text(json.dumps({"bundle_sha256": digest}))
+    (d / "SOUL.md").write_text("the bundle it was crowned on\n")
+
+
+def test_reveal_publishes_what_is_out_and_withholds_what_defends(tmp_path):
     rd, dest = tmp_path / "rd", tmp_path / "dest"
     rd.mkdir()
     dest.mkdir()
-    king = "5" + "A" * 47
-    loser = "5" + "B" * 47
-    incumbent = "5" + "C" * 47
-    dethroned = "5" + "D" * 47
-    (rd / "seal.json").write_text(
-        json.dumps(
-            {
-                "active": {
-                    king: {"pr": 1, "incumbent": False},
-                    loser: {"pr": 2, "incumbent": False},
-                    incumbent: {"pr": None, "incumbent": True},
-                }
-            }
-        )
+    king, loser, holder, dethroned = ("5" + c * 47 for c in "ABCD")
+    _sealed(
+        rd,
+        {
+            king: {"pr": 1, "incumbent": False, "bundle_sha256": "k" * 64},
+            loser: {"pr": 2, "incumbent": False, "bundle_sha256": "l" * 64},
+            holder: {"pr": None, "incumbent": True, "bundle_sha256": "h" * 64},
+        },
     )
-    for hk in (king, loser, incumbent):
-        d = rd / "bundles" / hk
-        d.mkdir(parents=True)
-        (d / "SOUL.md").write_text(f"soul {hk[:6]}\n")
-    d = rd / "reveal" / dethroned  # staged by _release_incumbent when it was dethroned this round
+    cfg = _cfg(tmp_path, tmp_path / "repo-unused")
+    _defends(cfg, holder, "h" * 64)  # defending with this exact bundle
+    d = rd / "reveal" / dethroned  # released this round by _release_incumbent
     d.mkdir(parents=True)
     (d / "SOUL.md").write_text("old king\n")
-    cfg = _cfg(tmp_path, tmp_path / "repo-unused")
-    (cfg.state / "incumbents" / incumbent).mkdir(parents=True)  # still defending: its prose stays private
+    (d / attest.FILE).write_text(json.dumps({"bundle_sha256": "d" * 64}))
+
     o._reveal_bundles(cfg, rd, dest, king)
-    published = sorted(p.name for p in (dest / "revealed").iterdir())
-    assert published == sorted([loser, dethroned])  # king + staying incumbent withheld; loser + dethroned revealed
+    assert sorted(p.name for p in (dest / "revealed").iterdir()) == sorted([loser, dethroned])
+
+
+def test_a_bundle_its_owner_no_longer_defends_is_revealed(tmp_path):
+    """A reigning king that resubmits and is not dethroned keeps defending on its OLD bundle. The new one it just
+    lost with is out of the competition, and its commitment is public, so it has to be revealed."""
+    rd, dest = tmp_path / "rd", tmp_path / "dest"
+    rd.mkdir()
+    dest.mkdir()
+    defender = "5" + "D" * 47
+    _sealed(rd, {defender: {"pr": 3, "incumbent": False, "was_incumbent": True, "bundle_sha256": "new" + "0" * 61}})
+    cfg = _cfg(tmp_path, tmp_path / "repo-unused")
+    _defends(cfg, defender, "old" + "0" * 61)  # still defending, but on a DIFFERENT bundle
+
+    o._reveal_bundles(cfg, rd, dest, king=None)
+    assert [p.name for p in (dest / "revealed").iterdir()] == [defender]
+    assert (dest / "revealed" / defender / "SOUL.md").read_text().startswith("soul")  # this round's, not the crown's
+
+
+def test_an_ordinary_dethronement_publishes_one_copy(tmp_path):
+    """The sealed bundle and the staged one are the same bundle; publishing both left a phantom duplicate."""
+    rd, dest = tmp_path / "rd", tmp_path / "dest"
+    rd.mkdir()
+    dest.mkdir()
+    king, gone = "5" + "K" * 47, "5" + "G" * 47
+    _sealed(
+        rd,
+        {
+            king: {"pr": 1, "incumbent": False, "bundle_sha256": "k" * 64},
+            gone: {"pr": None, "incumbent": True, "bundle_sha256": "g" * 64},
+        },
+    )
+    cfg = _cfg(tmp_path, tmp_path / "repo-unused")
+    d = rd / "reveal" / gone  # _release_incumbent staged it and removed the store entry
+    d.mkdir(parents=True)
+    (d / "SOUL.md").write_text("soul 5GGGGG\n")
+    (d / attest.FILE).write_text(json.dumps({"bundle_sha256": "g" * 64}))
+
+    o._reveal_bundles(cfg, rd, dest, king)
+    assert [p.name for p in (dest / "revealed").iterdir()] == [gone]  # exactly one, no ".dethroned" phantom
 
 
 def test_a_forged_digest_cannot_escape_the_store(tmp_path):
@@ -248,32 +294,3 @@ def test_a_pr_that_did_not_sign_cannot_claim_another_hotkeys_submission(tmp_path
     b = o._reveal_challenger(_cfg(tmp_path, repo), ref, hk, staged, round_id="r0001", store=store)
     assert b["problems"] and any("signature" in p for p in b["problems"])
     assert not staged.exists()  # the victim's prose was never materialised under the attacker's PR
-
-
-def test_a_hotkey_still_defending_is_not_revealed(tmp_path):
-    """A reigning king that resubmits and is not dethroned keeps defending, so its new prose must stay private —
-    'not crowned this round' is not the same as 'out of the competition'."""
-    rd, dest = tmp_path / "rd", tmp_path / "dest"
-    rd.mkdir()
-    dest.mkdir()
-    king, loser, defender = "5" + "A" * 47, "5" + "B" * 47, "5" + "C" * 47
-    (rd / "seal.json").write_text(
-        json.dumps(
-            {
-                "active": {
-                    king: {"pr": 1, "incumbent": False},
-                    loser: {"pr": 2, "incumbent": False},
-                    # the reigning king, resubmitted this round as a challenger and NOT dethroned
-                    defender: {"pr": 3, "incumbent": False, "was_incumbent": True},
-                }
-            }
-        )
-    )
-    for hk in (king, loser, defender):
-        d = rd / "bundles" / hk
-        d.mkdir(parents=True)
-        (d / "SOUL.md").write_text(f"soul {hk[:6]}\n")
-    cfg = _cfg(tmp_path, tmp_path / "repo-unused")
-    (cfg.state / "incumbents" / defender).mkdir(parents=True)  # still held: still defending
-    o._reveal_bundles(cfg, rd, dest, king)
-    assert sorted(p.name for p in (dest / "revealed").iterdir()) == [loser]

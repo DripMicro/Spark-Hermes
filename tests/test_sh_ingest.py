@@ -170,6 +170,8 @@ def test_rejected_requests_are_metered_to_the_caller_not_the_named_hotkey(tmp_pa
     """Charging only accepted uploads fixed the targeted lockout but left abuse free; the caller's address is
     metered instead, because it cannot be spent on another miner's behalf."""
     lim = ingest._RateLimiter(per_hotkey=1, total=5000, per_ip=3)
-    assert [lim.attempt("10.0.0.1") for _ in range(4)] == [True, True, True, False]
-    assert lim.attempt("10.0.0.2") is True  # another caller is unaffected
+    assert [lim.attempt("r0001", "10.0.0.1") for _ in range(4)] == [True, True, True, False]
+    assert lim.attempt("r0001", "10.0.0.2") is True  # another caller is unaffected
     assert lim.check("r0001", _kp().ss58_address) is True  # and no hotkey's quota was touched
+    # the cap is per round, so a flood cannot brick the channel for every later round
+    assert lim.attempt("r0002", "10.0.0.1") is True

@@ -32,7 +32,13 @@ SCHEMA_SFT = "sh-sft-v2"
 SCHEMA_DPO = "sh-dpo-v2"
 DPO_CHOSEN_MIN = 0.8  # the preferred side must do most of the task
 DPO_MARGIN = 0.5  # and the other side at least this much less of it
-MIN_SECRET_LINE = 24  # below this a line is too generic to treat as a bundle's own
+MIN_SECRET_LINE = 32  # below this a line is too generic to treat as a bundle's own
+# How many distinct bundle lines a row must echo before it is refused. One is not evidence the strategy leaked —
+# and a single line was a denial vector: the crowned miner writes the bundle, so one fenced line certain to appear
+# in any trajectory ("Traceback (most recent call last):") refused every row and collapsed the round's dataset.
+BUNDLE_LEAK_LINES = 3
+# What the system turn falls back to. Both row kinds must use it: the DPO side used "" and shipped blank prompts.
+DEFAULT_SYSTEM_PROMPT = "You are Hermes, an agent operating a terminal and a filesystem."
 
 
 def _leak_scan(text: str, secrets: set[str]) -> list[str]:
@@ -56,6 +62,36 @@ def _secrets(reveal: dict) -> set[str]:
 
 def _row_text(conversations: list) -> str:
     return "\n".join(str(t.get("value", "")) for t in conversations)
+
+
+def _bundle_leak(conversations: list, bundle_secrets: set[str] | None) -> int:
+    """How many distinct lines of the crowned bundle this row echoes."""
+    return len(_leak_scan(_row_text(conversations), bundle_secrets or set()))
+
+
+REDACTED = "[redacted: the crowned strategy's own text]"
+
+
+def _redact(conversations: list, bundle_secrets: set[str] | None) -> int:
+    """Strike the crowned bundle's own lines out of a row's trajectory, and say how many were struck. Dropping the
+    whole row instead would hand the crowned miner a way to empty the round's dataset — they write the bundle, so
+    one fenced line certain to appear in any trajectory would refuse everything — and keeping the row would
+    publish the strategy the king is still defending with. The system turn is replaced wholesale, not struck."""
+    if not bundle_secrets:
+        return 0
+    struck = 0
+    for turn in conversations:
+        value = str(turn.get("value", ""))
+        if turn.get("from") == "system" or not value:
+            continue
+        # Substring, not whole-line: the detector is a substring scan, and a line struck only when it stood alone
+        # left the two disagreeing — the row was kept and the text published anyway.
+        for secret in _leak_scan(value, bundle_secrets):
+            value = value.replace(secret, REDACTED)
+            struck += 1
+        if struck:
+            turn["value"] = value
+    return struck
 
 
 def _bundle_secrets(bundle_dir: Path | None) -> set[str]:
@@ -130,7 +166,16 @@ def build(
     bundle_secrets = _bundle_secrets(bundle_dir)
 
     sft, by_task = [], {}
-    gates = {"not_king": 0, "void": 0, "no_trajectory": 0, "not_verified": 0, "disqualified": 0, "leaked": 0}
+    gates = {
+        "not_king": 0,
+        "void": 0,
+        "no_trajectory": 0,
+        "not_verified": 0,
+        "disqualified": 0,
+        "leaked": 0,
+        "leaked_dpo": 0,
+        "redacted": 0,
+    }
     for episode_json in sorted(episodes_dir.rglob("episode.json")):
         episode = json.loads(episode_json.read_text())
         task = tasks.get(str(episode.get("task_id")), {})
@@ -151,13 +196,17 @@ def build(
             episode_json.parent,
             episode,
             task,
-            system_prompt or "You are Hermes, an agent operating a terminal and a filesystem.",
+            system_prompt or DEFAULT_SYSTEM_PROMPT,
             bundle_secrets,
         )
         if row is None:
             gates["no_trajectory"] += 1
             continue
-        if _leak_scan(json.dumps(row), secrets) or _leak_scan(_row_text(row["conversations"]), bundle_secrets):
+        gates["redacted"] += _redact(row["conversations"], bundle_secrets)
+        if (
+            _leak_scan(json.dumps(row), secrets)
+            or _bundle_leak(row["conversations"], bundle_secrets) >= BUNDLE_LEAK_LINES
+        ):
             gates["leaked"] += 1
             continue
         sft.append(row)
@@ -167,7 +216,7 @@ def build(
     dpo = []
     for task_id, entries in by_task.items() if king else []:
         task = tasks.get(str(task_id), {})
-        prompt = system_prompt or ""
+        prompt = system_prompt or DEFAULT_SYSTEM_PROMPT
         # Take the first side of each pair that actually yields a row. An episode killed on its timeout has no
         # trajectory at all, and picking only the first loser silently dropped every pair whose first loser
         # happened to be one of those — half the training value of the round, lost to list order.
@@ -193,7 +242,21 @@ def build(
             rejected = next(
                 (row for _, e, d in losers if (row := _rows_for(d, e, task, prompt, bundle_secrets)) is not None), None
             )
-        if chosen and rejected and not _leak_scan(_row_text(chosen["conversations"]), bundle_secrets):
+        if chosen and rejected:
+            gates["redacted"] += _redact(chosen["conversations"], bundle_secrets)
+            gates["redacted"] += _redact(rejected["conversations"], bundle_secrets)
+        if (
+            chosen
+            and rejected
+            and (
+                _leak_scan(json.dumps(chosen), secrets)
+                or _leak_scan(json.dumps(rejected), secrets)
+                or _bundle_leak(chosen["conversations"], bundle_secrets) >= BUNDLE_LEAK_LINES
+                or _bundle_leak(rejected["conversations"], bundle_secrets) >= BUNDLE_LEAK_LINES
+            )
+        ):
+            gates["leaked_dpo"] = gates.get("leaked_dpo", 0) + 1
+        elif chosen and rejected:
             # both sides carry the king's system turn and the same task, so the preference is over the trajectory
             # alone and not over which strategy prompt produced it
             rejected_turns = [
@@ -226,7 +289,12 @@ def build(
         "families": sorted({r["family"] for r in sft if r.get("family")}),
         "sft_sha256": hashlib.sha256((out / "sft.jsonl").read_bytes()).hexdigest(),
         "dpo_sha256": hashlib.sha256((out / "dpo.jsonl").read_bytes()).hexdigest(),
-        "leak_scan": {"secrets_checked": len(secrets), "rows_refused": gates["leaked"]},
+        "leak_scan": {
+            "secrets_checked": len(secrets),
+            "bundle_lines_checked": len(bundle_secrets),
+            "rows_refused": gates["leaked"],
+            "pairs_refused": gates.get("leaked_dpo", 0),
+        },
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1))
     return manifest

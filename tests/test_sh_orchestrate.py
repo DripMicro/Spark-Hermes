@@ -501,3 +501,22 @@ def test_the_board_advertises_the_submit_server_only_when_configured(tmp_path):
     cfg.submit_server = ""
     o.live(cfg, rd, "window", push=False)
     assert json.loads((cfg.repo / o.LIVE).read_text())["submit_server"] is None
+
+
+def test_the_board_is_not_republished_when_only_the_clock_moved(tmp_path):
+    """An idle loop republishes on a timer; without this it pushed an identical commit every tick."""
+    import sh.validator.orchestrate as o
+
+    cfg = _cfg(tmp_path)
+    rd = cfg.rounds / "r0001"
+    rd.mkdir(parents=True)
+    (rd / "window.json").write_text(json.dumps({"opens_at": 0, "closes_at": 1, "seconds": 1}))
+    # a real round has a phase log, which is what fixes `started`; without one it too moves with the clock
+    (rd / "phases.jsonl").write_text(json.dumps({"t": 1000.0, "stage": "start"}) + "\n")
+
+    o.live(cfg, rd, "waiting", push=False)
+    first = (cfg.repo / o.LIVE).read_text()
+    o.live(cfg, rd, "waiting", push=False)
+    assert (cfg.repo / o.LIVE).read_text() == first  # nothing rewritten, so nothing to commit
+    o.live(cfg, rd, "window", push=False)
+    assert (cfg.repo / o.LIVE).read_text() != first  # a real change still publishes
