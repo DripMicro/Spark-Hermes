@@ -294,3 +294,24 @@ def test_a_pr_that_did_not_sign_cannot_claim_another_hotkeys_submission(tmp_path
     b = o._reveal_challenger(_cfg(tmp_path, repo), ref, hk, staged, round_id="r0001", store=store)
     assert b["problems"] and any("signature" in p for p in b["problems"])
     assert not staged.exists()  # the victim's prose was never materialised under the attacker's PR
+
+
+def test_an_incumbent_no_marker_claims_is_released_not_left_to_rot(tmp_path, monkeypatch):
+    """A crown that never landed, or a marker removed outside the dethrone path, left a store entry defending
+    nothing — and the reveal skips a hotkey still in the store, so it was never published either."""
+    repo = _repo(tmp_path)
+    cfg = _cfg(tmp_path, repo)
+    rd = tmp_path / "rd"
+    rd.mkdir()
+    claimed, orphan = "5" + "C" * 47, "5" + "O" * 47
+    for hk in (claimed, orphan):
+        d = cfg.state / "incumbents" / hk
+        d.mkdir(parents=True)
+        (d / "SOUL.md").write_text(f"soul {hk[:6]}\n")
+        (d / attest.FILE).write_text(json.dumps({"bundle_sha256": "a" * 64}))
+
+    monkeypatch.setattr(o, "sh", lambda *a, **k: f"submissions/{claimed}\nsubmissions/README.md\n")
+    assert o._prune_orphan_incumbents(cfg, rd) == [orphan]
+    assert (cfg.state / "incumbents" / claimed).is_dir()  # the one a marker claims still defends
+    assert not (cfg.state / "incumbents" / orphan).exists()  # the orphan is gone
+    assert (rd / "reveal" / orphan / "SOUL.md").exists()  # ...and revealed rather than lost
