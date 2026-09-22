@@ -232,7 +232,7 @@ def make_handler(*, state: Path, store: Path, gate: Gate, secret: bytes | None, 
             self.end_headers()
             self.wfile.write(data)
 
-        def log_message(self, *_args) -> None:  # quiet by default; the loop's board is the operator view
+        def log_message(self, format, *args) -> None:  # quiet by default; the loop's board is the operator view
             pass
 
         def do_GET(self) -> None:

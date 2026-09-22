@@ -267,7 +267,7 @@ def test_a_forged_later_resubmission_cannot_take_a_miners_real_submission_out_of
         "h9": (1500, []),
     }
 
-    def fake_bundle(cfg, ref, hotkey, dest, *, round_id):
+    def fake_bundle(cfg, ref, hotkey, dest, *, round_id, store):
         at, problems = signed[ref]
         dest.mkdir(parents=True, exist_ok=True)
         (dest / "SOUL.md").write_text("Be careful.\n")
@@ -276,7 +276,7 @@ def test_a_forged_later_resubmission_cannot_take_a_miners_real_submission_out_of
 
     monkeypatch.setattr(o, "sh", lambda *a, **k: "")
     monkeypatch.setattr(o, "_strategy_prs", lambda cfg, tip: prs)
-    monkeypatch.setattr(o, "_bundle_from_tree", fake_bundle)
+    monkeypatch.setattr(o, "_reveal_challenger", fake_bundle)
     head_hk = {"h7": HKA, "h12": HKA, "h9": HKB}
     monkeypatch.setattr(o, "_changed_paths", lambda cfg, base, head: [f"submissions/{head_hk[head]}/SOUL.md"])
     active, rejected = o.candidates(cfg, "r0009", tmp_path / "bundles")
@@ -386,7 +386,7 @@ def test_a_strategy_pr_that_touches_anything_but_its_own_submission_directory_is
         "h5": [f"submissions/{HK}/SOUL.md"],
     }
 
-    def fake_bundle(cfg, ref, hotkey, dest, *, round_id):
+    def fake_bundle(cfg, ref, hotkey, dest, *, round_id, store):
         dest.mkdir(parents=True, exist_ok=True)
         (dest / "SOUL.md").write_text("Be careful.\n")
         (dest / "attestation.json").write_text(json.dumps({"signed_at": 100}))
@@ -394,7 +394,7 @@ def test_a_strategy_pr_that_touches_anything_but_its_own_submission_directory_is
 
     monkeypatch.setattr(o, "sh", lambda *a, **k: "")
     monkeypatch.setattr(o, "_strategy_prs", lambda cfg, tip: prs)
-    monkeypatch.setattr(o, "_bundle_from_tree", fake_bundle)
+    monkeypatch.setattr(o, "_reveal_challenger", fake_bundle)
     monkeypatch.setattr(o, "_changed_paths", lambda cfg, base, head: diffs[head])
     active, rejected = o.candidates(cfg, "r0009", tmp_path / "bundles")
     assert set(active) == {HK} and active[HK]["pr"] == 5

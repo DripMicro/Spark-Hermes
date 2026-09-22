@@ -415,6 +415,13 @@ def reopen_window(cfg: Config, rd: Path) -> dict:
     return w
 
 
+def _check_bundle_dir(dest: Path, hotkey: str, round_id: str | None) -> dict:
+    """Lint an already-materialised bundle directory — the shared tail of the tree and store paths."""
+    files, problems = collect(dest)
+    result = check_files(files, problems, hotkey=hotkey, round_id=round_id, require_attestation=round_id is not None)
+    return {"problems": result["problems"], "digest": result["bundle_sha256"], "attestation": result["attestation"]}
+
+
 def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_id: str | None) -> dict | None:
     """Materialise `submissions/<hotkey>/` as of `ref` into `dest` and lint it; None if there is nothing there.
     With `round_id`, the bundle must carry a valid attestation for that round (a challenger); without, it is an
@@ -435,9 +442,57 @@ def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_i
         out.parent.mkdir(parents=True, exist_ok=True)
         blob = subprocess.run(["git", "show", f"{ref}:{rel}"], cwd=cfg.repo, capture_output=True)  # bytes, not text
         out.write_bytes(blob.stdout)
-    files, problems = collect(dest)
-    result = check_files(files, problems, hotkey=hotkey, round_id=round_id, require_attestation=round_id is not None)
-    return {"problems": result["problems"], "digest": result["bundle_sha256"], "attestation": result["attestation"]}
+    return _check_bundle_dir(dest, hotkey, round_id)
+
+
+def _tree_names(cfg: Config, ref: str, hotkey: str) -> list[str]:
+    """The file names a PR carries under `submissions/<hotkey>/` at `ref`."""
+    prefix = f"submissions/{hotkey}/"
+    listing = sh(["git", "ls-tree", "-r", "-z", "--name-only", ref, prefix], cwd=cfg.repo, check=False)
+    return [r[len(prefix) :] for r in listing.split("\0") if r.startswith(prefix)]
+
+
+def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_id: str, store: Path) -> dict | None:
+    """A challenger's bundle for the seal. The PR carries the signed commitment (`attestation.json`); the prose
+    is fetched from the private submission store by the digest that commitment names — or, during the transition,
+    from the PR tree when it still carries the prose. Same shape as `_bundle_from_tree`; None if the PR has
+    nothing under `submissions/<hotkey>/`."""
+    names = _tree_names(cfg, ref, hotkey)
+    if not names:
+        return None
+    att = None
+    if "attestation.json" in names:
+        raw = subprocess.run(
+            ["git", "show", f"{ref}:submissions/{hotkey}/attestation.json"], cwd=cfg.repo, capture_output=True
+        )
+        try:
+            att = json.loads(raw.stdout.decode("utf-8"))
+        except (ValueError, UnicodeDecodeError):
+            att = None
+    digest = att.get("bundle_sha256") if isinstance(att, dict) else None
+    signed_at = att.get("signed_at") if isinstance(att, dict) else None
+    prose_in_pr = [n for n in names if n not in ("attestation.json", "receipt.json")]
+    if digest and isinstance(signed_at, int) and not isinstance(signed_at, bool):
+        src = store / round_id / hotkey / "uploads" / f"{signed_at}-{digest}"
+        if src.is_dir():  # the revealed bundle the commitment points to
+            shutil.rmtree(dest, ignore_errors=True)
+            dest.mkdir(parents=True)
+            for f in sorted(src.rglob("*")):
+                if not f.is_file() or f.name == "receipt.json":  # the receipt is not part of the bundle
+                    continue
+                out = dest / f.relative_to(src)
+                if not str(out.resolve()).startswith(str(dest.resolve()) + os.sep):
+                    return {"problems": [f"stored path escapes the bundle: {f.name[:60]}"], "digest": digest, "attestation": None}
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_bytes(f.read_bytes())
+            return _check_bundle_dir(dest, hotkey, round_id)
+        if not prose_in_pr:  # committed on the PR but never revealed to the store (or a different digest)
+            return {
+                "problems": [f"committed digest {str(digest)[:12]}… has no revealed bundle (upload it to the submission server)"],
+                "digest": digest,
+                "attestation": None,
+            }
+    return _bundle_from_tree(cfg, ref, hotkey, dest, round_id=round_id)  # transition: the PR still carries the prose
 
 
 def _changed_paths(cfg: Config, base: str, head: str) -> list[str]:
@@ -525,6 +580,7 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
     sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
     bundles.mkdir(parents=True, exist_ok=True)
     tip = f"origin/{BRANCH}"
+    store = cfg.state / "submissions"  # where the private ingestion server revealed each bundle
     active: dict[str, dict] = {}
     rejected: dict[str, str] = {}
     for entry in sh(["git", "ls-tree", "--name-only", tip, "submissions/"], cwd=cfg.repo, check=False).split():
@@ -554,7 +610,7 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
                 f"changes {len(outside)} path(s) outside submissions/{hotkey[:8]}…/ (e.g. {outside[0]})"
             )
             continue
-        b = _bundle_from_tree(cfg, pr["headRefOid"], hotkey, staged, round_id=round_id)
+        b = _reveal_challenger(cfg, pr["headRefOid"], hotkey, staged, round_id=round_id, store=store)
         if b is not None and not b["problems"] and answers:
             files, _ = collect(staged)
             if copied := answers.refuse(similarity.bundle_text(files)):
