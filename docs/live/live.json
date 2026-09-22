@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790079826.3952086,
+ "updated": 1790080006.0138843,
  "round_id": "r0004",
- "stage": "evaluate",
+ "stage": "window",
  "stages": [
   "open",
   "window",
@@ -26,36 +26,35 @@
    "t": 1790069567.2588756
   },
   {
-   "stage": "window",
-   "t": 1790076766.888242
-  },
-  {
-   "stage": "seal",
-   "t": 1790076774.9681969
-  },
-  {
    "stage": "images",
    "t": 1790076831.85245
+  },
+  {
+   "stage": "resume",
+   "t": 1790080004.4514916
   }
  ],
  "window": {
-  "opens_at": 1790069564.3907418,
-  "closes_at": 1790076764.3907418,
-  "seconds": 7200
+  "opens_at": 1790079977.65061,
+  "closes_at": 1790087177.65061,
+  "seconds": 7200,
+  "reopened": 1,
+  "first_opened_at": 1790069564.3907418,
+  "reason": "restarted from the start after the private-submission fixes were deployed"
  },
  "submissions": [
   {
    "pr": 195,
    "hotkey": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
    "created_at": "2026-09-22T10:48:28Z",
-   "updated_at": "2026-09-22T11:12:30Z",
+   "updated_at": "2026-09-22T11:32:52Z",
    "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/195"
   },
   {
    "pr": 194,
    "hotkey": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
    "created_at": "2026-09-22T10:32:00Z",
-   "updated_at": "2026-09-22T11:22:14Z",
+   "updated_at": "2026-09-22T11:32:49Z",
    "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/194"
   }
  ],
@@ -89,24 +88,7 @@
  },
  "last_round": "r0003",
  "tasks": 6,
- "active": {
-  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
-   "pr": 194,
-   "head": "d626872e3730ac89995c579e10f47120db88739f",
-   "bundle_sha256": "4815bc6ab143fd8f7c5b72203d5e0e09a9426cdd57f3a073c30997ecacf27e2c",
-   "incumbent": false,
-   "was_incumbent": true,
-   "github": "Tet-9"
-  },
-  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
-   "pr": 195,
-   "head": "05669495dfdef2af9b981ef17951146b81ff972e",
-   "bundle_sha256": "68ec6a6169517ddaae702988451c80bd02923f1d8cb5ece10a5de4b18fa30839",
-   "incumbent": false,
-   "was_incumbent": false,
-   "github": "dato-bitar"
-  }
- },
+ "active": {},
  "rejected": {},
  "progress": {
   "done": 14,
@@ -422,5 +404,6 @@
  ],
  "repo": "gittensor-model-hub/Spark-Hermes",
  "branch": "main",
- "hf_repo": "gittensor-model-hub/spark-hermes-rounds"
+ "hf_repo": "gittensor-model-hub/spark-hermes-rounds",
+ "submit_server": null
 }
