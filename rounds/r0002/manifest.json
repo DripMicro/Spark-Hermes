@@ -2,8 +2,8 @@
  "schema": "sh-export-manifest-v2",
  "round_id": "r0002",
  "king": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
- "sft_rows": 2,
- "dpo_pairs": 3,
+ "sft_rows": 1,
+ "dpo_pairs": 1,
  "gates": {
   "not_king": 18,
   "void": 0,
@@ -15,10 +15,17 @@
  "families": [
   "swe_fix"
  ],
- "sft_sha256": "1fa82247004b9ebe3e4f6cb634fca89c7034acab89ee16ad1b45386ff166943e",
- "dpo_sha256": "a40350954db688e9c6ec47cb49dbeba4ab216be72aef90c2e0c4eb4c14bd9929",
+ "sft_sha256": "a1d27914f16c3a24dda69ea715ea02bdad057dd0c894f80dc861b95bd7b9f321",
+ "dpo_sha256": "43e9e013e4eb7851dce92e2dece82b34995c60262dab3f894b1ae384eec79b3e",
  "leak_scan": {
   "secrets_checked": 6,
   "rows_refused": 0
+ },
+ "redaction": {
+  "at": "2026-09-22",
+  "reason": "the captured system turn embedded the crowned bundle's prose; rows whose trajectory also carried it were dropped rather than altered",
+  "previous": {
+   "sft_sha256": "1fa82247004b9ebe3e4f6cb634fca89c7034acab89ee16ad1b45386ff166943e"
+  }
  }
 }

@@ -15,10 +15,17 @@
  "families": [
   "swe_fix"
  ],
- "sft_sha256": "b393779960deb0e0d6db2fb881f3af8a4f2c3626e169a24de8ac16219aeeddcb",
- "dpo_sha256": "39bc3472c4ff218e574dfcd88f07e986c283733bde3516c32b0365a0a949b5a8",
+ "sft_sha256": "7e1cf12183c53af55ce2c938749910b4c02e0e9322e0b1311df681534f799297",
+ "dpo_sha256": "bd42babf1c8192b65a8754d171095c8a8fa450abdb215f91bc80e374891b6953",
  "leak_scan": {
   "secrets_checked": 6,
   "rows_refused": 0
+ },
+ "redaction": {
+  "at": "2026-09-22",
+  "reason": "the captured system turn embedded the crowned bundle's prose; rows whose trajectory also carried it were dropped rather than altered",
+  "previous": {
+   "sft_sha256": "b393779960deb0e0d6db2fb881f3af8a4f2c3626e169a24de8ac16219aeeddcb"
+  }
  }
 }
