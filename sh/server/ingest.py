@@ -99,6 +99,7 @@ def validate(payload: dict, *, round_id: str, round_dir: Path, is_registered: Ga
         return _reject(["signed_at is in the future"])
     answers = _ANSWERS.get(str(round_dir))
     if answers is None:
+        _ANSWERS.clear()  # only the open round is ever asked for; keeping the others is just memory
         answers = _ANSWERS.setdefault(str(round_dir), similarity.load(round_dir))
     if answers and (why := answers.refuse(similarity.bundle_text(files))):
         return _reject([why], code="s1")

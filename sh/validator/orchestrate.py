@@ -61,6 +61,7 @@ SS58 = re.compile(r"\A[1-9A-HJ-NP-Za-km-z]{47,48}\Z")
 # A digest out of a miner's attestation names a directory in the private store. It is attacker-controlled, so it
 # is matched strictly before it is ever joined to a path: "../.." must never reach the store lookup.
 DIGEST = re.compile(r"\A[0-9a-f]{64}\Z")
+_UNRESOLVED: set[tuple[str, str]] = set()  # incumbents already reported unresolved, so it is said once
 HF_REPO = "gittensor-model-hub/spark-hermes-rounds"
 LIVE = "docs/live/live.json"  # what the dashboard polls; committed on every stage change
 CLAIM_GRACE_S = 30  # after claiming the engine, how long a screen the daemon had just started is given to show up
@@ -697,7 +698,8 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
         b = _incumbent_bundle(cfg, tip, hotkey, bundles / hotkey, incumbents=cfg.state / "incumbents")
         if b and not b["problems"]:
             active[hotkey] = {"pr": None, "head": tip, "bundle_sha256": b["digest"], "incumbent": True}
-        else:  # a marker in submissions/ whose bundle resolves nowhere: it drops out, but never in silence
+        elif (round_id, hotkey) not in _UNRESOLVED:  # said once, not once per window-close poll
+            _UNRESOLVED.add((round_id, hotkey))
             why = (b or {}).get("problems") or ["no bundle in the store or the tree"]
             print(f"[{round_id}] incumbent {hotkey[:12]}… unresolved, not sealed: {why[0][:120]}", flush=True)
     prs = _strategy_prs(cfg, tip)
@@ -1069,6 +1071,26 @@ def dethroned(
     return sorted(gone)
 
 
+def _prune_orphan_incumbents(cfg: Config, rd: Path) -> list[str]:
+    """Drop anything in the private store that no marker in `submissions/` claims. Such an entry is a crown that
+    never landed, or a marker removed outside the dethrone path: it would defend nothing, and because the reveal
+    skips a hotkey that is still in the store it would never be published either. Releasing it does both."""
+    markers = {
+        e.split("/")[-1]
+        for e in sh(
+            ["git", "ls-tree", "--name-only", f"origin/{BRANCH}", "submissions/"], cwd=cfg.repo, check=False
+        ).split()
+    }
+    store = cfg.state / "incumbents"
+    orphans = (
+        [p.name for p in sorted(store.iterdir()) if p.is_dir() and p.name not in markers] if store.is_dir() else []
+    )
+    for hotkey in orphans:
+        _release_incumbent(cfg, hotkey, rd)
+        log(rd, "incumbent_orphan", hotkey=hotkey)
+    return orphans
+
+
 def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, crowned: dict) -> str | None:
     """Scorecards on every PR; `scored` on every PR; the crown moved to the king; the king's PR merged; every
     other competition PR closed with the reason; PRs that arrived after the seal closed as outside the window."""
@@ -1168,6 +1190,7 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
             )
             sh(["git", "push", "-q", "origin", BRANCH], cwd=cfg.repo)
         log(rd, "dethroned", hotkeys=gone)
+    _prune_orphan_incumbents(cfg, rd)
     for number in plan["close"]:
         reason = sealed.get("rejected", {}).get(str(number))
         why = f"rejected at seal: {reason}" if reason else f"not crowned in `{round_id}`"
