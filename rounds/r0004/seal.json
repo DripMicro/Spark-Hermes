@@ -1,0 +1,24 @@
+{
+ "schema": "sh-seal-v3",
+ "round_id": "r0004",
+ "sealed_at": 1790076768.9236767,
+ "active": {
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "pr": 194,
+   "head": "d626872e3730ac89995c579e10f47120db88739f",
+   "bundle_sha256": "4815bc6ab143fd8f7c5b72203d5e0e09a9426cdd57f3a073c30997ecacf27e2c",
+   "incumbent": false,
+   "was_incumbent": true,
+   "github": "Tet-9"
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": 195,
+   "head": "05669495dfdef2af9b981ef17951146b81ff972e",
+   "bundle_sha256": "68ec6a6169517ddaae702988451c80bd02923f1d8cb5ece10a5de4b18fa30839",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "dato-bitar"
+  }
+ },
+ "rejected": {}
+}
