@@ -27,9 +27,9 @@ MAX_SKILL = 15 * 1024
 MAX_FILE = 64 * 1024
 MAX_BUNDLE = 512 * 1024
 
-SOUL = re.compile(r"^SOUL\.md$")
-SKILL = re.compile(r"^skills/(?P<n>[a-z0-9][a-z0-9-]{0,63})/SKILL\.md$")
-REFERENCE = re.compile(r"^skills/(?P<n>[a-z0-9][a-z0-9-]{0,63})/references/[A-Za-z0-9._-]+\.md$")
+SOUL = re.compile(r"\ASOUL\.md\Z")
+SKILL = re.compile(r"\Askills/(?P<n>[a-z0-9][a-z0-9-]{0,63})/SKILL\.md\Z")
+REFERENCE = re.compile(r"\Askills/(?P<n>[a-z0-9][a-z0-9-]{0,63})/references/[A-Za-z0-9._-]+\.md\Z")
 
 DENIED_NAMES = ("mcp.json", ".env", "config.yaml", "AGENTS.md")
 DENIED_DIRS = ("scripts/", "memories/")

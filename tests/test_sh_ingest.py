@@ -154,5 +154,22 @@ def test_status_reports_the_owner_verdict(tmp_path):
     payload, digest = _payload(_kp(), "r0001", SOUL)
     ingest.ingest(payload, state=state, store=store, is_registered=ingest.allow_all, now=time.time(), secret=None)
     st = ingest.status(state, store, hotkey=_kp().ss58_address)
-    assert st["has_upload"] and st["digest"] == digest
+    assert st["has_upload"]
+    assert "digest" not in st and "signed_at" not in st  # the pointer a hijacking PR would need
     assert ingest.status(state, store, hotkey=_kp("//Bob").ss58_address)["has_upload"] is False
+
+
+def test_status_refuses_a_round_that_is_not_a_round_id(tmp_path):
+    """`round` comes off the query string straight into a path; unvalidated it read JSON outside the store."""
+    state, store = _state(tmp_path), tmp_path / "store"
+    st = ingest.status(state, store, hotkey=_kp().ss58_address, round_id="../../outside")
+    assert st["round_id"] is None and st["has_upload"] is False
+
+
+def test_rejected_requests_are_metered_to_the_caller_not_the_named_hotkey(tmp_path):
+    """Charging only accepted uploads fixed the targeted lockout but left abuse free; the caller's address is
+    metered instead, because it cannot be spent on another miner's behalf."""
+    lim = ingest._RateLimiter(per_hotkey=1, total=5000, per_ip=3)
+    assert [lim.attempt("10.0.0.1") for _ in range(4)] == [True, True, True, False]
+    assert lim.attempt("10.0.0.2") is True  # another caller is unaffected
+    assert lim.check("r0001", _kp().ss58_address) is True  # and no hotkey's quota was touched

@@ -77,10 +77,12 @@ def test_the_latest_signed_bundle_per_hotkey_counts_not_the_newest_pr():
         now=3000,
     )
     assert keep["A"]["number"] == 7 and keep["B"]["number"] == 9
-    assert superseded == {12: "superseded by #7, signed later (one submission per hotkey)"}
+    assert superseded == {
+        12: "superseded by #7 (one submission per hotkey: the latest signed, and on a tie the first submitted)"
+    }
 
 
-def test_a_future_signing_time_is_not_a_submission_and_ties_fall_to_the_pr_number():
+def test_a_future_signing_time_is_not_a_submission_and_ties_fall_to_the_first_pr():
     from sh.validator.orchestrate import one_per_hotkey
 
     keep, superseded = one_per_hotkey(
@@ -91,7 +93,9 @@ def test_a_future_signing_time_is_not_a_submission_and_ties_fall_to_the_pr_numbe
     keep, _ = one_per_hotkey(
         [{"number": 5, "changed": ["A"], "signed_at": 10}, {"number": 6, "changed": ["A"], "signed_at": 10}], now=20
     )
-    assert keep["A"]["number"] == 6
+    # The lower number wins: a copy of a public attestation can only be opened after the original, so a tie
+    # must go to whoever submitted first rather than handing the slot to the copier.
+    assert keep["A"]["number"] == 5
 
 
 def test_a_dethroned_incumbent_leaves_submissions():

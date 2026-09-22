@@ -27,8 +27,10 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 import shutil
 import sys
+import tempfile
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -40,6 +42,7 @@ from sh.cli import attest
 from sh.cli.lint import bundle_digest, lint
 from sh.validator import similarity
 
+_ANSWERS: dict[str, similarity.References] = {}  # per round: loading re-reads and re-shingles every answer
 FUTURE_SLACK_S = 600  # a signing time this far ahead is not a submission (mirrors the seal's one_per_hotkey)
 Gate = Callable[[str], bool]
 
@@ -94,7 +97,9 @@ def validate(payload: dict, *, round_id: str, round_dir: Path, is_registered: Ga
         return _reject(problems, code="lint")
     if att["signed_at"] > now + FUTURE_SLACK_S:
         return _reject(["signed_at is in the future"])
-    answers = similarity.load(round_dir)
+    answers = _ANSWERS.get(str(round_dir))
+    if answers is None:
+        answers = _ANSWERS.setdefault(str(round_dir), similarity.load(round_dir))
     if answers and (why := answers.refuse(similarity.bundle_text(files))):
         return _reject([why], code="s1")
     return {
@@ -125,6 +130,9 @@ def _receipt(round_id: str, hotkey: str, digest: str, signed_at: int, now: float
     return r
 
 
+_STORE_LOCK = threading.Lock()
+
+
 def _update_index(store: Path, round_id: str, hotkey: str, digest: str, signed_at: int, now: float) -> None:
     """A convenience pointer to each hotkey's latest signed upload for `/status`. The seal is
     authoritative — it picks the latest signed PR and fetches *that* digest — so this only advises."""
@@ -135,7 +143,9 @@ def _update_index(store: Path, round_id: str, hotkey: str, digest: str, signed_a
     if newer:
         idx[hotkey] = {"digest": digest, "signed_at": signed_at, "received_at": int(now)}
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(idx, indent=1))
+        tmp = path.with_suffix(".json.new")  # a reader must never see a half-written index
+        tmp.write_text(json.dumps(idx, indent=1))
+        tmp.replace(path)
 
 
 def store_upload(result: dict, *, store: Path, round_id: str, now: float, secret: bytes | None) -> dict:
@@ -147,17 +157,20 @@ def store_upload(result: dict, *, store: Path, round_id: str, now: float, secret
     dest = store / round_id / hotkey / "uploads" / f"{signed_at}-{digest}"
     if dest.exists():
         return receipt
-    tmp = dest.with_name(dest.name + ".tmp")
-    shutil.rmtree(tmp, ignore_errors=True)
-    tmp.mkdir(parents=True)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = Path(tempfile.mkdtemp(prefix=".staging-", dir=dest.parent))  # unique: two threads must not share it
     for rel, data in result["files"].items():
         f = tmp / rel
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_bytes(data)
     (tmp / attest.FILE).write_text(json.dumps(result["attestation"], indent=1) + "\n")
     (tmp / "receipt.json").write_text(json.dumps(receipt, indent=1) + "\n")
-    tmp.rename(dest)
-    _update_index(store, round_id, hotkey, digest, signed_at, now)
+    with _STORE_LOCK:
+        if dest.exists():  # another thread won the race; its copy is the same bundle, so drop ours
+            shutil.rmtree(tmp, ignore_errors=True)
+        else:
+            tmp.rename(dest)
+        _update_index(store, round_id, hotkey, digest, signed_at, now)
     return receipt
 
 
@@ -177,11 +190,14 @@ def ingest(payload: dict, *, state: Path, store: Path, is_registered: Gate, now:
 
 
 def status(state: Path, store: Path, *, hotkey: str, round_id: str | None = None) -> dict:
-    """The owner's own verdict for their latest upload — metadata only, never prose. The digest is
-    already public in the PR, so this leaks nothing a reader could not already see."""
+    """Whether this hotkey's latest upload landed — and nothing else. It is unauthenticated, so it must not
+    return the digest and signing time: that pair is exactly what a PR needs to claim the slot, and before the
+    miner opens their own PR it exists nowhere else. Never prose."""
+    if round_id and not attest.ROUND.match(round_id):  # a query string must never reach a path
+        return {"round_id": None, "hotkey": hotkey, "has_upload": False}
     round_id = round_id or current_round(state)
     entry = _read(store / round_id / "index.json", {}).get(hotkey) if round_id else None
-    return {"round_id": round_id, "hotkey": hotkey, "has_upload": bool(entry), **(entry or {})}
+    return {"round_id": round_id, "hotkey": hotkey, "has_upload": bool(entry)}
 
 
 # ─── registration gates ───────────────────────────────────────────────────────────────────────────
@@ -215,11 +231,20 @@ class _RateLimiter:
     the signature was checked would have allowed. Unauthenticated load is bounded instead by the registration
     gate, the body-size cap and the reverse proxy. Resets on restart; this blunts a flood, it is not the Sybil gate."""
 
-    def __init__(self, per_hotkey: int, total: int) -> None:
-        self.per_hotkey, self.total = per_hotkey, total
+    def __init__(self, per_hotkey: int, total: int, per_ip: int = 1000) -> None:
+        self.per_hotkey, self.total, self.per_ip = per_hotkey, total, per_ip
         self._by: dict[tuple[str, str], int] = {}
         self._total: dict[str, int] = {}
+        self._attempts: dict[str, int] = {}
         self._lock = threading.Lock()
+
+    def attempt(self, address: str) -> bool:
+        """Every request costs, charged to the caller's address. Charging only accepted uploads fixed the
+        targeted lockout but left rejected work — the attacker's actual path — free; an address cannot be spent
+        on another miner's behalf, so this meters abuse without reintroducing that."""
+        with self._lock:
+            self._attempts[address] = self._attempts.get(address, 0) + 1
+            return self._attempts[address] <= self.per_ip
 
     def check(self, round_id: str, hotkey: str) -> bool:
         with self._lock:
@@ -234,6 +259,7 @@ class _RateLimiter:
 def make_handler(*, state: Path, store: Path, gate: Gate, secret: bytes | None, limiter: _RateLimiter):
     class Handler(BaseHTTPRequestHandler):
         server_version = "sh-ingest/1"
+        timeout = 30  # a client that declares a large body and dribbles it must not hold a thread open
 
         def _send(self, code: int, body: dict) -> None:
             data = json.dumps(body).encode()
@@ -276,6 +302,9 @@ def make_handler(*, state: Path, store: Path, gate: Gate, secret: bytes | None, 
             except (ValueError, UnicodeDecodeError):
                 self._send(400, {"ok": False, "problems": ["body is not JSON"]})
                 return
+            if not limiter.attempt(self.client_address[0]):
+                self._send(429, {"ok": False, "code": "rate_limited", "problems": ["too many requests"]})
+                return
             hotkey = (payload.get("attestation") or {}).get("hotkey") if isinstance(payload, dict) else None
             rid = current_round(state)
             if rid and attest.SS58.match(str(hotkey or "")) and not limiter.check(rid, str(hotkey)):
@@ -309,11 +338,13 @@ def build_gate(kind: str, allowlist: Path | None, netuid: int, network: str) -> 
 
 
 def main(argv=None) -> int:
-    import os
-
     ap = argparse.ArgumentParser(description="Spark-Hermes private submission ingestion")
     ap.add_argument("--state", default=os.environ.get("SH_STATE", str(Path.home() / ".spark-hermes-state")))
-    ap.add_argument("--store", help="where uploads are kept (default: $SH_STATE/submissions)")
+    ap.add_argument(
+        "--store",
+        default=os.environ.get("SH_SUBMISSION_STORE"),
+        help="where uploads are kept; the seal reads SH_SUBMISSION_STORE too (default: $SH_STATE/submissions)",
+    )
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=8091)
     ap.add_argument("--gate", choices=("none", "allowlist", "metagraph"), default="allowlist")
@@ -328,10 +359,16 @@ def main(argv=None) -> int:
     state = Path(a.state)
     store = Path(a.store) if a.store else state / "submissions"
     store.mkdir(parents=True, exist_ok=True)
+    for old in sorted(store.glob("r*")):  # a closed round's uploads are never read again; they only grow
+        if old.is_dir() and (state / "rounds" / old.name / "DONE").exists():
+            shutil.rmtree(old, ignore_errors=True)
     secret_path = Path(a.secret_file) if a.secret_file else state / "server_secret"
     secret = secret_path.read_bytes().strip() if secret_path.exists() else None
     if secret is None:
         print(f"[ingest] no receipt secret at {secret_path}; receipts will be unsigned", file=sys.stderr)
+    if not attest.available():  # without it every signature check silently passes
+        print("substrate-interface is missing; signatures would go unverified. Refusing to start.", file=sys.stderr)
+        return 2
     gate = build_gate(a.gate, Path(a.allowlist) if a.allowlist else None, a.netuid, a.network)
     handler = make_handler(
         state=state, store=store, gate=gate, secret=secret, limiter=_RateLimiter(a.max_per_hotkey, a.max_total)
