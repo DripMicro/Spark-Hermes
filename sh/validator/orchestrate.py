@@ -83,6 +83,7 @@ class Config:
     concurrency: int = 2
     era: str = "e0"
     canon_every: int = 8  # the reference strategy runs in every n-th round (calibration); 1 = every round
+    submit_server: str = ""  # advertised to miners on the board; set it (r0002+) to switch submissions to commit–reveal
 
     @property
     def rounds(self) -> Path:
@@ -264,6 +265,7 @@ def live(
         "repo": REPO,
         "branch": BRANCH,
         "hf_repo": HF_REPO,
+        "submit_server": cfg.submit_server or None,  # where the CLI uploads the prose; None = legacy (prose in the PR)
     }
     out = cfg.repo / LIVE
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -1315,6 +1317,11 @@ def main(argv=None) -> int:
     ap.add_argument("--window-minutes", type=int, default=120, help="the submission window")
     ap.add_argument("--min-paired", type=int, default=4)
     ap.add_argument("--canon-every", type=int, default=8, help="run the reference strategy every n-th round")
+    ap.add_argument(
+        "--submit-server",
+        default=os.environ.get("SH_SUBMIT_SERVER", ""),
+        help="the private submission server URL to advertise on the board (r0002+); empty keeps prose-in-PR",
+    )
     ap.add_argument("--once", action="store_true")
     ap.add_argument("--pause", type=int, default=0, help="seconds between rounds")
     ap.add_argument("--mock-miners", help="directory of mock miner bundles that submit each window (test only)")
@@ -1332,6 +1339,7 @@ def main(argv=None) -> int:
         window_s=a.window_minutes * 60,
         min_paired=a.min_paired,
         canon_every=a.canon_every,
+        submit_server=a.submit_server,
     )
     mock = (Path(a.mock_miners), Path(a.mock_keys or (cfg.state / "mock-keys"))) if a.mock_miners else None
     resume = unfinished_round(cfg)  # a restart picks up the round it was in the middle of

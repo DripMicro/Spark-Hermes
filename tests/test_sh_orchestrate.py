@@ -483,3 +483,21 @@ def test_live_json_takes_github_logins_only_from_the_seal(tmp_path, monkeypatch)
     live = json.loads((cfg.repo / "docs" / "live" / "live.json").read_text())
     assert live["github"] == {"5A": "torvalds", "5B": "octocat"}  # prev + seal; no open-PR opener anywhere
     assert "5C" not in live["github"]
+
+
+def test_the_board_advertises_the_submit_server_only_when_configured(tmp_path):
+    """The cutover switch: with submit_server set, the board carries it and the CLI uploads; empty keeps legacy."""
+    import sh.validator.orchestrate as o
+
+    cfg = _cfg(tmp_path)
+    rd = cfg.rounds / "r0001"
+    rd.mkdir(parents=True)
+    (rd / "window.json").write_text(json.dumps({"opens_at": 0, "closes_at": 1, "seconds": 1}))
+
+    cfg.submit_server = "https://ingest.example"
+    o.live(cfg, rd, "window", push=False)
+    assert json.loads((cfg.repo / o.LIVE).read_text())["submit_server"] == "https://ingest.example"
+
+    cfg.submit_server = ""
+    o.live(cfg, rd, "window", push=False)
+    assert json.loads((cfg.repo / o.LIVE).read_text())["submit_server"] is None
