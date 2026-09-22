@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0003-p02",
+ "round_id": "r0003",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nGPXWaypoint.remove_time() sets time to 0 instead of None\n\nWhen calling `remove_time()` on a GPXWaypoint, the time field is being set to `0` instead of `None`. This breaks the expected behavior where removed time should be `None`.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\nimport datetime\n\n# Create a waypoint with time\nwaypoint = gpxpy.gpx.GPXWaypoint(latitude=13.0, longitude=13.0, time=datetime.datetime(2018, 7, 15, 12, 30, 0))\nprint(f\"Before remove_time(): {waypoint.time}\")\n\n# Remove time\nwaypoint.remove_time()\nprint(f\"After remove_time(): {waypoint.time}\")\nprint(f\"Is time None? {waypoint.time is None}\")\n```\n\nExpected output:\n```\nBefore remove_time(): 2018-07-15 12:30:00\nAfter remove_time(): None\nIs time None? True\n```\n\nActual output:\n```\nBefore remove_time(): 2018-07-15 12:30:00\nAfter remove_time(): 0\nIs time None? False\n```\n\nThe same issue affects other GPX elements that use the `remove_time()` method when processing GPX files with the `remove_time(all=True)` option.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_basic__bc9n0vec",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_remove_time_all"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

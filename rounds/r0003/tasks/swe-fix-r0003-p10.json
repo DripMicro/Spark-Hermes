@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0003-p10",
+ "round_id": "r0003",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nLRU cache __wrapped__ attribute returns None instead of wrapped function\n\n#### Description\n\nWhen accessing the `__wrapped__` attribute on a function decorated with `@functools.lru_cache`, astroid incorrectly returns `None` instead of the original wrapped function.\n\n#### Steps/Code to Reproduce\n\n```python\nimport functools\nimport astroid\n\ncode = '''\nimport functools\n\nclass Foo(object):\n    @functools.lru_cache()\n    def foo(self):\n        pass\n\nf = Foo()\nf.foo.__wrapped__\n'''\n\nmodule = astroid.parse(code)\nwrapped_attr = list(module.body[-1].value.infer())[0]\nprint(f\"Expected: FunctionDef, Got: {type(wrapped_attr)}\")\n```\n\nThe `__wrapped__` attribute should return the original function that was decorated, but instead it returns `None`. This breaks code analysis tools that rely on being able to access the wrapped function through this standard attribute.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__zp8tdo4h",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_object_model.py::test_lru_cache[False]",
+   "tests/test_object_model.py::test_lru_cache[True]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

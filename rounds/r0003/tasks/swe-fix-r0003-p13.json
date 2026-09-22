@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0003-p13",
+ "round_id": "r0003",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Data class in diagnostics module has incorrect initialization\n\nI'm encountering issues with the Data class in the diagnostics module. The class seems to be incorrectly initializing several properties.\n\n## Description\n\nWhen creating a Data object, several properties are being initialized with incorrect values:\n\n1. The conversion is defaulting to `is_float=True` instead of `False`\n2. The length is being incremented by 1\n3. The byte_order is being swapped (little_endian becomes big_endian and vice versa)\n4. The minimum and maximum values are swapped\n5. The is_signed property is always set to True instead of False\n6. The scale property returns a negative value\n7. The choices representation in __repr__ is incorrect\n\n## Reproduction\n\n```python\nfrom cantools.database.diagnostics.data import Data, IdentityConversion\n\n# Create a simple Data object\ndata = Data(\n    name=\"TestData\",\n    start=0,\n    length=8,\n    byte_order=\"little_endian\",\n    minimum=0,\n    maximum=255\n)\n\n# Check the properties\nprint(f\"Length: {data.length}\")  # Shows 9 instead of 8\nprint(f\"Byte order: {data.byte_order}\")  # Shows big_endian instead of little_endian\nprint(f\"Minimum: {data.minimum}\")  # Shows 255 instead of 0\nprint(f\"Maximum: {data.maximum}\")  # Shows 0 instead of 255\nprint(f\"Is signed: {data.is_signed}\")  # Shows True instead of False\nprint(f\"Scale: {data.scale}\")  # Shows negative value\n```\n\nThis causes issues when trying to use the Data class for diagnostics operations, as the values are not being properly initialized or represented.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_file__vvyd1zlf",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd_repr",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd_repr"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

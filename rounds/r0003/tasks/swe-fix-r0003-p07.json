@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0003-p07",
+ "round_id": "r0003",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nOAuth1 mandatory parameter validation removed accidentally\n\n#### Description\n\nThe mandatory parameter validation for OAuth1 requests has been removed from the `_check_mandatory_parameters` method in `BaseEndpoint`. This means that OAuth1 requests missing required parameters like `oauth_signature`, `oauth_consumer_key`, `oauth_nonce`, `oauth_timestamp`, or `oauth_signature_method` are no longer being rejected with a 400 Bad Request status as required by the OAuth1 specification.\n\nAdditionally, signature method validation against the allowed signature methods list has also been removed, so invalid signature methods are no longer being caught.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth1.rfc5849.endpoints.base import BaseEndpoint\nfrom oauthlib.oauth1.rfc5849 import RequestValidator\nfrom oauthlib.common import URLENCODED\n\n# Create endpoint with default validator\nv = RequestValidator()\ne = BaseEndpoint(v)\n\n# Create request missing mandatory oauth_timestamp parameter\nr = e._create_request('https://example.com/', 'GET', \n                     'oauth_signature=a&oauth_consumer_key=b&oauth_nonce=c', \n                     URLENCODED)\n\n# This should raise InvalidRequestError but doesn't anymore\ntry:\n    e._check_mandatory_parameters(r)\n    print(\"ERROR: No exception raised for missing mandatory parameters!\")\nexcept Exception as ex:\n    print(f\"Expected exception: {ex}\")\n\n# Test invalid signature method\nr2 = e._create_request('https://example.com/', 'GET',\n                      'oauth_signature=a&oauth_consumer_key=b&oauth_nonce=c&oauth_version=1.0&oauth_signature_method=INVALID&oauth_timestamp=1234567890',\n                      URLENCODED)\n\ntry:\n    e._check_mandatory_parameters(r2)\n    print(\"ERROR: No exception raised for invalid signature method!\")\nexcept Exception as ex:\n    print(f\"Expected exception: {ex}\")\n```\n\nThis should raise `InvalidRequestError` for missing mandatory parameters and `InvalidSignatureMethodError` for invalid signature methods, but currently passes without any validation.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_pm_remove_cond__wllpz46m",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth1/rfc5849/endpoints/test_base.py::BaseEndpointTest::test_mandated_params",
+   "tests/oauth1/rfc5849/endpoints/test_base.py::BaseEndpointTest::test_signature_method_validation",
+   "tests/oauth1/rfc5849/endpoints/test_base.py::BaseEndpointTest::test_signature_methods"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

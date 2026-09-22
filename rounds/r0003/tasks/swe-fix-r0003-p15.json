@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0003-p15",
+ "round_id": "r0003",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nData label default values changed unexpectedly\n\nWhen creating new data labels, the default visibility settings are not what they used to be. Previously, data labels would show values by default and hide other elements like legend keys, category names, and percentages. Now it seems like the defaults have been flipped around.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx import Presentation\nfrom pptx.chart.data import ChartData\n\n# Create a simple chart with data labels\nprs = Presentation()\nslide = prs.slides.add_slide(prs.slide_layouts[5])\n\nchart_data = ChartData()\nchart_data.categories = ['Q1', 'Q2', 'Q3', 'Q4']\nchart_data.add_series('Sales', (10, 20, 30, 40))\n\nchart = slide.shapes.add_chart(\n    XL_CHART_TYPE.COLUMN_CLUSTERED, \n    Inches(2), Inches(2), Inches(6), Inches(4.5), \n    chart_data\n).chart\n\n# Add data labels - these should show values by default\nchart.has_data_labels = True\ndata_labels = chart.data_labels\n\n# Check what's actually showing\nprint(f\"Show values: {data_labels.show_value}\")  # Expected: True, but getting False\nprint(f\"Show legend key: {data_labels.show_legend_key}\")  # Expected: False, but getting True  \nprint(f\"Show category name: {data_labels.show_category_name}\")  # Expected: False, but getting True\nprint(f\"Show percentage: {data_labels.show_percentage}\")  # Expected: False, but getting True\n```\n\nThe data labels are now showing legend keys, category names, and percentages by default instead of just the values, which makes charts look cluttered and is inconsistent with typical PowerPoint behavior.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.combine_file__7nyqsiw8",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/chart/test_datalabel.py::DescribeDataLabel::it_can_change_its_position[position_set_fixture0]",
+   "tests/chart/test_datalabel.py::DescribeDataLabel::it_can_change_whether_it_has_a_text_frame[has_tf_set_fixture10]",
+   "tests/chart/test_datalabel.py::DescribeDataLabel::it_can_change_whether_it_has_a_text_frame[has_tf_set_fixture6]",
+   "tests/chart/test_datalabel.py::DescribeDataLabel::it_can_change_whether_it_has_a_text_frame[has_tf_set_fixture7]",
+   "tests/chart/test_datalabel.py::DescribeDataLabel::it_gets_or_adds_rich_element_to_help[rich_fixture0]",
+   "tests/chart/test_datalabel.py::DescribeDataLabel::it_has_a_font[font_fixture0]",
+   "tests/chart/test_datalabel.py::DescribeDataLabels::it_knows_whether_it_shows_percentage[percent_get_fixture0]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
