@@ -204,3 +204,19 @@ def test_reveal_publishes_out_of_competition_bundles_but_not_the_king(tmp_path):
     o._reveal_bundles(rd, dest, king)
     published = sorted(p.name for p in (dest / "revealed").iterdir())
     assert published == sorted([loser, dethroned])  # king + staying incumbent withheld; loser + dethroned revealed
+
+
+def test_a_forged_digest_cannot_escape_the_store(tmp_path):
+    """bundle_sha256 comes out of the miner's own attestation, so it is attacker-controlled: it names a directory
+    in the private store and must never be able to climb out of it."""
+    repo, kp = _repo(tmp_path), _kp()
+    hk = kp.ss58_address
+    att = attest.sign(kp, "r0001", bundle_digest(PROSE))
+    att["bundle_sha256"] = "../../../../../../tmp"  # not a digest: a path
+    ref = _commit_submission(repo, hk, _attestation_only(att))
+    store = tmp_path / "store"
+    store.mkdir()
+    staged = tmp_path / "staged"
+    b = o._reveal_challenger(_cfg(tmp_path, repo), ref, hk, staged, round_id="r0001", store=store)
+    assert b is not None and b["problems"]  # refused
+    assert sorted(p.name for p in staged.iterdir()) == ["attestation.json"]  # nothing outside the store was pulled in

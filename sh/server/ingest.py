@@ -200,8 +200,10 @@ def metagraph_gate(_netuid: int, _network: str) -> Gate:  # TODO(phase-1-ops): w
 
 # ─── HTTP layer ───────────────────────────────────────────────────────────────────────────────────
 class _RateLimiter:
-    """Best-effort, in-memory: per-hotkey and global upload caps within the current window. Resets on
-    restart — a durable cap can replace it later; this only blunts a flood, it is not the Sybil gate."""
+    """Best-effort, in-memory caps on *accepted* uploads per round. Only an accepted upload is recorded, so a
+    forged request naming someone else's hotkey can never burn that miner's quota — which a cap charged before
+    the signature was checked would have allowed. Unauthenticated load is bounded instead by the registration
+    gate, the body-size cap and the reverse proxy. Resets on restart; this blunts a flood, it is not the Sybil gate."""
 
     def __init__(self, per_hotkey: int, total: int) -> None:
         self.per_hotkey, self.total = per_hotkey, total
@@ -209,15 +211,14 @@ class _RateLimiter:
         self._total: dict[str, int] = {}
         self._lock = threading.Lock()
 
-    def allow(self, round_id: str, hotkey: str) -> bool:
+    def check(self, round_id: str, hotkey: str) -> bool:
         with self._lock:
-            if self._total.get(round_id, 0) >= self.total:
-                return False
-            if self._by.get((round_id, hotkey), 0) >= self.per_hotkey:
-                return False
+            return self._total.get(round_id, 0) < self.total and self._by.get((round_id, hotkey), 0) < self.per_hotkey
+
+    def record(self, round_id: str, hotkey: str) -> None:
+        with self._lock:
             self._by[(round_id, hotkey)] = self._by.get((round_id, hotkey), 0) + 1
             self._total[round_id] = self._total.get(round_id, 0) + 1
-            return True
 
 
 def make_handler(*, state: Path, store: Path, gate: Gate, secret: bytes | None, limiter: _RateLimiter):
@@ -265,11 +266,13 @@ def make_handler(*, state: Path, store: Path, gate: Gate, secret: bytes | None, 
                 return
             hotkey = (payload.get("attestation") or {}).get("hotkey") if isinstance(payload, dict) else None
             rid = current_round(state)
-            if rid and attest.SS58.match(str(hotkey or "")) and not limiter.allow(rid, str(hotkey)):
-                self._send(429, {"ok": False, "code": "rate_limited", "problems": ["too many uploads this window"]})
+            if rid and attest.SS58.match(str(hotkey or "")) and not limiter.check(rid, str(hotkey)):
+                self._send(429, {"ok": False, "code": "rate_limited", "problems": ["too many uploads this round"]})
                 return
             result = ingest(payload if isinstance(payload, dict) else {}, state=state, store=store,
                             is_registered=gate, now=time.time(), secret=secret)
+            if result["ok"]:  # charged only once the hotkey's own signature carried the upload
+                limiter.record(result["receipt"]["round_id"], result["receipt"]["hotkey"])
             self._send(200 if result["ok"] else 400, result)
 
     return Handler

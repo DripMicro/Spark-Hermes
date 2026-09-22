@@ -57,6 +57,9 @@ LABEL_STRATEGY, LABEL_SCORED = "sh:strategy", "sh:round:scored"
 # name and as a shell word in the worker's `--surfaces` argument; a name like `$(...)` or `../x` must never reach
 # there. Anything else in submissions/ is not a submission.
 SS58 = re.compile(r"\A[1-9A-HJ-NP-Za-km-z]{47,48}\Z")
+# A digest out of a miner's attestation names a directory in the private store. It is attacker-controlled, so it
+# is matched strictly before it is ever joined to a path: "../.." must never reach the store lookup.
+DIGEST = re.compile(r"\A[0-9a-f]{64}\Z")
 HF_REPO = "gittensor-model-hub/spark-hermes-rounds"
 LIVE = "docs/live/live.json"  # what the dashboard polls; committed on every stage change
 CLAIM_GRACE_S = 30  # after claiming the engine, how long a screen the daemon had just started is given to show up
@@ -474,7 +477,7 @@ def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_
     digest = att.get("bundle_sha256") if isinstance(att, dict) else None
     signed_at = att.get("signed_at") if isinstance(att, dict) else None
     prose_in_pr = [n for n in names if n not in ("attestation.json", "receipt.json")]
-    if digest and isinstance(signed_at, int) and not isinstance(signed_at, bool):
+    if isinstance(digest, str) and DIGEST.match(digest) and isinstance(signed_at, int) and not isinstance(signed_at, bool):
         src = store / round_id / hotkey / "uploads" / f"{signed_at}-{digest}"
         if src.is_dir():  # the revealed bundle the commitment points to
             shutil.rmtree(dest, ignore_errors=True)
