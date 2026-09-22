@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790069561.2687018,
- "round_id": "r0003",
- "stage": "done",
+ "updated": 1790069564.4324684,
+ "round_id": "r0004",
+ "stage": "window",
  "stages": [
   "open",
   "window",
@@ -15,78 +15,19 @@
   "publish_close",
   "done"
  ],
- "started": 1790057481.1679504,
+ "started": 1790069564.3955722,
  "phases": [
   {
    "stage": "start",
-   "t": 1790057481.1679504
-  },
-  {
-   "stage": "open",
-   "t": 1790057483.5016499
-  },
-  {
-   "stage": "window",
-   "t": 1790064687.4181786
-  },
-  {
-   "stage": "seal",
-   "t": 1790064695.1238804
-  },
-  {
-   "stage": "images",
-   "t": 1790064788.9760714
-  },
-  {
-   "stage": "evaluate",
-   "t": 1790069535.1591854
-  },
-  {
-   "stage": "close",
-   "t": 1790069537.9304988
-  },
-  {
-   "stage": "crown",
-   "t": 1790069537.9352946
-  },
-  {
-   "stage": "merge",
-   "t": 1790069549.6544993
-  },
-  {
-   "stage": "dethroned",
-   "t": 1790069552.569215
-  },
-  {
-   "stage": "announce",
-   "t": 1790069556.694951
-  },
-  {
-   "stage": "export",
-   "t": 1790069560.6121445
+   "t": 1790069564.3955722
   }
  ],
  "window": {
-  "opens_at": 1790057481.163895,
-  "closes_at": 1790064681.163895,
+  "opens_at": 1790069564.3907418,
+  "closes_at": 1790076764.3907418,
   "seconds": 7200
  },
- "submissions": [
-  {
-   "pr": 193,
-   "hotkey": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
-   "created_at": "2026-09-22T06:57:36Z",
-   "updated_at": "2026-09-22T06:58:55Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/193"
-  },
-  {
-   "pr": 192,
-   "hotkey": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
-   "created_at": "2026-09-22T06:55:36Z",
-   "updated_at": "2026-09-22T07:00:22Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/192"
-  }
- ],
+ "submissions": [],
  "github": {
   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": "dato-bitar",
   "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": "Tet-9",
@@ -117,244 +58,12 @@
  },
  "last_round": "r0003",
  "tasks": 6,
- "active": {
-  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
-   "pr": 192,
-   "head": "779b47a6fb716a4a3e598a65b0efed2c4897a4ef",
-   "bundle_sha256": "6308eaac9af703e7fbfb2794691d677c109a49555c6e5a86f75e0ad7ba898712",
-   "incumbent": false,
-   "was_incumbent": true,
-   "github": "dato-bitar"
-  },
-  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
-   "pr": 193,
-   "head": "ad5696901661b1720d56a8c5bf8480fc6298019f",
-   "bundle_sha256": "4815bc6ab143fd8f7c5b72203d5e0e09a9426cdd57f3a073c30997ecacf27e2c",
-   "incumbent": false,
-   "was_incumbent": false,
-   "github": "Tet-9"
-  }
- },
+ "active": {},
  "rejected": {},
- "progress": {
-  "done": 18,
-  "total": 18,
-  "by_surface": {
-   "null": {
-    "n": 6,
-    "verified": 1,
-    "credit": 0.3,
-    "tasks": {
-     "swe-fix-r0003-01": {
-      "credit": 0.8,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-02": {
-      "credit": 1.0,
-      "verified": true,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-07": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-10": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-15": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-13": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     }
-    }
-   },
-   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
-    "n": 6,
-    "verified": 0,
-    "credit": 0.2167,
-    "tasks": {
-     "swe-fix-r0003-01": {
-      "credit": 0.8,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-02": {
-      "credit": 0.5,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-07": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-10": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-13": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-15": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     }
-    }
-   },
-   "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
-    "n": 6,
-    "verified": 1,
-    "credit": 0.4333,
-    "tasks": {
-     "swe-fix-r0003-02": {
-      "credit": 1.0,
-      "verified": true,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-07": {
-      "credit": 0.8,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-10": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-13": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-15": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0003-01": {
-      "credit": 0.8,
-      "verified": false,
-      "void": false,
-      "dq": false
-     }
-    }
-   }
-  }
- },
- "crown": {
-  "schema": "sh-crown-v1",
-  "round_id": "r0003",
-  "king": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
-  "standings": {
-   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
-    "n": 6,
-    "verified": 0,
-    "dq": 0,
-    "credit": 0.216667,
-    "delta": -0.083333
-   },
-   "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
-    "n": 6,
-    "verified": 1,
-    "dq": 0,
-    "credit": 0.433333,
-    "delta": 0.133333,
-    "rank": 1
-   }
-  },
-  "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired, not disqualified; a tie does not dethrone the incumbent; other ties by pooled \u0394c then a round-keyed hash"
- },
- "scores": {
-  "weights": {
-   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.45375314529125166,
-   "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.3926699399685235,
-   "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": 0.15357691474022486
-  },
-  "king": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
-  "per_hotkey": {
-   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
-    "n": 18,
-    "score": 0.240741,
-    "mean_d": 0.240741,
-    "se": 0.117637,
-    "delta_c": 0.09016539316663807,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": null
-   },
-   "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
-    "n": 12,
-    "score": 0.208333,
-    "mean_d": 0.208333,
-    "se": 0.121586,
-    "delta_c": 0.05270273763794614,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": null
-   },
-   "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
-    "n": 18,
-    "score": 0.081481,
-    "mean_d": 0.081481,
-    "se": 0.127379,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": null
-   }
-  },
-  "family_stats": {
-   "swe_fix": {
-    "null_p": 0.16666666666666666,
-    "canon_p": null,
-    "null_credit": 0.2111,
-    "canon_credit": null,
-    "label": "frontier"
-   }
-  },
-  "commitments_ok": true
- },
- "queue": [
-  {
-   "round_id": "r0004",
-   "tasks_sha256": "4c23bb6ec790f13ff678100c2964875155c7f535e27cb5ab68ee5e5f43391ac0",
-   "tasks": 6,
-   "minted_at": 1789758337.8168805
-  }
- ],
+ "progress": {},
+ "crown": null,
+ "scores": null,
+ "queue": [],
  "history": [
   {
    "round_id": "r0001",

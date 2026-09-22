@@ -1,0 +1,34 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0004-p04",
+ "round_id": "r0004",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nBinary operations with union types broken in Python 3.10+\n\n#### Description\n\nWhen using the `|` operator for union types in Python 3.10+, the binary operation inference is producing incorrect results. The operator seems to be applying the wrong operands or contexts during type inference.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# Test union type operations\ncode = \"\"\"\nfrom typing import Union\nx = int | str  # This should work in Python 3.10+\ny = Union[int, str] | None\n\"\"\"\n\nmodule = astroid.parse(code)\n# Try to infer the union type operations\nfor node in module.nodes_of_class(astroid.BinOp):\n    if node.op == '|':\n        try:\n            result = list(node.infer())\n            print(f\"Inferred: {result}\")\n        except Exception as e:\n            print(f\"Error: {e}\")\n```\n\nThe binary operation inference for union types using the `|` operator is not working correctly, particularly when dealing with `None` values and class definitions in the operands.\n\n#### Expected Behavior\n\nUnion type operations with the `|` operator should be properly inferred and return the correct union type results.\n\n#### Actual Behavior\n\nThe inference fails or produces incorrect results due to issues in the binary operation handling logic for union types.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__z7cb06vx",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::InferenceTest::test_binary_op_custom_class",
+   "tests/test_inference.py::InferenceTest::test_binary_op_float_div",
+   "tests/test_inference.py::InferenceTest::test_binary_op_or_union_type",
+   "tests/test_inference.py::InferenceTest::test_binary_op_other_type",
+   "tests/test_inference.py::InferenceTest::test_binary_op_other_type_using_reflected_operands",
+   "tests/test_inference.py::InferenceTest::test_binop_different_types_normal_not_implemented_and_reflected",
+   "tests/test_inference.py::InferenceTest::test_binop_different_types_reflected_only",
+   "tests/test_inference.py::InferenceTest::test_binop_subtype",
+   "tests/test_inference.py::InferenceTest::test_binop_supertype",
+   "tests/test_inference.py::InferenceTest::test_infer_coercion_rules_for_floats_complex"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

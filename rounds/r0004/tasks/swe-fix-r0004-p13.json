@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0004-p13",
+ "round_id": "r0004",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nServiceApplicationClient prepare_request_body fails with NameError\n\n#### Description\n\nWhen using ServiceApplicationClient to prepare a request body for JWT assertion, the method fails with a NameError because the `assertion` variable is referenced before being defined.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth2 import ServiceApplicationClient\n\n# Set up client with private key\nclient_id = 'your_client_id'\nprivate_key = \"\"\"-----BEGIN RSA PRIVATE KEY-----\n... your private key here ...\n-----END RSA PRIVATE KEY-----\"\"\"\n\nclient = ServiceApplicationClient(client_id, private_key=private_key)\n\n# Try to prepare request body\nbody = client.prepare_request_body(\n    issuer='https://example.com',\n    subject='user@example.com', \n    audience='https://oauth.example.com/token',\n    body='grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer'\n)\n```\n\nThis raises:\n```\nNameError: name 'assertion' is not defined\n```\n\nThe issue occurs because the JWT encoding line was removed but the code still tries to use the `assertion` variable that was never created.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_pm_remove_assign__w5gemjke",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth2/rfc6749/clients/test_service_application.py::ServiceApplicationClientTest::test_request_body",
+   "tests/oauth2/rfc6749/clients/test_service_application.py::ServiceApplicationClientTest::test_request_body_no_initial_private_key"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

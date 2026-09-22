@@ -1,0 +1,34 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0004-p00",
+ "round_id": "r0004",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nARXML loader fails with \"name 'fresh_len' is not defined\" error\n\nWhen loading ARXML files that contain secured PDUs with freshness properties, the system loader crashes with a NameError indicating that `fresh_len` is not defined.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# This will fail when loading ARXML files with secured PDUs\ndb = cantools.db.load_file('tests/files/arxml/system-4.2.arxml')\n```\n\nThe error occurs when processing secured I-PDUs that have freshness properties defined in the ARXML file. The loader attempts to reference a variable `fresh_len` that hasn't been properly initialized.\n\n#### Error Message\n\n```\ncantools.database.UnsupportedDatabaseFormatError: ARXML: \"name 'fresh_len' is not defined\"\n```\n\nThis affects loading of ARXML files containing:\n- Secured I-PDUs with freshness properties\n- E2E protected messages with Profile2 or Profile5 configurations\n- Container PDUs with secured contained messages\n\nThe issue prevents proper parsing of AUTOSAR ARXML database files that include security and end-to-end protection configurations.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_remove_assign__vfcgyxfm",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar3_e2e_profile2",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e_profile5",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_secoc",
+   "tests/test_database.py::CanToolsDatabaseTest::test_encode_decode_containers",
+   "tests/test_database.py::CanToolsDatabaseTest::test_encode_mixed_signal",
+   "tests/test_database.py::CanToolsDatabaseTest::test_gather_signals",
+   "tests/test_database.py::CanToolsDatabaseTest::test_system_4_arxml",
+   "tests/test_database.py::CanToolsDatabaseTest::test_unused_bit_pattern",
+   "tests/test_list.py::CanToolsListTest::test_arxml4"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

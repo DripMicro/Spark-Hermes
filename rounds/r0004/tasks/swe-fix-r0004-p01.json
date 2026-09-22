@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0004-p01",
+ "round_id": "r0004",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTable cell margin_left setter produces incorrect values\n\n#### Description\n\nWhen setting the `margin_left` property on a table cell, the value is being negated and validation is not working properly.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx import Presentation\nfrom pptx.util import Inches\n\n# Create a presentation with a table\nprs = Presentation()\nslide = prs.slides.add_slide(prs.slide_layouts[5])\ntable = slide.shapes.add_table(2, 2, Inches(1), Inches(1), Inches(4), Inches(2)).table\n\n# Try to set margin_left on a cell\ncell = table.cell(0, 0)\ncell.margin_left = Inches(0.5)\n\n# The margin value will be incorrect (negated)\nprint(f\"Expected: positive margin value\")\nprint(f\"Actual: margin value is negated\")\n```\n\nThe margin_left setter appears to negate the input value and also validates against None instead of the actual input value, causing unexpected behavior when setting cell margins.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.func_basic__2d5il5av",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/test_table.py::Describe_Cell::it_can_change_its_margin_settings[margin_set_fixture0]",
+   "tests/test_table.py::Describe_Cell::it_can_change_its_margin_settings[margin_set_fixture4]",
+   "tests/test_table.py::Describe_Cell::it_can_change_its_margin_settings[margin_set_fixture5]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

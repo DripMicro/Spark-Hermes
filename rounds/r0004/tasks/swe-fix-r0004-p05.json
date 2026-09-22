@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0004-p05",
+ "round_id": "r0004",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\ndateutil.parser brain extension not working after recent changes\n\n#### Description\n\nThe dateutil.parser module is not being properly extended by astroid's brain module. When trying to use dateutil.parser functionality, astroid fails to provide the expected inference capabilities.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\nfrom dateutil import parser\n\n# This should work with proper brain extension\ncode = \"\"\"\nfrom dateutil import parser\nresult = parser.parse(\"2023-01-01\")\n\"\"\"\n\nmodule = astroid.parse(code)\n# The parser module should be properly extended but isn't\n```\n\nThe issue appears to be that the brain extension for dateutil.parser is not being registered correctly, causing astroid to not recognize the module's structure and functionality properly.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__jkqnnygv",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_dateutil.py::DateutilBrainTest::test_parser"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

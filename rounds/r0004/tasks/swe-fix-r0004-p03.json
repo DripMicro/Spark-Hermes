@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0004-p03",
+ "round_id": "r0004",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPerl6 lexer incorrectly handles nested bracket delimiters\n\n#### Description\n\nThe Perl6 lexer is not correctly parsing nested bracket delimiters in quoted strings and other constructs. When using mirrored characters like `()`, `[]`, `{}`, etc. as delimiters, the lexer appears to be swapping the opening and closing characters during the nesting level calculation, causing incorrect tokenization.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pygments import highlight\nfrom pygments.lexers import Perl6Lexer\nfrom pygments.formatters import TerminalFormatter\n\ncode = '''\nq{nested {brackets} here}\nq[nested [brackets] here]\nq(nested (parens) here)\n'''\n\nlexer = Perl6Lexer()\nformatter = TerminalFormatter()\nresult = highlight(code, lexer, formatter)\nprint(result)\n```\n\nThe lexer fails to properly handle the nested bracket structures, leading to incorrect syntax highlighting and potentially incomplete tokenization of the quoted strings.\n\n#### Expected Behavior\n\nThe lexer should correctly identify matching opening and closing brackets while maintaining proper nesting levels, ensuring that quoted strings with nested delimiters are fully tokenized.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pygments__pygments.27649ebb.func_basic__ngpyaof0",
+  "environment": "jyangballin/swesmith.x86_64.pygments_1776_pygments.27649ebb",
+  "fail_to_pass": [
+   "tests/examplefiles/perl6/RoleQ.pm6::",
+   "tests/examplefiles/perl6/grammar-test.p6::",
+   "tests/examplefiles/perl6/test.p6::"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
