@@ -68,12 +68,9 @@ jobs:
 
       - name: Summary
         if: env.BUNDLE != ''
+        # Nothing from the pull request is echoed here. A bundle path or an attestation field is attacker
+        # controlled, and inside a fenced block it can close the fence and inject markdown into the job summary.
+        # The full report is already in the previous step's log.
         run: |
           echo "### Strategy check" >> "$GITHUB_STEP_SUMMARY"
-          echo '```json' >> "$GITHUB_STEP_SUMMARY"
-          if [ -f "$BUNDLE/SOUL.md" ] || [ -d "$BUNDLE/skills" ]; then
-            python -m sh.cli.lint "$BUNDLE" --json
-          else
-            cat "$BUNDLE/attestation.json"
-          fi >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "Checked the submission — see this job's log for the digest and the full report." >> "$GITHUB_STEP_SUMMARY"

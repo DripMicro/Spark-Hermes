@@ -26,9 +26,9 @@ from pathlib import Path
 SCHEMA = "sh-attestation-v2"
 FILE = "attestation.json"
 DOMAIN = "gittensor-model-hub/Spark-Hermes"  # the competition the signature is for; a fork's rounds share nothing
-SS58 = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{46,48}$")
-ROUND = re.compile(r"^r\d{4}$")
-HEX64 = re.compile(r"^[0-9a-f]{64}$")
+SS58 = re.compile(r"\A[1-9A-HJ-NP-Za-km-z]{47,48}\Z")  # same shape the seal enforces
+ROUND = re.compile(r"\Ar\d{4}\Z")
+HEX64 = re.compile(r"\A[0-9a-f]{64}\Z")
 
 
 def message(round_id: str, bundle_sha256: str, signed_at: int) -> bytes:

@@ -40,6 +40,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from sh.cli import attest
 from sh.cli.lint import check_files, collect
 from sh.cli.scorecard import render as render_scorecard
 from sh.exports.build import build as build_exports
@@ -474,6 +475,11 @@ def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_
             att = json.loads(raw.stdout.decode("utf-8"))
         except (ValueError, UnicodeDecodeError):
             att = None
+    # The PR's own attestation is what claims this hotkey's slot, so it must carry the hotkey's signature over
+    # this round and this digest. Without this a one-file PR copying a victim's digest — no signature needed —
+    # pointed the seal at the victim's revealed bundle and took over their submission.
+    if forged := attest.problems(att, digest=(att or {}).get("bundle_sha256", ""), hotkey=hotkey, round_id=round_id):
+        return {"problems": forged, "digest": "", "attestation": None}
     digest = att.get("bundle_sha256") if isinstance(att, dict) else None
     signed_at = att.get("signed_at") if isinstance(att, dict) else None
     prose_in_pr = [n for n in names if n not in ("attestation.json", "receipt.json")]
@@ -530,9 +536,12 @@ def _retain_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
     if not src.is_dir():
         return
     dest = cfg.state / "incumbents" / hotkey
-    shutil.rmtree(dest, ignore_errors=True)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(src, dest)
+    staging = dest.with_name(f".{hotkey}.new")  # copy first, swap last: a partial bundle would fail its own digest
+    shutil.rmtree(staging, ignore_errors=True)
+    shutil.copytree(src, staging)
+    shutil.rmtree(dest, ignore_errors=True)
+    staging.rename(dest)
 
 
 def _release_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
@@ -548,22 +557,26 @@ def _release_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
     shutil.rmtree(kept, ignore_errors=True)
 
 
-def _reveal_bundles(rd: Path, dest: Path, king: str | None) -> None:
-    """Publish the prose of every bundle that is out of the competition, so anyone can match its committed
-    digest against its content: each sealed challenger that was not crowned, and any incumbent dethroned this
-    round (staged under `rd/reveal` by `_release_incumbent`). The reigning king is not revealed — it defends."""
+def _reveal_bundles(cfg: Config, rd: Path, dest: Path, king: str | None) -> None:
+    """Publish the prose of every bundle that is out of the competition, so anyone can match its committed digest
+    against its content. A bundle is out when it is neither the crown nor still held in the private incumbents
+    store — a hotkey that is still defending (including a reigning king that resubmitted and was not dethroned)
+    keeps its prose private. A dethroned king's previous bundle is staged under `rd/reveal` by
+    `_release_incumbent`; it is published beside, never on top of, that hotkey's bundle for this round, because
+    the two are different bundles and each must still match its own commitment."""
     out = dest / "revealed"
     sealed = _read(rd / "seal.json", {}).get("active") or {}
     for hotkey, info in sealed.items():
-        if hotkey == king or info.get("incumbent"):
-            continue  # the king still defends; a staying incumbent is not out; a dethroned one comes via rd/reveal
+        if hotkey == king or (cfg.state / "incumbents" / hotkey).is_dir():
+            continue  # crowned, or still defending: its prose stays private
         src = rd / "bundles" / hotkey
         if src.is_dir():
             shutil.copytree(src, out / hotkey, dirs_exist_ok=True)
     if (rd / "reveal").is_dir():
         for staged in (rd / "reveal").iterdir():
-            if staged.is_dir():
-                shutil.copytree(staged, out / staged.name, dirs_exist_ok=True)
+            if staged.is_dir():  # the bundle it was crowned on, distinct from anything it submitted this round
+                name = staged.name if not (out / staged.name).exists() else f"{staged.name}.dethroned"
+                shutil.copytree(staged, out / name, dirs_exist_ok=True)
 
 
 def _changed_paths(cfg: Config, base: str, head: str) -> list[str]:
@@ -625,7 +638,9 @@ def one_per_hotkey(prs: list[dict], *, now: float | None = None) -> tuple[dict[s
     now = time.time() if now is None else now
     keep: dict[str, dict] = {}
     superseded: dict[int, str] = {}
-    order = lambda p: (p.get("signed_at") if isinstance(p.get("signed_at"), int) else -1, p["number"])  # noqa: E731
+    # Ties fall to the *lowest* PR number: a copy of a public attestation can only be opened after the original,
+    # so the miner who submitted first keeps the slot. Highest-number-wins handed it to the copier.
+    order = lambda p: (p.get("signed_at") if isinstance(p.get("signed_at"), int) else -1, -p["number"])  # noqa: E731
     for pr in sorted(prs, key=order):
         hotkey = pr["changed"][0]
         at = pr.get("signed_at")
@@ -634,7 +649,8 @@ def one_per_hotkey(prs: list[dict], *, now: float | None = None) -> tuple[dict[s
             continue
         if hotkey in keep:
             superseded[keep[hotkey]["number"]] = (
-                f"superseded by #{pr['number']}, signed later (one submission per hotkey)"
+                f"superseded by #{pr['number']} (one submission per hotkey: the latest signed, "
+                "and on a tie the first submitted)"
             )
         keep[hotkey] = pr
     return keep, superseded
@@ -651,7 +667,8 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
     sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
     bundles.mkdir(parents=True, exist_ok=True)
     tip = f"origin/{BRANCH}"
-    store = cfg.state / "submissions"  # where the private ingestion server revealed each bundle
+    # Same setting the ingestion server reads: pointed apart, uploads succeed and every seal then rejects them.
+    store = Path(os.environ.get("SH_SUBMISSION_STORE") or (cfg.state / "submissions"))
     active: dict[str, dict] = {}
     rejected: dict[str, str] = {}
     for entry in sh(["git", "ls-tree", "--name-only", tip, "submissions/"], cwd=cfg.repo, check=False).split():
@@ -661,6 +678,9 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
         b = _incumbent_bundle(cfg, tip, hotkey, bundles / hotkey, incumbents=cfg.state / "incumbents")
         if b and not b["problems"]:
             active[hotkey] = {"pr": None, "head": tip, "bundle_sha256": b["digest"], "incumbent": True}
+        else:  # a marker in submissions/ whose bundle resolves nowhere: it drops out, but never in silence
+            why = (b or {}).get("problems") or ["no bundle in the store or the tree"]
+            print(f"[{round_id}] incumbent {hotkey[:12]}… unresolved, not sealed: {why[0][:120]}", flush=True)
     prs = _strategy_prs(cfg, tip)
     for pr in prs:
         if pr_role(pr["changed"]) == "malformed":
@@ -1104,10 +1124,13 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
                 ["gh", "pr", "merge", str(plan["merge"]), "--repo", REPO, "--squash", "--match-head-commit",
                  sealed_head, "--subject", f"crown {round_id}: {king}"], capture_output=True, text=True)  # fmt: skip
         log(rd, "merge", pr=plan["merge"], ok=merged.returncode == 0, head=sealed_head[:8], err=merged.stderr[-200:])
-        if merged.returncode == 0:  # keep the crowned bundle private so it defends future rounds without leaking
-            _retain_incumbent(cfg, king, rd)
     elif king:
         log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown")
+    if king:
+        # Unconditional and idempotent. Gating this on the merge's exit code lost the crowned bundle whenever
+        # announce re-ran after a crash (the second `gh pr merge` fails with "already merged"), and the king then
+        # silently dropped out of the next round with no bundle anywhere and no record of why.
+        _retain_incumbent(cfg, king, rd)
     history = _read(cfg.repo / "rounds" / "index.json", {"rounds": []})["rounds"]  # closed rounds, this one not yet
     if gone := dethroned(sealed, king, record.get("scores"), history):  # after the merge: the tree is current
         sh(["git", "pull", "-q", "--rebase", "--autostash", "origin", BRANCH], cwd=cfg.repo, check=False)
@@ -1162,7 +1185,16 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
 
 
 def export_and_upload(cfg: Config, round_id: str, rd: Path, king: str | None) -> dict:
-    manifest = build_exports(rd, rd / "episodes", rd / "close" / "close.json", rd / "export", king=king)
+    manifest = build_exports(
+        rd,
+        rd / "episodes",
+        rd / "close" / "close.json",
+        rd / "export",
+        king=king,
+        # The export is public; the king's bundle is not, for as long as it defends. Naming it here lets the
+        # builder keep its prose out of the rows (the captured system turn embeds it verbatim).
+        bundle_dir=(rd / "bundles" / king) if king else None,
+    )
     token = os.environ.get("HF_TOKEN", "")
     if not manifest["sft_rows"] and not manifest["dpo_pairs"]:
         why = "no king this round" if king is None else "the king's episodes yielded no rows"
@@ -1189,12 +1221,13 @@ def export_and_upload(cfg: Config, round_id: str, rd: Path, king: str | None) ->
     return {"manifest": manifest, "upload": result}
 
 
-def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: dict, exported: dict) -> None:
+def publish_close(
+    cfg: Config, round_id: str, rd: Path, record: dict, crowned: dict, exported: dict, king: str | None
+) -> None:
     """Everything a miner needs to check the round, in the repository, under the round."""
     sh(
         ["git", "pull", "-q", "--rebase", "--autostash", "origin", BRANCH], cwd=cfg.repo, check=False
     )  # the merge just landed
-    king = crowned["king"]
     dest = cfg.repo / "rounds" / round_id
     dest.mkdir(parents=True, exist_ok=True)
     for name in ("close.json", "reveal.json", "crown.json"):
@@ -1204,7 +1237,7 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: d
     if (rd / "checks").exists():
         shutil.copytree(rd / "checks", dest / "checks", dirs_exist_ok=True)  # semantics of `custom` predicates
     shutil.copytree(rd / "scorecards", dest / "scorecards", dirs_exist_ok=True)
-    _reveal_bundles(rd, dest, king)  # the prose of every bundle now out of the competition (never the reigning king)
+    _reveal_bundles(cfg, rd, dest, king)  # every bundle now out of the competition (never one still defending)
     shutil.copy(rd / "export" / "manifest.json", dest / "manifest.json")
     artefacts = sorted(p.name for p in dest.iterdir())
     entry = {
@@ -1309,7 +1342,7 @@ def run_round(cfg: Config, mock: tuple[Path, Path] | None = None, resume: Path |
         king = _logged(rd, "announce", "king")
     live(cfg, rd, "export", push=False)
     exported = export_and_upload(cfg, round_id, rd, king)
-    publish_close(cfg, round_id, rd, record, crowned, exported)
+    publish_close(cfg, round_id, rd, record, crowned, exported, king)
     (rd / "DONE").write_text(json.dumps({"king": king, "weights": record["weights"]}))
     _reclaim_disk(cfg)  # the round is done: its snapshots and trajectories are no longer needed on this disk
     log(rd, "done", king=king)
@@ -1341,6 +1374,9 @@ def main(argv=None) -> int:
     ap.add_argument("--mock-miners", help="directory of mock miner bundles that submit each window (test only)")
     ap.add_argument("--mock-keys", help="directory holding the mock miners' keypairs (created on demand)")
     a = ap.parse_args(argv)
+    if not attest.available():  # every signature check is `available() and verify(...)`: absent, they all pass
+        print("substrate-interface is missing; signatures would go unverified. Refusing to run.", file=sys.stderr)
+        return 2
     cfg = Config(
         state=Path(a.state),
         repo=Path(a.repo),

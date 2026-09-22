@@ -32,6 +32,7 @@ SCHEMA_SFT = "sh-sft-v2"
 SCHEMA_DPO = "sh-dpo-v2"
 DPO_CHOSEN_MIN = 0.8  # the preferred side must do most of the task
 DPO_MARGIN = 0.5  # and the other side at least this much less of it
+MIN_SECRET_LINE = 24  # below this a line is too generic to treat as a bundle's own
 
 
 def _leak_scan(text: str, secrets: set[str]) -> list[str]:
@@ -53,13 +54,40 @@ def _secrets(reveal: dict) -> set[str]:
     return secrets
 
 
-def _rows_for(episode_dir: Path, episode: dict, task: dict, system_prompt: str) -> dict | None:
+def _row_text(conversations: list) -> str:
+    return "\n".join(str(t.get("value", "")) for t in conversations)
+
+
+def _bundle_secrets(bundle_dir: Path | None) -> set[str]:
+    """The crowned bundle's own prose. An export is public (it is pushed to a dataset repo) while a defending
+    king's strategy must stay private, so a row carrying a distinctive line of it is refused. Short lines are
+    skipped: they are not distinctive enough to be worth refusing a row over."""
+    if bundle_dir is None or not bundle_dir.is_dir():
+        return set()
+    out: set[str] = set()
+    for p in sorted(bundle_dir.rglob("*")):
+        if not p.is_file() or p.name == "attestation.json":
+            continue
+        for raw in p.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = raw.strip()
+            if len(line) >= MIN_SECRET_LINE:
+                out.add(line)
+    return out
+
+
+def _rows_for(
+    episode_dir: Path, episode: dict, task: dict, system_prompt: str, bundle_secrets: set[str] | None = None
+) -> dict | None:
     trajectory = episode_dir / "trajectory.json"
     if not trajectory.exists():
         return None
     captured = episode_dir / "system_prompt.txt"  # what the episode actually ran under: the runner records it
     if captured.is_file():
-        system_prompt = captured.read_text()
+        text = captured.read_text()
+        # ...which, on a strategy surface, embeds that miner's bundle verbatim. Publishing it would hand the
+        # crowned strategy to every rival the moment the round closes, so fall back to the surface-less prompt
+        # whenever the captured one carries the bundle's prose.
+        system_prompt = system_prompt if _leak_scan(text, bundle_secrets or set()) else text
     turns = json.loads(trajectory.read_text())
     if not isinstance(turns, list) or not turns:
         return None
@@ -90,6 +118,7 @@ def build(
     *,
     king: str | None = None,
     system_prompt: str | None = None,
+    bundle_dir: Path | None = None,
 ) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     tasks = {p.stem: json.loads(p.read_text()) for p in sorted((round_dir / "tasks").glob("*.json"))}
@@ -97,6 +126,8 @@ def build(
 
     reveal = close_file.parent / "reveal.json"
     secrets = _secrets(json.loads(reveal.read_text())) if reveal.exists() else set()
+    # The king's own prose is a secret too, for as long as it defends: the export is public.
+    bundle_secrets = _bundle_secrets(bundle_dir)
 
     sft, by_task = [], {}
     gates = {"not_king": 0, "void": 0, "no_trajectory": 0, "not_verified": 0, "disqualified": 0, "leaked": 0}
@@ -121,11 +152,12 @@ def build(
             episode,
             task,
             system_prompt or "You are Hermes, an agent operating a terminal and a filesystem.",
+            bundle_secrets,
         )
         if row is None:
             gates["no_trajectory"] += 1
             continue
-        if _leak_scan(json.dumps(row), secrets):
+        if _leak_scan(json.dumps(row), secrets) or _leak_scan(_row_text(row["conversations"]), bundle_secrets):
             gates["leaked"] += 1
             continue
         sft.append(row)
@@ -147,7 +179,7 @@ def build(
         chosen = rejected = None
         c_credit = 0.0
         for c_credit, e, d in sorted(kings, key=lambda x: -x[0]):
-            if (chosen := _rows_for(d, e, task, prompt)) is not None:
+            if (chosen := _rows_for(d, e, task, prompt, bundle_secrets)) is not None:
                 break
         if chosen is not None:
             losers = sorted(
@@ -158,8 +190,10 @@ def build(
                 ),
                 key=lambda x: x[0],
             )
-            rejected = next((row for _, e, d in losers if (row := _rows_for(d, e, task, prompt)) is not None), None)
-        if chosen and rejected:
+            rejected = next(
+                (row for _, e, d in losers if (row := _rows_for(d, e, task, prompt, bundle_secrets)) is not None), None
+            )
+        if chosen and rejected and not _leak_scan(_row_text(chosen["conversations"]), bundle_secrets):
             # both sides carry the king's system turn and the same task, so the preference is over the trajectory
             # alone and not over which strategy prompt produced it
             rejected_turns = [

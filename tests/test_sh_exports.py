@@ -92,3 +92,30 @@ def test_a_dpo_pair_shares_the_kings_system_turn(tmp_path):
     assert p["chosen"][0] == {"from": "system", "value": "KING SOUL"}
     assert p["rejected"][0] == {"from": "system", "value": "KING SOUL"}  # not GENERIC: the confound is removed
     assert p["rejected"][-1]["value"] == "by null"  # but the rejected trajectory is still null's
+
+
+def test_the_crowned_prose_never_enters_an_exported_row(tmp_path):
+    """The export is public. The captured system turn is what the episode really ran under, which on a strategy
+    surface embeds that miner's bundle verbatim — publishing it would hand the crowned strategy to every rival."""
+    import json as _json
+
+    from sh.exports.build import _bundle_secrets, _rows_for
+
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    soul = "# Soul\n\nA distinctive line of the crowned strategy that rivals must not get to read.\n"
+    (bundle / "SOUL.md").write_text(soul)
+    secrets = _bundle_secrets(bundle)
+
+    ep = tmp_path / "ep"
+    ep.mkdir()
+    (ep / "trajectory.json").write_text(
+        _json.dumps([{"from": "system", "value": "generic"}, {"from": "gpt", "value": "fixed it"}])
+    )
+    (ep / "system_prompt.txt").write_text("You are Hermes.\n\n" + soul)  # what the episode actually ran under
+
+    row = _rows_for(ep, {"task_id": "t"}, {}, "SURFACE-LESS-PROMPT", secrets)
+    assert row["conversations"][0]["value"] == "SURFACE-LESS-PROMPT"  # fell back rather than publish the bundle
+    assert "distinctive line of the crowned strategy" not in _json.dumps(row)
+    # and with no bundle named, the captured prompt is still preferred, as before
+    assert _rows_for(ep, {"task_id": "t"}, {}, "x")["conversations"][0]["value"].startswith("You are Hermes.")

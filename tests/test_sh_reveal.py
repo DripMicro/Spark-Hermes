@@ -211,7 +211,9 @@ def test_reveal_publishes_out_of_competition_bundles_but_not_the_king(tmp_path):
     d = rd / "reveal" / dethroned  # staged by _release_incumbent when it was dethroned this round
     d.mkdir(parents=True)
     (d / "SOUL.md").write_text("old king\n")
-    o._reveal_bundles(rd, dest, king)
+    cfg = _cfg(tmp_path, tmp_path / "repo-unused")
+    (cfg.state / "incumbents" / incumbent).mkdir(parents=True)  # still defending: its prose stays private
+    o._reveal_bundles(cfg, rd, dest, king)
     published = sorted(p.name for p in (dest / "revealed").iterdir())
     assert published == sorted([loser, dethroned])  # king + staying incumbent withheld; loser + dethroned revealed
 
@@ -229,4 +231,49 @@ def test_a_forged_digest_cannot_escape_the_store(tmp_path):
     staged = tmp_path / "staged"
     b = o._reveal_challenger(_cfg(tmp_path, repo), ref, hk, staged, round_id="r0001", store=store)
     assert b is not None and b["problems"]  # refused
-    assert sorted(p.name for p in staged.iterdir()) == ["attestation.json"]  # nothing outside the store was pulled in
+    assert not staged.exists()  # refused before anything at all was materialised
+
+
+def test_a_pr_that_did_not_sign_cannot_claim_another_hotkeys_submission(tmp_path):
+    """The PR's own attestation must carry the hotkey's signature. Without that check a one-file PR copying a
+    victim's public digest pointed the seal at the victim's revealed bundle and took the slot: the victim's real
+    PR was closed as superseded and the attacker's login was published as that hotkey's identity."""
+    repo, kp = _repo(tmp_path), _kp()
+    hk, digest = kp.ss58_address, bundle_digest(PROSE)
+    att = attest.sign(kp, "r0001", digest)
+    store = _store(tmp_path, hk, att, PROSE)  # the victim's bundle really is in the store
+    forged = {**att, "signature": "0x" + "00" * 64}  # ...but the attacker signed nothing
+    ref = _commit_submission(repo, hk, _attestation_only(forged))
+    staged = tmp_path / "staged"
+    b = o._reveal_challenger(_cfg(tmp_path, repo), ref, hk, staged, round_id="r0001", store=store)
+    assert b["problems"] and any("signature" in p for p in b["problems"])
+    assert not staged.exists()  # the victim's prose was never materialised under the attacker's PR
+
+
+def test_a_hotkey_still_defending_is_not_revealed(tmp_path):
+    """A reigning king that resubmits and is not dethroned keeps defending, so its new prose must stay private —
+    'not crowned this round' is not the same as 'out of the competition'."""
+    rd, dest = tmp_path / "rd", tmp_path / "dest"
+    rd.mkdir()
+    dest.mkdir()
+    king, loser, defender = "5" + "A" * 47, "5" + "B" * 47, "5" + "C" * 47
+    (rd / "seal.json").write_text(
+        json.dumps(
+            {
+                "active": {
+                    king: {"pr": 1, "incumbent": False},
+                    loser: {"pr": 2, "incumbent": False},
+                    # the reigning king, resubmitted this round as a challenger and NOT dethroned
+                    defender: {"pr": 3, "incumbent": False, "was_incumbent": True},
+                }
+            }
+        )
+    )
+    for hk in (king, loser, defender):
+        d = rd / "bundles" / hk
+        d.mkdir(parents=True)
+        (d / "SOUL.md").write_text(f"soul {hk[:6]}\n")
+    cfg = _cfg(tmp_path, tmp_path / "repo-unused")
+    (cfg.state / "incumbents" / defender).mkdir(parents=True)  # still held: still defending
+    o._reveal_bundles(cfg, rd, dest, king)
+    assert sorted(p.name for p in (dest / "revealed").iterdir()) == [loser]
