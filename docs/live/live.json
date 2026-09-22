@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790064672.1339397,
+ "updated": 1790064692.694667,
  "round_id": "r0003",
- "stage": "window",
+ "stage": "evaluate",
  "stages": [
   "open",
   "window",
@@ -24,6 +24,10 @@
   {
    "stage": "open",
    "t": 1790057483.5016499
+  },
+  {
+   "stage": "window",
+   "t": 1790064687.4181786
   }
  ],
  "window": {
@@ -77,9 +81,30 @@
  },
  "last_round": "r0002",
  "tasks": 6,
- "active": {},
+ "active": {
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": 192,
+   "head": "779b47a6fb716a4a3e598a65b0efed2c4897a4ef",
+   "bundle_sha256": "6308eaac9af703e7fbfb2794691d677c109a49555c6e5a86f75e0ad7ba898712",
+   "incumbent": false,
+   "was_incumbent": true,
+   "github": "dato-bitar"
+  },
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "pr": 193,
+   "head": "ad5696901661b1720d56a8c5bf8480fc6298019f",
+   "bundle_sha256": "4815bc6ab143fd8f7c5b72203d5e0e09a9426cdd57f3a073c30997ecacf27e2c",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "Tet-9"
+  }
+ },
  "rejected": {},
- "progress": {},
+ "progress": {
+  "done": 0,
+  "total": 0,
+  "by_surface": {}
+ },
  "crown": null,
  "scores": null,
  "queue": [
