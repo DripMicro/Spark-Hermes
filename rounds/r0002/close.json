@@ -1,0 +1,121 @@
+{
+ "schema": "sh-round-close-v3",
+ "scoring": "sh-scoring-v3 (credit)",
+ "round_id": "r0002",
+ "era": "e0",
+ "tasks": [
+  "swe-fix-r0002-01",
+  "swe-fix-r0002-02",
+  "swe-fix-r0002-03",
+  "swe-fix-r0002-06",
+  "swe-fix-r0002-07",
+  "swe-fix-r0002-08"
+ ],
+ "episodes": 48,
+ "family_stats": {
+  "swe_fix": {
+   "schema": "sh-family-stats-v2",
+   "family": "swe_fix",
+   "era": "e0",
+   "window": [
+    "r0001",
+    "r0002"
+   ],
+   "null": {
+    "n": 12,
+    "successes": 2,
+    "p": 0.16666666666666666,
+    "mean_credit": 0.1667,
+    "wilson": [
+     0.047,
+     0.448
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 12.0,
+      "p25": 11.0,
+      "n": 2
+     },
+     "tool_calls": {
+      "median": 13.5,
+      "p25": 11.0,
+      "n": 2
+     }
+    }
+   },
+   "canon": {
+    "n": 0,
+    "successes": 0,
+    "p": null,
+    "mean_credit": null,
+    "wilson": null,
+    "efficiency": {},
+    "delta_c": null,
+    "delta_e": {},
+    "delta_e_paired_instances": 0
+   },
+   "label": "frontier",
+   "partial_rate": 0.0,
+   "in_rotation": true,
+   "retirement": null
+  }
+ },
+ "scores": {
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "hotkey": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
+   "n": 12,
+   "score": 0.402778,
+   "delta_c": 0.20722218239669132,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.152778,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 12,
+   "mean_d": 0.402778
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "hotkey": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
+   "n": 12,
+   "score": 0.208333,
+   "delta_c": 0.05270273763794614,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.121586,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 12,
+   "mean_d": 0.208333
+  },
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "hotkey": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
+   "n": 12,
+   "score": 0.055556,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.182728,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 12,
+   "mean_d": 0.055556
+  }
+ },
+ "weights": {
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.6041666979166511,
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.3124993437503281,
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": 0.08333395833302083
+ },
+ "commitments_verified": {
+  "swe-fix-r0002-01": true,
+  "swe-fix-r0002-02": true,
+  "swe-fix-r0002-03": true,
+  "swe-fix-r0002-06": true,
+  "swe-fix-r0002-07": true,
+  "swe-fix-r0002-08": true
+ },
+ "commitments_ok": true
+}

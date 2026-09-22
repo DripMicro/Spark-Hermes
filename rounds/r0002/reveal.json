@@ -1,0 +1,191 @@
+{
+ "swe-fix-r0002-01": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_presto.py::TestPresto::test_json"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_presto.py::TestPresto::test_presto"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_spark.py::TestSpark::test_spark"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_tsql.py::TestTSQL::test_convert"
+    ]
+   ],
+   "assets_sha256": "0c7181e72d215fae42308a0d30415780f63ca8628a07478083f31b05a62cccc9",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "fe600889a90d66e5bce95a5b9b6f95f1149de93cdf22894ec7e7efd28a7ae36e",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.lm_rewrite__9lfd11cr",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0002-02": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_teradata.py::TestTeradata::test_time"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_teradata.py::TestTeradata::test_translate"
+    ]
+   ],
+   "assets_sha256": "7985e442842f8ebeacd7bd6e3926b64932c65cc47550ce58c6a85b517a2b663f",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "f823d94e1effe1f8724defa0907c1673b4bc98e6b1eeb9742ed9d48708267cdc",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.combine_file__pbfl37if",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0002-03": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_expect"
+    ]
+   ],
+   "assets_sha256": "20140c8aaf4c1893a1a454b0fedcfcdd484a9b04f9d55047d736750125cd0cfd",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "92a1d1b5ae160cf72cae37ec427750f01170acddbd50e56e32a03e3e7644552e",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__9hi2rn7q",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0002-06": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_hyperlink.py::DescribeHyperlink::it_knows_the_full_url_for_web_addresses[w:hyperlink-]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_hyperlink.py::DescribeHyperlink::it_knows_the_full_url_for_web_addresses[w:hyperlink{r:id=rId6,w:anchor=foo}/w:r/w:t\"post\"-https://google.com/#foo]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_hyperlink.py::DescribeHyperlink::it_knows_the_full_url_for_web_addresses[w:hyperlink{r:id=rId6}/w:r/w:t\"post\"-https://google.com/]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_hyperlink.py::DescribeHyperlink::it_knows_the_full_url_for_web_addresses[w:hyperlink{w:anchor=_Toc147925734}-]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_hyperlink.py::DescribeHyperlink::it_knows_the_link_fragment_when_there_is_one[w:hyperlink{r:id=rId6}-]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_hyperlink.py::DescribeHyperlink::it_knows_the_link_fragment_when_there_is_one[w:hyperlink{w:anchor=intro}-intro]"
+    ]
+   ],
+   "assets_sha256": "81c88d0951d797e56a78dbbb9c390fdfae7f879094b2afd3c82c8e5d700a31e3",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "dba95eb400901fbc93a3dd59b8b34deb7c4005305e752efe8a062a46978f4816",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.combine_file__9cpzf1ms",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0002-07": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/image/test_image.py::Describe_ImageHeaderFactory::it_constructs_the_right_class_for_a_given_image_stream[call_fixture2]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/image/test_jpeg.py::Describe_JfifMarkers::it_can_find_the_APP1_marker"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/image/test_jpeg.py::Describe_JfifMarkers::it_raises_if_it_cant_find_the_APP1_marker"
+    ]
+   ],
+   "assets_sha256": "df283eb7fbd4cc624763814b55abdfaa8816c4b14ca272034ab61d6e7371aabf",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "501d03dde7e9ef50670866279ae1a9c149cd05b45be16a6f23ff4d1872543be6",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.func_pm_class_rm_funcs__4uigqgap",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0002-08": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/parts/test_story.py::DescribeStoryPart::it_can_create_a_new_pic_inline"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/styles/test_style.py::DescribeBaseStyle::it_can_change_whether_its_hidden[hidden_set_fixture0]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/styles/test_style.py::DescribeBaseStyle::it_can_change_whether_its_hidden[hidden_set_fixture1]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/styles/test_style.py::DescribeBaseStyle::it_can_change_whether_its_hidden[hidden_set_fixture2]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_shape.py::DescribeInlineShape::it_can_change_its_display_dimensions"
+    ]
+   ],
+   "assets_sha256": "b8f30043dbef358e0a05e42e563b30656e1696c8a4830c8664ab1e5c3aefcb52",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "381c7cdcd98aa01818e9214b14dda6a4c0ef166a1fb37c845f48ed55f2cbd82c",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.combine_module__g6ptzfwa",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ }
+}

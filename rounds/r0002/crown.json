@@ -1,0 +1,30 @@
+{
+ "schema": "sh-crown-v1",
+ "round_id": "r0002",
+ "king": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
+ "standings": {
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "n": 6,
+   "verified": 2,
+   "dq": 0,
+   "credit": 0.472222,
+   "delta": 0.305556,
+   "rank": 1
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "n": 6,
+   "verified": 0,
+   "dq": 0,
+   "credit": 0.138889,
+   "delta": -0.027778
+  },
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "n": 6,
+   "verified": 1,
+   "dq": 0,
+   "credit": 0.166667,
+   "delta": 0.0
+  }
+ },
+ "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired, not disqualified; a tie does not dethrone the incumbent; other ties by pooled \u0394c then a round-keyed hash"
+}
