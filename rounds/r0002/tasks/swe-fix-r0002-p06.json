@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0002-p06",
+ "round_id": "r0002",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Table cell merging fails when merging cells in specific positions\n\n#### Description\n\nWhen trying to merge cells in a table, the operation fails for certain cell positions. The issue occurs when attempting to merge cells that span multiple rows or columns in specific locations within the table.\n\n#### Steps to Reproduce\n\n```python\nfrom docx import Document\n\n# Create a document with a table\ndocument = Document()\ntable = document.add_table(rows=3, cols=3)\n\n# Try to merge cells in the first row\ntable.cell(0, 0).merge(table.cell(0, 1))  # This works fine\n\n# Try to merge cells vertically\ntry:\n    table.cell(0, 0).merge(table.cell(1, 0))  # This fails for certain table configurations\nexcept Exception as e:\n    print(f\"Error: {e}\")\n\n# Try to merge cells in a more complex pattern\ntry:\n    table.cell(1, 1).merge(table.cell(2, 2))  # This also fails\nexcept Exception as e:\n    print(f\"Error: {e}\")\n```\n\n#### Expected Results\n\nAll cell merges should complete successfully, regardless of the position of the cells in the table.\n\n#### Actual Results\n\nWhen attempting to merge cells in certain positions, the operation fails with an error. The error occurs specifically when trying to merge cells that would create vertical spans in particular positions within the table.\n\nThe issue seems to be related to how the table cells are processed during the merge operation, particularly when handling vertical merges that require cells to grow to specific dimensions.\n\n#### Environment Information\n```\npython-docx version: 0.8.11\nPython version: 3.10\nOperating system: Windows 10 (also reproduced on Ubuntu 20.04)\n```\n\n#### Additional Information\n\nThe problem appears to be in the internal cell growth mechanism that handles vertical merging. The issue is most noticeable when working with tables that have cells with different widths or when attempting to merge cells that would create complex spanning patterns.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.lm_rewrite__1miilyfm",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_can_grow_itself_to_help_merge[0-0-1-1-2]",
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_can_grow_itself_to_help_merge[1-0-0-2-2]",
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_can_grow_itself_to_help_merge[2-1-2-1-2]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

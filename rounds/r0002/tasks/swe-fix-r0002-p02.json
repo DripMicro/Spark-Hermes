@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0002-p02",
+ "round_id": "r0002",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nFormat mapping precedence incorrect in CAST function parsing\n\nWhen parsing CAST expressions with format strings, the parser incorrectly prioritizes TIME_MAPPING over FORMAT_MAPPING, causing format strings to be processed with the wrong mapping rules.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should use FORMAT_MAPPING but uses TIME_MAPPING instead\nsql = \"CAST(some_date AS DATE FORMAT 'DD MONTH YYYY')\"\nparsed = sqlglot.parse_one(sql, dialect=\"bigquery\")\nprint(parsed)\n```\n\nThe issue occurs in the `_parse_cast` method where the mapping precedence is reversed - TIME_MAPPING is checked before FORMAT_MAPPING, but for CAST expressions with FORMAT clauses, FORMAT_MAPPING should take precedence.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_swap__ge232489",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_bigquery.py::TestBigQuery::test_bigquery"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

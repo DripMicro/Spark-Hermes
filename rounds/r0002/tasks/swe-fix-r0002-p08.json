@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0002-p08",
+ "round_id": "r0002",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCell text replacement produces reversed text\n\n#### Description\n\nWhen setting text content on a table cell using the `text` property, the text appears reversed in the document.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\n\n# Create a new document with a table\ndoc = Document()\ntable = doc.add_table(rows=1, cols=1)\ncell = table.cell(0, 0)\n\n# Set cell text\ncell.text = \"Hello World\"\n\n# Save and check the document - text appears as \"dlroW olleH\"\ndoc.save('test.docx')\n```\n\nThe expected behavior is that the cell should contain \"Hello World\" but instead it contains the text reversed as \"dlroW olleH\".\n\nThis affects any text assignment to table cells and makes the library unusable for basic table text operations.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__tws2dwm2",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_table.py::Describe_Cell::it_can_replace_its_content_with_a_string_of_text[w:tc/w:p-fo\\tob\\rar\\n-w:tc/w:p/w:r/(w:t\"fo\",w:tab,w:t\"ob\",w:br,w:t\"ar\",w:br)]",
+   "tests/test_table.py::Describe_Cell::it_can_replace_its_content_with_a_string_of_text[w:tc/w:p-foobar-w:tc/w:p/w:r/w:t\"foobar\"]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

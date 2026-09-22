@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0002-p01",
+ "round_id": "r0002",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTSQL function parsing broken for NULL ON NULL INPUT clause\n\nWhen parsing TSQL functions with the `NULL ON NULL INPUT` clause, the parser incorrectly handles the logic flow, causing the `null` flag to be set even when it shouldn't be.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import transpile\n\n# This should parse correctly but doesn't\nsql = \"\"\"\nCREATE FUNCTION add(integer, integer) \nRETURNS INT \nLANGUAGE SQL \nIMMUTABLE \nRETURNS NULL ON NULL INPUT \nAS 'select $1 + $2;'\n\"\"\"\n\nresult = transpile(sql, read='tsql', write='tsql')\nprint(result[0])\n```\n\nThe parser incorrectly processes the `RETURNS NULL ON NULL INPUT` clause and sets the null property when it should be parsing the return types instead.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_invert_if__47fa2ux1",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_bigquery.py::TestBigQuery::test_user_defined_functions",
+   "tests/dialects/test_databricks.py::TestDatabricks::test_databricks",
+   "tests/dialects/test_postgres.py::TestPostgres::test_ddl",
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_ddl",
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_user_defined_functions",
+   "tests/dialects/test_tsql.py::TestTSQL::test_udf",
+   "tests/test_transpile.py::TestTranspile::test_identity"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

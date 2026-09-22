@@ -1,0 +1,30 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0002-p07",
+ "round_id": "r0002",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nContent type mapping broken for document parts\n\nWhen opening Word documents, the content type mapping for document parts gets corrupted, causing issues with document parsing and content iteration.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\n\n# Try to open any Word document\ndocument = Document('example.docx')\n\n# This will fail or produce unexpected results\nsections = document.sections\ncontent = list(sections[0].iter_inner_content())\n```\n\nThe issue appears when the package reader processes content type overrides - the mapping gets reversed internally, breaking the association between part names and their content types. This affects document structure parsing and content access.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__ah81jkjl",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/opc/test_pkgreader.py::Describe_ContentTypeMap::it_can_construct_from_ct_item_xml",
+   "tests/opc/test_pkgreader.py::Describe_ContentTypeMap::it_matches_an_override_on_case_insensitive_partname[match_override_fixture0]",
+   "tests/opc/test_pkgreader.py::Describe_ContentTypeMap::it_matches_an_override_on_case_insensitive_partname[match_override_fixture1]",
+   "tests/opc/test_pkgreader.py::Describe_ContentTypeMap::it_matches_an_override_on_case_insensitive_partname[match_override_fixture2]",
+   "tests/test_blkcntnr.py::DescribeBlockItemContainer::it_can_iterate_its_inner_content",
+   "tests/test_section.py::DescribeSection::it_can_iterate_its_inner_content"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
