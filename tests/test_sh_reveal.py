@@ -114,3 +114,62 @@ def test_seal_catches_a_tampered_stored_bundle(tmp_path):
     store = _store(tmp_path, hk, att, {"SOUL.md": b"# Soul\n\nTampered prose that does not hash to the commitment.\n"})
     b = o._reveal_challenger(_cfg(tmp_path, repo), ref, hk, tmp_path / "staged", round_id="r0001", store=store)
     assert b["problems"] and any("bundle_sha256" in p for p in b["problems"])
+
+
+def test_incumbent_resolves_from_the_private_store(tmp_path):
+    repo, kp = _repo(tmp_path), _kp()
+    hk, digest = kp.ss58_address, bundle_digest(PROSE)
+    att = attest.sign(kp, "r0001", digest)
+    kept = tmp_path / "state" / "incumbents" / hk  # the crowned bundle lives here, not in the public tree
+    kept.mkdir(parents=True)
+    (kept / "SOUL.md").write_bytes(PROSE["SOUL.md"])
+    (kept / attest.FILE).write_text(json.dumps(att))
+    b = o._incumbent_bundle(_cfg(tmp_path, repo), "HEAD", hk, tmp_path / "staged", incumbents=tmp_path / "state" / "incumbents")
+    assert b and not b["problems"] and b["digest"] == digest
+
+
+def test_incumbent_falls_back_to_the_tree_when_not_in_the_store(tmp_path):
+    repo, kp = _repo(tmp_path), _kp()
+    hk, digest = kp.ss58_address, bundle_digest(PROSE)
+    att = attest.sign(kp, "r0001", digest)
+    ref = _commit_submission(repo, hk, {**PROSE, attest.FILE: (json.dumps(att) + "\n").encode()})  # legacy: prose in tree
+    b = o._incumbent_bundle(_cfg(tmp_path, repo), ref, hk, tmp_path / "staged", incumbents=tmp_path / "none")
+    assert b and not b["problems"] and b["digest"] == digest
+
+
+def test_retain_then_release_moves_the_bundle_through_the_store(tmp_path):
+    repo, kp = _repo(tmp_path), _kp()
+    hk, cfg = kp.ss58_address, _cfg(tmp_path, repo)
+    rd = tmp_path / "rd"
+    (rd / "bundles" / hk).mkdir(parents=True)
+    (rd / "bundles" / hk / "SOUL.md").write_bytes(PROSE["SOUL.md"])
+    (rd / "bundles" / hk / attest.FILE).write_text(json.dumps(attest.sign(kp, "r0001", bundle_digest(PROSE))))
+    o._retain_incumbent(cfg, hk, rd)
+    assert (cfg.state / "incumbents" / hk / "SOUL.md").exists()  # crowned bundle kept privately
+    o._release_incumbent(cfg, hk, rd)
+    assert (rd / "reveal" / hk / "SOUL.md").exists()  # dethroned: revealed for audit
+    assert not (cfg.state / "incumbents" / hk).exists()  # and dropped from the store
+
+
+def test_candidates_seals_a_private_incumbent_from_the_store(tmp_path, monkeypatch):
+    repo, kp = _repo(tmp_path), _kp()
+    hk, digest = kp.ss58_address, bundle_digest(PROSE)
+    att = attest.sign(kp, "r0001", digest)
+    _commit_submission(repo, hk, _attestation_only(att))  # public marker: the commitment only, no prose
+    kept = tmp_path / "state" / "incumbents" / hk
+    kept.mkdir(parents=True)
+    (kept / "SOUL.md").write_bytes(PROSE["SOUL.md"])
+    (kept / attest.FILE).write_text(json.dumps(att))
+    cfg = _cfg(tmp_path, repo)
+    (cfg.rounds / "r0002").mkdir(parents=True)  # similarity.load reads the round dir (no answers)
+
+    def fake_sh(cmd, **k):
+        if cmd[:2] == ["git", "ls-tree"] and cmd[-1] == "submissions/":
+            return f"submissions/{hk}\nsubmissions/README.md\n"
+        return ""
+
+    monkeypatch.setattr(o, "sh", fake_sh)
+    monkeypatch.setattr(o, "_strategy_prs", lambda cfg, tip: [])
+    active, rejected = o.candidates(cfg, "r0002", tmp_path / "bundles")
+    assert list(active) == [hk] and active[hk]["incumbent"] and active[hk]["bundle_sha256"] == digest
+    assert rejected == {}

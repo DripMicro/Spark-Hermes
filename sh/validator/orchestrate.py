@@ -495,6 +495,43 @@ def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_
     return _bundle_from_tree(cfg, ref, hotkey, dest, round_id=round_id)  # transition: the PR still carries the prose
 
 
+def _incumbent_bundle(cfg: Config, tip: str, hotkey: str, dest: Path, *, incumbents: Path) -> dict | None:
+    """A defending incumbent's bundle. Its prose is not public, so it comes from the private incumbents store;
+    a legacy incumbent whose prose is still in `submissions/` comes from the tree. Its attestation was checked
+    when it was first sealed, so the round binding is not re-checked (round_id=None)."""
+    kept = incumbents / hotkey
+    if kept.is_dir():
+        shutil.rmtree(dest, ignore_errors=True)
+        shutil.copytree(kept, dest)
+        return _check_bundle_dir(dest, hotkey, round_id=None)
+    return _bundle_from_tree(cfg, tip, hotkey, dest, round_id=None)
+
+
+def _retain_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
+    """Keep a freshly crowned bundle in the private incumbents store so it can defend future rounds without its
+    prose ever being public. The seal already materialised it under the round's `bundles/`."""
+    src = rd / "bundles" / hotkey
+    if not src.is_dir():
+        return
+    dest = cfg.state / "incumbents" / hotkey
+    shutil.rmtree(dest, ignore_errors=True)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(src, dest)
+
+
+def _release_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
+    """A dethroned king leaves the competition, so its bundle is no longer defended: stage it for the round's
+    reveal (auditors can match its committed digest) and drop it from the private store."""
+    kept = cfg.state / "incumbents" / hotkey
+    if not kept.is_dir():
+        return
+    reveal = rd / "reveal" / hotkey
+    shutil.rmtree(reveal, ignore_errors=True)
+    reveal.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(kept, reveal)
+    shutil.rmtree(kept, ignore_errors=True)
+
+
 def _changed_paths(cfg: Config, base: str, head: str) -> list[str]:
     """Every path a head changes relative to where it forked from the base (three-dot)."""
     names = sh(["git", "diff", "--name-only", "-z", f"{base}...{head}", "--"], cwd=cfg.repo, check=False)
@@ -587,7 +624,7 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
         hotkey = entry.split("/")[-1]
         if not SS58.match(hotkey):  # README.md and anything not an ss58 directory is not a submission
             continue
-        b = _bundle_from_tree(cfg, tip, hotkey, bundles / hotkey, round_id=None)
+        b = _incumbent_bundle(cfg, tip, hotkey, bundles / hotkey, incumbents=cfg.state / "incumbents")
         if b and not b["problems"]:
             active[hotkey] = {"pr": None, "head": tip, "bundle_sha256": b["digest"], "incumbent": True}
     prs = _strategy_prs(cfg, tip)
@@ -1033,6 +1070,8 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
                 ["gh", "pr", "merge", str(plan["merge"]), "--repo", REPO, "--squash", "--match-head-commit",
                  sealed_head, "--subject", f"crown {round_id}: {king}"], capture_output=True, text=True)  # fmt: skip
         log(rd, "merge", pr=plan["merge"], ok=merged.returncode == 0, head=sealed_head[:8], err=merged.stderr[-200:])
+        if merged.returncode == 0:  # keep the crowned bundle private so it defends future rounds without leaking
+            _retain_incumbent(cfg, king, rd)
     elif king:
         log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown")
     history = _read(cfg.repo / "rounds" / "index.json", {"rounds": []})["rounds"]  # closed rounds, this one not yet
@@ -1040,6 +1079,7 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
         sh(["git", "pull", "-q", "--rebase", "--autostash", "origin", BRANCH], cwd=cfg.repo, check=False)
         for hotkey in gone:
             sh(["git", "rm", "-r", "-q", f"submissions/{hotkey}"], cwd=cfg.repo, check=False)
+            _release_incumbent(cfg, hotkey, rd)  # out of the competition: reveal its bundle, drop it from the store
         if sh(["git", "status", "--porcelain", "submissions"], cwd=cfg.repo).strip():
             sh(
                 ["git", "commit", "-q", "-m", f"{round_id}: dethroned {', '.join(gone)}", "--", "submissions"],
