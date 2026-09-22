@@ -16,8 +16,10 @@ the seal always verifies.
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
+import sys
 import time
 from pathlib import Path
 
@@ -117,3 +119,57 @@ def problems(att: dict | None, *, digest: str, hotkey: str | None = None, round_
     if not out and available() and not verify(att):
         out.append("L10 attestation.json: signature is not the hotkey's over this round and digest")
     return out
+
+
+def commitment_problems(att: dict | None, *, hotkey: str | None = None) -> list[str]:
+    """A commitment-only submission carries the attestation and no prose (the prose is uploaded privately to the
+    submission server). Validate its structure — and, when the library is present, its signature, which is over
+    the attestation's own fields and so needs no bundle — the seal does digest-binding and answer-copy. This is
+    the CI check for a private-mode PR; a legacy PR that still carries prose is checked by the full lint instead."""
+    if att is None:
+        return ["L10 attestation.json: missing"]
+    out = []
+    if att.get("schema") != SCHEMA:
+        out.append(f"L10 attestation.json: schema {att.get('schema')!r} != {SCHEMA!r} — re-sign with the current CLI")
+    if not isinstance(att.get("signed_at"), int) or isinstance(att.get("signed_at"), bool):
+        out.append("L10 attestation.json: signed_at is not a unix time in whole seconds")
+    if not SS58.match(str(att.get("hotkey", ""))):
+        out.append("L10 attestation.json: hotkey is not an ss58 address")
+    if not ROUND.match(str(att.get("round_id", ""))):
+        out.append("L10 attestation.json: round_id is not r0000-style")
+    if not HEX64.match(str(att.get("bundle_sha256", ""))):
+        out.append("L10 attestation.json: bundle_sha256 is not a 64-hex digest")
+    if hotkey and att.get("hotkey") != hotkey:
+        out.append(f"L10 attestation.json: hotkey {att.get('hotkey')} != submission directory {hotkey}")
+    if not out and available() and not verify(att):
+        out.append("L10 attestation.json: signature is not the hotkey's over this round and digest")
+    return out
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description="validate a commitment-only submission (attestation.json, no prose)")
+    ap.add_argument("dir", help="a submissions/<hotkey>/ directory carrying only attestation.json")
+    ap.add_argument("--hotkey", help="the ss58 the attestation must name (usually the directory's name)")
+    a = ap.parse_args(argv)
+    path = Path(a.dir) / FILE
+    if not path.is_file():
+        print(f"{path}: no {FILE}", file=sys.stderr)
+        return 1
+    try:
+        att = json.loads(path.read_text())
+    except (ValueError, UnicodeDecodeError) as exc:
+        print(f"{path}: not a JSON object [{exc}]", file=sys.stderr)
+        return 1
+    problems = commitment_problems(att if isinstance(att, dict) else None, hotkey=a.hotkey)
+    if problems:
+        print("commitment not ok:", file=sys.stderr)
+        for p in problems:
+            print(f"  - {p}", file=sys.stderr)
+        return 1
+    state = "verified" if available() and verify(att) else "unverified here"
+    print(f"commitment ok: {att['hotkey']} for {att['round_id']} — digest {att['bundle_sha256'][:12]}… ({state})")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

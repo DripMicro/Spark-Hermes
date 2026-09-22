@@ -173,3 +173,34 @@ def test_candidates_seals_a_private_incumbent_from_the_store(tmp_path, monkeypat
     active, rejected = o.candidates(cfg, "r0002", tmp_path / "bundles")
     assert list(active) == [hk] and active[hk]["incumbent"] and active[hk]["bundle_sha256"] == digest
     assert rejected == {}
+
+
+def test_reveal_publishes_out_of_competition_bundles_but_not_the_king(tmp_path):
+    rd, dest = tmp_path / "rd", tmp_path / "dest"
+    rd.mkdir()
+    dest.mkdir()
+    king = "5" + "A" * 47
+    loser = "5" + "B" * 47
+    incumbent = "5" + "C" * 47
+    dethroned = "5" + "D" * 47
+    (rd / "seal.json").write_text(
+        json.dumps(
+            {
+                "active": {
+                    king: {"pr": 1, "incumbent": False},
+                    loser: {"pr": 2, "incumbent": False},
+                    incumbent: {"pr": None, "incumbent": True},
+                }
+            }
+        )
+    )
+    for hk in (king, loser, incumbent):
+        d = rd / "bundles" / hk
+        d.mkdir(parents=True)
+        (d / "SOUL.md").write_text(f"soul {hk[:6]}\n")
+    d = rd / "reveal" / dethroned  # staged by _release_incumbent when it was dethroned this round
+    d.mkdir(parents=True)
+    (d / "SOUL.md").write_text("old king\n")
+    o._reveal_bundles(rd, dest, king)
+    published = sorted(p.name for p in (dest / "revealed").iterdir())
+    assert published == sorted([loser, dethroned])  # king + staying incumbent withheld; loser + dethroned revealed

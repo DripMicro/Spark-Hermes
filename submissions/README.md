@@ -1,10 +1,14 @@
 # Submissions
 
 A round opens with a **2-hour submission window**. During the window you fetch the round's tasks, write a strategy,
-and submit it as one signed pull request per hotkey; you may resubmit as often as you like
-and each submission replaces the last. When the window closes the validator seals every open strategy PR at
-its head SHA, evaluates, scores, crowns, and opens the next round. Nothing submitted after the close is sealed. If the
-window closes with no valid submission (an incumbent alone does not count), the round is not sealed: it reopens with the same tasks and a fresh window.
+and submit it with the CLI: your prose is uploaded privately to the submission server and your **pull request
+carries only your signed commitment** (`attestation.json`, one per hotkey) — so no rival can read your strategy
+while the window is open. You may resubmit as often as you like and each submission replaces the last. When the
+window closes the validator seals every open strategy PR at its head SHA, fetches each revealed bundle by the
+digest its commitment names, evaluates, scores, crowns, and opens the next round. Nothing submitted after the
+close is sealed. If the window closes with no valid submission (an incumbent alone does not count), the round is
+not sealed: it reopens with the same tasks and a fresh window. Your strategy's prose is made public only after
+the round is scored — a losing bundle at that round's close, the crowned one only once it is dethroned.
 
 The tasks are real bugs in real Python repositories (family `swe_fix`, from SWE-smith): a problem statement, the
 repository at the bug, and a grader that runs the tests the bug broke — each passing test earns its share of the
@@ -120,11 +124,12 @@ Open any board row to see the per-instance credits every one of these numbers is
 
 ## What happens next
 
-1. **Lint** runs on your PR automatically. It is the whole of what CI does: no code from a submission is ever
-   executed in this repository.
-2. **Seal**, when the window closes: one PR per hotkey — the **latest *signed*** counts, not the newest PR (signed
-   bundles are public, so a newer PR carrying your old bundle cannot displace your real one). Your PR must change
-   only your own `submissions/<hotkey>/` directory and nothing else, or it is rejected.
+1. **Lint** runs twice: the submission server lints your prose and refuses an answer-copy when you upload, and a
+   CI check validates your PR's commitment. No code from a submission is ever executed in this repository.
+2. **Seal**, when the window closes: one PR per hotkey — the **latest *signed*** counts, not the newest PR (your
+   commitment is public, so a newer PR carrying your old commitment cannot displace your real one). The validator
+   fetches your revealed bundle by the digest your commitment names and re-checks it. Your PR must change only your
+   own `submissions/<hotkey>/` directory and nothing else, or it is rejected.
 3. **Evaluation** on the validator's GPU, inside the sealed sandbox, against the strategy-less NULL baseline on
    the same instances (the CANON reference strategy runs every 8th round, for calibration). The board shows
    progress live.
@@ -137,5 +142,6 @@ Open any board row to see the per-instance credits every one of these numbers is
 5. **Payment** pools the last 8 rounds: Δc, the lower bound of your Δ vs baseline, is what earns weight.
    Consistency pays; a single round does not.
 6. **Your scorecard** is posted on the PR with the revealed withheld halves and salts, so you can recompute the
-   grading yourself. The definition of the score is `sh/scoring/v2.py`; the crown rule is `sh/scoring/crown.py`;
-   what they run against is `docs/pins.md`.
+   grading yourself; every out-of-competition bundle's prose is published under `rounds/<round>/revealed/` so you
+   can match its committed digest against its content. The definition of the score is `sh/scoring/v2.py`; the crown
+   rule is `sh/scoring/crown.py`; what they run against is `docs/pins.md`.

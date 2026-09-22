@@ -84,3 +84,22 @@ def test_keypair_loads_from_a_bittensor_hotkey_file(tmp_path):
     (tmp_path / "phrase").write_text(json.dumps({"secretPhrase": mnemonic}))
     assert attest.load_keypair(str(tmp_path / "phrase")).ss58_address == kp.ss58_address
     assert attest.load_keypair("//Alice").ss58_address == _kp().ss58_address
+
+
+def test_commitment_only_validates_structure_and_signature():
+    kp = _kp()
+    att = attest.sign(kp, "r0007", "a" * 64)
+    assert attest.commitment_problems(att, hotkey=kp.ss58_address) == []
+    assert any("64-hex" in p for p in attest.commitment_problems({**att, "bundle_sha256": "xyz"}))
+    assert any("hotkey" in p for p in attest.commitment_problems(att, hotkey="5" + "Z" * 47))
+    assert attest.commitment_problems(None) == ["L10 attestation.json: missing"]
+
+
+def test_commitment_cli_accepts_a_valid_commitment_and_rejects_a_broken_one(tmp_path):
+    kp = _kp()
+    d = tmp_path / "submissions" / kp.ss58_address
+    d.mkdir(parents=True)
+    (d / attest.FILE).write_text(json.dumps(attest.sign(kp, "r0007", "a" * 64)))
+    assert attest.main([str(d), "--hotkey", kp.ss58_address]) == 0
+    (d / attest.FILE).write_text(json.dumps({"schema": "wrong"}))
+    assert attest.main([str(d)]) == 1

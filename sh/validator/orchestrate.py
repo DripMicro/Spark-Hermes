@@ -532,6 +532,24 @@ def _release_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
     shutil.rmtree(kept, ignore_errors=True)
 
 
+def _reveal_bundles(rd: Path, dest: Path, king: str | None) -> None:
+    """Publish the prose of every bundle that is out of the competition, so anyone can match its committed
+    digest against its content: each sealed challenger that was not crowned, and any incumbent dethroned this
+    round (staged under `rd/reveal` by `_release_incumbent`). The reigning king is not revealed — it defends."""
+    out = dest / "revealed"
+    sealed = _read(rd / "seal.json", {}).get("active") or {}
+    for hotkey, info in sealed.items():
+        if hotkey == king or info.get("incumbent"):
+            continue  # the king still defends; a staying incumbent is not out; a dethroned one comes via rd/reveal
+        src = rd / "bundles" / hotkey
+        if src.is_dir():
+            shutil.copytree(src, out / hotkey, dirs_exist_ok=True)
+    if (rd / "reveal").is_dir():
+        for staged in (rd / "reveal").iterdir():
+            if staged.is_dir():
+                shutil.copytree(staged, out / staged.name, dirs_exist_ok=True)
+
+
 def _changed_paths(cfg: Config, base: str, head: str) -> list[str]:
     """Every path a head changes relative to where it forked from the base (three-dot)."""
     names = sh(["git", "diff", "--name-only", "-z", f"{base}...{head}", "--"], cwd=cfg.repo, check=False)
@@ -1170,6 +1188,7 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: d
     if (rd / "checks").exists():
         shutil.copytree(rd / "checks", dest / "checks", dirs_exist_ok=True)  # semantics of `custom` predicates
     shutil.copytree(rd / "scorecards", dest / "scorecards", dirs_exist_ok=True)
+    _reveal_bundles(rd, dest, king)  # the prose of every bundle now out of the competition (never the reigning king)
     shutil.copy(rd / "export" / "manifest.json", dest / "manifest.json")
     artefacts = sorted(p.name for p in dest.iterdir())
     entry = {
