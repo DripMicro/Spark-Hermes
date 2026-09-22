@@ -53,17 +53,27 @@ jobs:
           fi
           echo "BUNDLE=$changed" >> "$GITHUB_ENV"
 
-      - name: Lint the bundle and print its canonical digest
+      - name: Check the submission (full bundle, or commitment-only)
         if: env.BUNDLE != ''
-        # Structure, digest and the attestation's binding to the directory are checked here; the signature
-        # itself is verified by the seal, which has the signing library and knows the round.
-        run: python -m sh.cli.lint "$BUNDLE" --require-attestation --hotkey "$(basename "$BUNDLE")"
+        # A legacy PR carries the prose and gets the full lint (structure, digest, attestation binding). A
+        # private-mode PR carries only the signed commitment (attestation.json) — the prose is uploaded to the
+        # submission server — so its structure is validated here; the digest binding and answer-copy checks are
+        # done by the seal, which has the prose. The signature is verified by the seal in either case.
+        run: |
+          if [ -f "$BUNDLE/SOUL.md" ] || [ -d "$BUNDLE/skills" ]; then
+            python -m sh.cli.lint "$BUNDLE" --require-attestation --hotkey "$(basename "$BUNDLE")"
+          else
+            python -m sh.cli.attest "$BUNDLE" --hotkey "$(basename "$BUNDLE")"
+          fi
 
-      - name: Digest for the commitment
+      - name: Summary
         if: env.BUNDLE != ''
         run: |
-          python -m sh.cli.lint "$BUNDLE" --json > lint.json
-          echo "### Strategy lint" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Strategy check" >> "$GITHUB_STEP_SUMMARY"
           echo '```json' >> "$GITHUB_STEP_SUMMARY"
-          cat lint.json >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "$BUNDLE/SOUL.md" ] || [ -d "$BUNDLE/skills" ]; then
+            python -m sh.cli.lint "$BUNDLE" --json
+          else
+            cat "$BUNDLE/attestation.json"
+          fi >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"

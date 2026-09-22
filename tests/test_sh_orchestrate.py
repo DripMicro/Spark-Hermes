@@ -267,7 +267,7 @@ def test_a_forged_later_resubmission_cannot_take_a_miners_real_submission_out_of
         "h9": (1500, []),
     }
 
-    def fake_bundle(cfg, ref, hotkey, dest, *, round_id):
+    def fake_bundle(cfg, ref, hotkey, dest, *, round_id, store):
         at, problems = signed[ref]
         dest.mkdir(parents=True, exist_ok=True)
         (dest / "SOUL.md").write_text("Be careful.\n")
@@ -276,7 +276,7 @@ def test_a_forged_later_resubmission_cannot_take_a_miners_real_submission_out_of
 
     monkeypatch.setattr(o, "sh", lambda *a, **k: "")
     monkeypatch.setattr(o, "_strategy_prs", lambda cfg, tip: prs)
-    monkeypatch.setattr(o, "_bundle_from_tree", fake_bundle)
+    monkeypatch.setattr(o, "_reveal_challenger", fake_bundle)
     head_hk = {"h7": HKA, "h12": HKA, "h9": HKB}
     monkeypatch.setattr(o, "_changed_paths", lambda cfg, base, head: [f"submissions/{head_hk[head]}/SOUL.md"])
     active, rejected = o.candidates(cfg, "r0009", tmp_path / "bundles")
@@ -386,7 +386,7 @@ def test_a_strategy_pr_that_touches_anything_but_its_own_submission_directory_is
         "h5": [f"submissions/{HK}/SOUL.md"],
     }
 
-    def fake_bundle(cfg, ref, hotkey, dest, *, round_id):
+    def fake_bundle(cfg, ref, hotkey, dest, *, round_id, store):
         dest.mkdir(parents=True, exist_ok=True)
         (dest / "SOUL.md").write_text("Be careful.\n")
         (dest / "attestation.json").write_text(json.dumps({"signed_at": 100}))
@@ -394,7 +394,7 @@ def test_a_strategy_pr_that_touches_anything_but_its_own_submission_directory_is
 
     monkeypatch.setattr(o, "sh", lambda *a, **k: "")
     monkeypatch.setattr(o, "_strategy_prs", lambda cfg, tip: prs)
-    monkeypatch.setattr(o, "_bundle_from_tree", fake_bundle)
+    monkeypatch.setattr(o, "_reveal_challenger", fake_bundle)
     monkeypatch.setattr(o, "_changed_paths", lambda cfg, base, head: diffs[head])
     active, rejected = o.candidates(cfg, "r0009", tmp_path / "bundles")
     assert set(active) == {HK} and active[HK]["pr"] == 5
@@ -483,3 +483,21 @@ def test_live_json_takes_github_logins_only_from_the_seal(tmp_path, monkeypatch)
     live = json.loads((cfg.repo / "docs" / "live" / "live.json").read_text())
     assert live["github"] == {"5A": "torvalds", "5B": "octocat"}  # prev + seal; no open-PR opener anywhere
     assert "5C" not in live["github"]
+
+
+def test_the_board_advertises_the_submit_server_only_when_configured(tmp_path):
+    """The cutover switch: with submit_server set, the board carries it and the CLI uploads; empty keeps legacy."""
+    import sh.validator.orchestrate as o
+
+    cfg = _cfg(tmp_path)
+    rd = cfg.rounds / "r0001"
+    rd.mkdir(parents=True)
+    (rd / "window.json").write_text(json.dumps({"opens_at": 0, "closes_at": 1, "seconds": 1}))
+
+    cfg.submit_server = "https://ingest.example"
+    o.live(cfg, rd, "window", push=False)
+    assert json.loads((cfg.repo / o.LIVE).read_text())["submit_server"] == "https://ingest.example"
+
+    cfg.submit_server = ""
+    o.live(cfg, rd, "window", push=False)
+    assert json.loads((cfg.repo / o.LIVE).read_text())["submit_server"] is None

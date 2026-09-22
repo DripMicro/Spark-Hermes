@@ -57,6 +57,9 @@ LABEL_STRATEGY, LABEL_SCORED = "sh:strategy", "sh:round:scored"
 # name and as a shell word in the worker's `--surfaces` argument; a name like `$(...)` or `../x` must never reach
 # there. Anything else in submissions/ is not a submission.
 SS58 = re.compile(r"\A[1-9A-HJ-NP-Za-km-z]{47,48}\Z")
+# A digest out of a miner's attestation names a directory in the private store. It is attacker-controlled, so it
+# is matched strictly before it is ever joined to a path: "../.." must never reach the store lookup.
+DIGEST = re.compile(r"\A[0-9a-f]{64}\Z")
 HF_REPO = "gittensor-model-hub/spark-hermes-rounds"
 LIVE = "docs/live/live.json"  # what the dashboard polls; committed on every stage change
 CLAIM_GRACE_S = 30  # after claiming the engine, how long a screen the daemon had just started is given to show up
@@ -83,6 +86,7 @@ class Config:
     concurrency: int = 2
     era: str = "e0"
     canon_every: int = 8  # the reference strategy runs in every n-th round (calibration); 1 = every round
+    submit_server: str = ""  # advertised to miners on the board; set it (r0002+) to switch submissions to commit–reveal
 
     @property
     def rounds(self) -> Path:
@@ -264,6 +268,7 @@ def live(
         "repo": REPO,
         "branch": BRANCH,
         "hf_repo": HF_REPO,
+        "submit_server": cfg.submit_server or None,  # where the CLI uploads the prose; None = legacy (prose in the PR)
     }
     out = cfg.repo / LIVE
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -415,6 +420,13 @@ def reopen_window(cfg: Config, rd: Path) -> dict:
     return w
 
 
+def _check_bundle_dir(dest: Path, hotkey: str, round_id: str | None) -> dict:
+    """Lint an already-materialised bundle directory — the shared tail of the tree and store paths."""
+    files, problems = collect(dest)
+    result = check_files(files, problems, hotkey=hotkey, round_id=round_id, require_attestation=round_id is not None)
+    return {"problems": result["problems"], "digest": result["bundle_sha256"], "attestation": result["attestation"]}
+
+
 def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_id: str | None) -> dict | None:
     """Materialise `submissions/<hotkey>/` as of `ref` into `dest` and lint it; None if there is nothing there.
     With `round_id`, the bundle must carry a valid attestation for that round (a challenger); without, it is an
@@ -435,9 +447,123 @@ def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_i
         out.parent.mkdir(parents=True, exist_ok=True)
         blob = subprocess.run(["git", "show", f"{ref}:{rel}"], cwd=cfg.repo, capture_output=True)  # bytes, not text
         out.write_bytes(blob.stdout)
-    files, problems = collect(dest)
-    result = check_files(files, problems, hotkey=hotkey, round_id=round_id, require_attestation=round_id is not None)
-    return {"problems": result["problems"], "digest": result["bundle_sha256"], "attestation": result["attestation"]}
+    return _check_bundle_dir(dest, hotkey, round_id)
+
+
+def _tree_names(cfg: Config, ref: str, hotkey: str) -> list[str]:
+    """The file names a PR carries under `submissions/<hotkey>/` at `ref`."""
+    prefix = f"submissions/{hotkey}/"
+    listing = sh(["git", "ls-tree", "-r", "-z", "--name-only", ref, prefix], cwd=cfg.repo, check=False)
+    return [r[len(prefix) :] for r in listing.split("\0") if r.startswith(prefix)]
+
+
+def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_id: str, store: Path) -> dict | None:
+    """A challenger's bundle for the seal. The PR carries the signed commitment (`attestation.json`); the prose
+    is fetched from the private submission store by the digest that commitment names — or, during the transition,
+    from the PR tree when it still carries the prose. Same shape as `_bundle_from_tree`; None if the PR has
+    nothing under `submissions/<hotkey>/`."""
+    names = _tree_names(cfg, ref, hotkey)
+    if not names:
+        return None
+    att = None
+    if "attestation.json" in names:
+        raw = subprocess.run(
+            ["git", "show", f"{ref}:submissions/{hotkey}/attestation.json"], cwd=cfg.repo, capture_output=True
+        )
+        try:
+            att = json.loads(raw.stdout.decode("utf-8"))
+        except (ValueError, UnicodeDecodeError):
+            att = None
+    digest = att.get("bundle_sha256") if isinstance(att, dict) else None
+    signed_at = att.get("signed_at") if isinstance(att, dict) else None
+    prose_in_pr = [n for n in names if n not in ("attestation.json", "receipt.json")]
+    if (
+        isinstance(digest, str)
+        and DIGEST.match(digest)
+        and isinstance(signed_at, int)
+        and not isinstance(signed_at, bool)
+    ):
+        src = store / round_id / hotkey / "uploads" / f"{signed_at}-{digest}"
+        if src.is_dir():  # the revealed bundle the commitment points to
+            shutil.rmtree(dest, ignore_errors=True)
+            dest.mkdir(parents=True)
+            for f in sorted(src.rglob("*")):
+                if not f.is_file() or f.name == "receipt.json":  # the receipt is not part of the bundle
+                    continue
+                out = dest / f.relative_to(src)
+                if not str(out.resolve()).startswith(str(dest.resolve()) + os.sep):
+                    return {
+                        "problems": [f"stored path escapes the bundle: {f.name[:60]}"],
+                        "digest": digest,
+                        "attestation": None,
+                    }
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_bytes(f.read_bytes())
+            return _check_bundle_dir(dest, hotkey, round_id)
+        if not prose_in_pr:  # committed on the PR but never revealed to the store (or a different digest)
+            return {
+                "problems": [
+                    f"committed digest {str(digest)[:12]}… has no revealed bundle (upload it to the submission server)"
+                ],
+                "digest": digest,
+                "attestation": None,
+            }
+    return _bundle_from_tree(cfg, ref, hotkey, dest, round_id=round_id)  # transition: the PR still carries the prose
+
+
+def _incumbent_bundle(cfg: Config, tip: str, hotkey: str, dest: Path, *, incumbents: Path) -> dict | None:
+    """A defending incumbent's bundle. Its prose is not public, so it comes from the private incumbents store;
+    a legacy incumbent whose prose is still in `submissions/` comes from the tree. Its attestation was checked
+    when it was first sealed, so the round binding is not re-checked (round_id=None)."""
+    kept = incumbents / hotkey
+    if kept.is_dir():
+        shutil.rmtree(dest, ignore_errors=True)
+        shutil.copytree(kept, dest)
+        return _check_bundle_dir(dest, hotkey, round_id=None)
+    return _bundle_from_tree(cfg, tip, hotkey, dest, round_id=None)
+
+
+def _retain_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
+    """Keep a freshly crowned bundle in the private incumbents store so it can defend future rounds without its
+    prose ever being public. The seal already materialised it under the round's `bundles/`."""
+    src = rd / "bundles" / hotkey
+    if not src.is_dir():
+        return
+    dest = cfg.state / "incumbents" / hotkey
+    shutil.rmtree(dest, ignore_errors=True)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(src, dest)
+
+
+def _release_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
+    """A dethroned king leaves the competition, so its bundle is no longer defended: stage it for the round's
+    reveal (auditors can match its committed digest) and drop it from the private store."""
+    kept = cfg.state / "incumbents" / hotkey
+    if not kept.is_dir():
+        return
+    reveal = rd / "reveal" / hotkey
+    shutil.rmtree(reveal, ignore_errors=True)
+    reveal.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(kept, reveal)
+    shutil.rmtree(kept, ignore_errors=True)
+
+
+def _reveal_bundles(rd: Path, dest: Path, king: str | None) -> None:
+    """Publish the prose of every bundle that is out of the competition, so anyone can match its committed
+    digest against its content: each sealed challenger that was not crowned, and any incumbent dethroned this
+    round (staged under `rd/reveal` by `_release_incumbent`). The reigning king is not revealed — it defends."""
+    out = dest / "revealed"
+    sealed = _read(rd / "seal.json", {}).get("active") or {}
+    for hotkey, info in sealed.items():
+        if hotkey == king or info.get("incumbent"):
+            continue  # the king still defends; a staying incumbent is not out; a dethroned one comes via rd/reveal
+        src = rd / "bundles" / hotkey
+        if src.is_dir():
+            shutil.copytree(src, out / hotkey, dirs_exist_ok=True)
+    if (rd / "reveal").is_dir():
+        for staged in (rd / "reveal").iterdir():
+            if staged.is_dir():
+                shutil.copytree(staged, out / staged.name, dirs_exist_ok=True)
 
 
 def _changed_paths(cfg: Config, base: str, head: str) -> list[str]:
@@ -525,13 +651,14 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
     sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
     bundles.mkdir(parents=True, exist_ok=True)
     tip = f"origin/{BRANCH}"
+    store = cfg.state / "submissions"  # where the private ingestion server revealed each bundle
     active: dict[str, dict] = {}
     rejected: dict[str, str] = {}
     for entry in sh(["git", "ls-tree", "--name-only", tip, "submissions/"], cwd=cfg.repo, check=False).split():
         hotkey = entry.split("/")[-1]
         if not SS58.match(hotkey):  # README.md and anything not an ss58 directory is not a submission
             continue
-        b = _bundle_from_tree(cfg, tip, hotkey, bundles / hotkey, round_id=None)
+        b = _incumbent_bundle(cfg, tip, hotkey, bundles / hotkey, incumbents=cfg.state / "incumbents")
         if b and not b["problems"]:
             active[hotkey] = {"pr": None, "head": tip, "bundle_sha256": b["digest"], "incumbent": True}
     prs = _strategy_prs(cfg, tip)
@@ -554,7 +681,7 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
                 f"changes {len(outside)} path(s) outside submissions/{hotkey[:8]}…/ (e.g. {outside[0]})"
             )
             continue
-        b = _bundle_from_tree(cfg, pr["headRefOid"], hotkey, staged, round_id=round_id)
+        b = _reveal_challenger(cfg, pr["headRefOid"], hotkey, staged, round_id=round_id, store=store)
         if b is not None and not b["problems"] and answers:
             files, _ = collect(staged)
             if copied := answers.refuse(similarity.bundle_text(files)):
@@ -977,6 +1104,8 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
                 ["gh", "pr", "merge", str(plan["merge"]), "--repo", REPO, "--squash", "--match-head-commit",
                  sealed_head, "--subject", f"crown {round_id}: {king}"], capture_output=True, text=True)  # fmt: skip
         log(rd, "merge", pr=plan["merge"], ok=merged.returncode == 0, head=sealed_head[:8], err=merged.stderr[-200:])
+        if merged.returncode == 0:  # keep the crowned bundle private so it defends future rounds without leaking
+            _retain_incumbent(cfg, king, rd)
     elif king:
         log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown")
     history = _read(cfg.repo / "rounds" / "index.json", {"rounds": []})["rounds"]  # closed rounds, this one not yet
@@ -984,6 +1113,7 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
         sh(["git", "pull", "-q", "--rebase", "--autostash", "origin", BRANCH], cwd=cfg.repo, check=False)
         for hotkey in gone:
             sh(["git", "rm", "-r", "-q", f"submissions/{hotkey}"], cwd=cfg.repo, check=False)
+            _release_incumbent(cfg, hotkey, rd)  # out of the competition: reveal its bundle, drop it from the store
         if sh(["git", "status", "--porcelain", "submissions"], cwd=cfg.repo).strip():
             sh(
                 ["git", "commit", "-q", "-m", f"{round_id}: dethroned {', '.join(gone)}", "--", "submissions"],
@@ -1074,6 +1204,7 @@ def publish_close(cfg: Config, round_id: str, rd: Path, record: dict, crowned: d
     if (rd / "checks").exists():
         shutil.copytree(rd / "checks", dest / "checks", dirs_exist_ok=True)  # semantics of `custom` predicates
     shutil.copytree(rd / "scorecards", dest / "scorecards", dirs_exist_ok=True)
+    _reveal_bundles(rd, dest, king)  # the prose of every bundle now out of the competition (never the reigning king)
     shutil.copy(rd / "export" / "manifest.json", dest / "manifest.json")
     artefacts = sorted(p.name for p in dest.iterdir())
     entry = {
@@ -1200,6 +1331,11 @@ def main(argv=None) -> int:
     ap.add_argument("--window-minutes", type=int, default=120, help="the submission window")
     ap.add_argument("--min-paired", type=int, default=4)
     ap.add_argument("--canon-every", type=int, default=8, help="run the reference strategy every n-th round")
+    ap.add_argument(
+        "--submit-server",
+        default=os.environ.get("SH_SUBMIT_SERVER", ""),
+        help="the private submission server URL to advertise on the board (r0002+); empty keeps prose-in-PR",
+    )
     ap.add_argument("--once", action="store_true")
     ap.add_argument("--pause", type=int, default=0, help="seconds between rounds")
     ap.add_argument("--mock-miners", help="directory of mock miner bundles that submit each window (test only)")
@@ -1217,6 +1353,7 @@ def main(argv=None) -> int:
         window_s=a.window_minutes * 60,
         min_paired=a.min_paired,
         canon_every=a.canon_every,
+        submit_server=a.submit_server,
     )
     mock = (Path(a.mock_miners), Path(a.mock_keys or (cfg.state / "mock-keys"))) if a.mock_miners else None
     resume = unfinished_round(cfg)  # a restart picks up the round it was in the middle of
