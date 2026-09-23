@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790205886.1284895,
+ "updated": 1790206059.7639358,
  "round_id": "r0005",
  "stage": "evaluate",
  "stages": [
@@ -44,6 +44,14 @@
   {
    "stage": "window",
    "t": 1790205882.8973603
+  },
+  {
+   "stage": "seal",
+   "t": 1790205888.7584608
+  },
+  {
+   "stage": "images",
+   "t": 1790205912.0542595
   }
  ],
  "window": {
@@ -112,7 +120,7 @@
  "rejected": {},
  "progress": {
   "done": 0,
-  "total": 0,
+  "total": 18,
   "by_surface": {}
  },
  "crown": null,
