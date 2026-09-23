@@ -464,10 +464,34 @@ def _tree_names(cfg: Config, ref: str, hotkey: str) -> list[str]:
     return [r[len(prefix) :] for r in listing.split("\0") if r.startswith(prefix)]
 
 
-def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_id: str, store: Path) -> dict | None:
+# All a private-mode PR may add under its `submissions/<hotkey>/`: the signed commitment, and the server's receipt.
+PR_FILES = ("attestation.json", "receipt.json")
+
+
+def _prose_added(cfg: Config, base: str, head: str, hotkey: str) -> list[str]:
+    """What a PR adds or changes under `submissions/<hotkey>/` besides its commitment (three-dot, so only the PR's own
+    changes; deletions excluded — a king removing its old, already public prose adds none). Raises if git fails."""
+    prefix = f"submissions/{hotkey}/"
+    names = sh(["git", "diff", "--name-only", "-z", "--diff-filter=d", f"{base}...{head}", "--", prefix], cwd=cfg.repo)
+    return [p[len(prefix) :] for p in names.split("\0") if p.startswith(prefix) and p[len(prefix) :] not in PR_FILES]
+
+
+def _reveal_challenger(
+    cfg: Config,
+    ref: str,
+    hotkey: str,
+    dest: Path,
+    *,
+    round_id: str,
+    store: Path,
+    base: str = f"origin/{BRANCH}",
+    private_only: bool = False,
+) -> dict | None:
     """A challenger's bundle for the seal. The PR carries the signed commitment (`attestation.json`); the prose
-    is fetched from the private submission store by the digest that commitment names — or, during the transition,
-    from the PR tree when it still carries the prose. Same shape as `_bundle_from_tree`; None if the PR has
+    is fetched from the private submission store by the digest that commitment names. With `private_only` (the
+    board advertises a submission server) that is the only way in: a PR that adds prose of its own is refused —
+    it made the strategy public for every rival to read — and there is no fallback to the PR tree. Without it, a
+    PR that still carries the prose seals from its tree. Same shape as `_bundle_from_tree`; None if the PR has
     nothing under `submissions/<hotkey>/`."""
     names = _tree_names(cfg, ref, hotkey)
     if not names:
@@ -486,6 +510,24 @@ def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_
     # pointed the seal at the victim's revealed bundle and took over their submission.
     if forged := attest.problems(att, digest=(att or {}).get("bundle_sha256", ""), hotkey=hotkey, round_id=round_id):
         return {"problems": forged, "digest": "", "attestation": None}
+    if private_only:
+        try:
+            added = _prose_added(cfg, base, ref, hotkey)
+        except RuntimeError as exc:  # one PR's unreadable diff rejects that PR; it must not stop the seal
+            return {
+                "problems": [f"the PR could not be compared with {base}: {str(exc)[:120]}"],
+                "digest": "",
+                "attestation": None,
+            }
+        if added:
+            return {
+                "problems": [
+                    f"the PR carries strategy files ({', '.join(sorted(added)[:3])[:80]}); submissions are private: the PR "
+                    "carries only attestation.json and the prose goes to the submission server (the CLI does both)"
+                ],
+                "digest": "",
+                "attestation": None,
+            }
     digest = att.get("bundle_sha256") if isinstance(att, dict) else None
     signed_at = att.get("signed_at") if isinstance(att, dict) else None
     prose_in_pr = [n for n in names if n not in ("attestation.json", "receipt.json")]
@@ -512,7 +554,7 @@ def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_
                 out.parent.mkdir(parents=True, exist_ok=True)
                 out.write_bytes(f.read_bytes())
             return _check_bundle_dir(dest, hotkey, round_id)
-        if not prose_in_pr:  # committed on the PR but never revealed to the store (or a different digest)
+        if not prose_in_pr or private_only:  # committed on the PR but never revealed (or a different digest)
             return {
                 "problems": [
                     f"committed digest {str(digest)[:12]}… has no revealed bundle (upload it to the submission server)"
@@ -520,7 +562,9 @@ def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_
                 "digest": digest,
                 "attestation": None,
             }
-    return _bundle_from_tree(cfg, ref, hotkey, dest, round_id=round_id)  # transition: the PR still carries the prose
+    if private_only:  # a commitment that names no bundle at all
+        return {"problems": ["the commitment names no revealed bundle"], "digest": "", "attestation": None}
+    return _bundle_from_tree(cfg, ref, hotkey, dest, round_id=round_id)  # no server advertised: prose from the PR
 
 
 def _incumbent_bundle(cfg: Config, tip: str, hotkey: str, dest: Path, *, incumbents: Path) -> dict | None:
@@ -776,7 +820,16 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
                 f"changes {len(outside)} path(s) outside submissions/{hotkey[:8]}…/ (e.g. {outside[0]})"
             )
             continue
-        b = _reveal_challenger(cfg, pr["headRefOid"], hotkey, staged, round_id=round_id, store=store)
+        b = _reveal_challenger(
+            cfg,
+            pr["headRefOid"],
+            hotkey,
+            staged,
+            round_id=round_id,
+            store=store,
+            base=tip,
+            private_only=bool(cfg.submit_server),
+        )
         if b is not None and not b["problems"] and answers:
             files, _ = collect(staged)
             if copied := answers.refuse(similarity.bundle_text(files)):

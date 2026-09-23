@@ -10,8 +10,11 @@ window closes with no valid submission (an incumbent alone does not count), the 
 the CLI switches over by itself: your prose is uploaded to that server and your pull request carries only your
 signed commitment (`attestation.json`), so no rival can read your strategy while the window is open. The validator
 then fetches your bundle by the digest your commitment names. Your prose becomes public only after the round is
-scored — a losing bundle at that round's close, the crowned one only once it is dethroned. Until the board
-advertises a server, submissions work exactly as described above, with the bundle itself in the pull request.
+scored — a losing bundle at that round's close, the crowned one only once it is dethroned. While a server is
+advertised — as it has been since r0005 — a pull request that adds anything under your directory besides
+`attestation.json` (and the server's `receipt.json`) is refused, by CI and at the seal: prose in a PR is public the
+moment it is opened. Only a hotkey registered on SN74 can upload. With no server advertised, the bundle itself goes
+in the pull request, as described above.
 
 The tasks are real bugs in real Python repositories (family `swe_fix`, from SWE-smith): a problem statement, the
 repository at the bug, and a grader that runs the tests the bug broke — each passing test earns its share of the

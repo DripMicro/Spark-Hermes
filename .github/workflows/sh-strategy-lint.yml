@@ -53,14 +53,31 @@ jobs:
           fi
           echo "BUNDLE=$changed" >> "$GITHUB_ENV"
 
-      - name: Check the submission (full bundle, or commitment-only)
+      - name: Check the submission (commitment-only while a submission server is advertised)
         if: env.BUNDLE != ''
-        # A legacy PR carries the prose and gets the full lint (structure, digest, attestation binding). A
-        # private-mode PR carries only the signed commitment (attestation.json) — the prose is uploaded to the
-        # submission server — so its structure is validated here; the digest binding and answer-copy checks are
-        # done by the seal, which has the prose. The signature is verified by the seal in either case.
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        # While the board advertises a submission server, a PR carries only the signed commitment (attestation.json,
+        # and the server's receipt.json): the prose goes to the server. A PR that adds prose has made it public for
+        # every rival to read, so the seal refuses it and so does this check. Deleting files is allowed (a king
+        # removing its old, already public prose adds none). The signature is verified here when the library is
+        # present, and always by the seal, which also binds the digest. With no server advertised, the full lint
+        # runs on a bundle that carries its prose.
         run: |
-          if [ -f "$BUNDLE/SOUL.md" ] || [ -d "$BUNDLE/skills" ]; then
+          set -euo pipefail
+          server=$(git show "$BASE_SHA:docs/live/live.json" 2>/dev/null \
+            | python -c 'import json, sys; print(json.load(sys.stdin).get("submit_server") or "")' 2>/dev/null || true)
+          if [ -n "$server" ]; then
+            extra=$(git diff --name-only --diff-filter=d "$BASE_SHA"...HEAD -- "$BUNDLE/" \
+              | grep -v -x -e "$BUNDLE/attestation.json" -e "$BUNDLE/receipt.json" || true)
+            if [ -n "$extra" ]; then
+              echo "::error::submissions are private: a PR adds only attestation.json under its directory, and the prose is uploaded to the submission server — run the CLI's submit, which does both"
+              echo "files this PR adds or changes besides the commitment:"
+              echo "$extra"
+              exit 1
+            fi
+            python -m sh.cli.attest "$BUNDLE" --hotkey "$(basename "$BUNDLE")"
+          elif [ -f "$BUNDLE/SOUL.md" ] || [ -d "$BUNDLE/skills" ]; then
             python -m sh.cli.lint "$BUNDLE" --require-attestation --hotkey "$(basename "$BUNDLE")"
           else
             python -m sh.cli.attest "$BUNDLE" --hotkey "$(basename "$BUNDLE")"

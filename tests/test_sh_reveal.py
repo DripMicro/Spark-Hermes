@@ -399,3 +399,88 @@ def test_a_staging_dir_beside_a_live_crown_is_dropped_not_published(tmp_path, mo
     assert (live / "SOUL.md").read_text() == "the crown\n"
     assert not staging.exists()
     assert not (rd / "reveal").exists()
+
+
+def _head(repo: Path) -> str:
+    return _git(repo, "rev-parse", "HEAD").strip()
+
+
+def test_private_only_seals_an_attestation_only_pr_from_the_store(tmp_path):
+    repo, kp = _repo(tmp_path), _kp()
+    hk, digest = kp.ss58_address, bundle_digest(PROSE)
+    att = attest.sign(kp, "r0001", digest)
+    base = _head(repo)
+    ref = _commit_submission(repo, hk, _attestation_only(att))
+    store = _store(tmp_path, hk, att, PROSE)
+    b = o._reveal_challenger(
+        _cfg(tmp_path, repo), ref, hk, tmp_path / "staged", round_id="r0001", store=store, base=base, private_only=True
+    )
+    assert b and not b["problems"] and b["digest"] == digest
+
+
+def test_private_only_refuses_a_pr_that_carries_its_prose(tmp_path):
+    """The prose in the PR is public the moment it is opened. Even with the bundle uploaded, the PR is refused."""
+    repo, kp = _repo(tmp_path), _kp()
+    hk, digest = kp.ss58_address, bundle_digest(PROSE)
+    att = attest.sign(kp, "r0001", digest)
+    base = _head(repo)
+    ref = _commit_submission(repo, hk, {**PROSE, **_attestation_only(att)})
+    store = _store(tmp_path, hk, att, PROSE)
+    b = o._reveal_challenger(
+        _cfg(tmp_path, repo), ref, hk, tmp_path / "staged", round_id="r0001", store=store, base=base, private_only=True
+    )
+    assert b["problems"] and "carries strategy files (SOUL.md)" in b["problems"][0]
+
+
+def test_private_only_never_falls_back_to_the_tree(tmp_path):
+    """A king whose old prose is already public on the branch resubmits with a commitment alone. The files it did
+    not add are not held against it — and without an upload the old prose in the tree is not used either."""
+    repo, kp = _repo(tmp_path), _kp()
+    hk = kp.ss58_address
+    old = {"SOUL.md": b"# Soul\n\nThe crown's old, already public prose.\n"}
+    _commit_submission(repo, hk, {**old, **_attestation_only(attest.sign(kp, "r0000", bundle_digest(old)))})
+    base = _head(repo)
+    att = attest.sign(kp, "r0001", bundle_digest(PROSE))
+    (repo / "submissions" / hk / attest.FILE).write_text(json.dumps(att) + "\n")  # the PR changes only this
+    _git(repo, "commit", "-qam", "resubmit")
+    ref, cfg = _head(repo), _cfg(tmp_path, repo)
+    b = o._reveal_challenger(
+        cfg, ref, hk, tmp_path / "staged", round_id="r0001", store=tmp_path / "empty", base=base, private_only=True
+    )
+    assert b["problems"] and "no revealed bundle" in b["problems"][0]
+    store = _store(tmp_path, hk, att, PROSE)
+    b = o._reveal_challenger(
+        cfg, ref, hk, tmp_path / "staged2", round_id="r0001", store=store, base=base, private_only=True
+    )
+    assert b and not b["problems"] and b["digest"] == bundle_digest(PROSE)
+
+
+def test_private_only_rejects_a_pr_it_cannot_diff_without_raising(tmp_path):
+    """One PR whose diff does not run is refused; it must not stop the seal for everyone else."""
+    repo, kp = _repo(tmp_path), _kp()
+    hk = kp.ss58_address
+    att = attest.sign(kp, "r0001", bundle_digest(PROSE))
+    ref = _commit_submission(repo, hk, _attestation_only(att))
+    b = o._reveal_challenger(
+        _cfg(tmp_path, repo),
+        ref,
+        hk,
+        tmp_path / "staged",
+        round_id="r0001",
+        store=_store(tmp_path, hk, att, PROSE),
+        base="no-such-ref",
+        private_only=True,
+    )
+    assert b["problems"] and "could not be compared" in b["problems"][0]
+
+
+def test_without_a_server_a_prose_pr_still_seals_from_its_tree(tmp_path):
+    repo, kp = _repo(tmp_path), _kp()
+    hk, digest = kp.ss58_address, bundle_digest(PROSE)
+    att = attest.sign(kp, "r0001", digest)
+    base = _head(repo)
+    ref = _commit_submission(repo, hk, {**PROSE, **_attestation_only(att)})
+    b = o._reveal_challenger(
+        _cfg(tmp_path, repo), ref, hk, tmp_path / "staged", round_id="r0001", store=tmp_path / "e", base=base
+    )
+    assert b and not b["problems"] and b["digest"] == digest
