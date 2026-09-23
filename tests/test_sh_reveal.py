@@ -156,6 +156,8 @@ def test_retain_then_release_moves_the_bundle_through_the_store(tmp_path):
     (rd / "bundles" / hk / attest.FILE).write_text(json.dumps(attest.sign(kp, "r0001", bundle_digest(PROSE))))
     o._retain_incumbent(cfg, hk, rd)
     assert (cfg.state / "incumbents" / hk / "SOUL.md").exists()  # crowned bundle kept privately
+    assert not (cfg.state / "incumbents" / f".{hk}.new").exists()  # the swap's scratch dirs do not outlive it
+    assert not (cfg.state / "incumbents" / f".{hk}.old").exists()
     o._release_incumbent(cfg, hk, rd)
     assert (rd / "reveal" / hk / "SOUL.md").exists()  # dethroned: revealed for audit
     assert not (cfg.state / "incumbents" / hk).exists()  # and dropped from the store
@@ -315,3 +317,85 @@ def test_an_incumbent_no_marker_claims_is_released_not_left_to_rot(tmp_path, mon
     assert (cfg.state / "incumbents" / claimed).is_dir()  # the one a marker claims still defends
     assert not (cfg.state / "incumbents" / orphan).exists()  # the orphan is gone
     assert (rd / "reveal" / orphan / "SOUL.md").exists()  # ...and revealed rather than lost
+
+
+def test_a_failed_marker_listing_does_not_release_every_crown(tmp_path, monkeypatch):
+    """`git ls-tree` prints nothing when it fails. The prune used to read that as an empty tree and release
+    every crown — and publish every bundle — because a hotkey still in the store is skipped by the reveal."""
+    repo = _repo(tmp_path)
+    cfg = _cfg(tmp_path, repo)
+    rd = tmp_path / "rd"
+    rd.mkdir()
+    claimed, orphan = "5" + "C" * 47, "5" + "B" * 47
+    for hk in (claimed, orphan):
+        d = cfg.state / "incumbents" / hk
+        d.mkdir(parents=True)
+        (d / "SOUL.md").write_text(f"soul {hk[:6]}\n")
+
+    def fail(*_a, **_k):
+        raise RuntimeError("git ls-tree… exited 128: fatal: not a git repository")
+
+    monkeypatch.setattr(o, "sh", fail)
+    assert o._prune_orphan_incumbents(cfg, rd) == []
+    assert (cfg.state / "incumbents" / claimed).is_dir()
+    assert (cfg.state / "incumbents" / orphan).is_dir()
+    assert not (rd / "reveal").exists()
+
+
+def test_a_real_empty_listing_still_releases_what_nobody_claims(tmp_path, monkeypatch):
+    """Failure is not emptiness. A listing that succeeded and named nobody still means nothing defends."""
+    repo = _repo(tmp_path)
+    cfg = _cfg(tmp_path, repo)
+    rd = tmp_path / "rd"
+    rd.mkdir()
+    orphan = "5" + "B" * 47
+    d = cfg.state / "incumbents" / orphan
+    d.mkdir(parents=True)
+    (d / "SOUL.md").write_text("soul\n")
+    monkeypatch.setattr(o, "sh", lambda *_a, **_k: "")
+    assert o._prune_orphan_incumbents(cfg, rd) == [orphan]
+    assert (rd / "reveal" / orphan / "SOUL.md").exists()
+
+
+def test_a_retain_interrupted_before_the_swap_still_defends(tmp_path):
+    """The new bundle was written and the previous crown moved aside, then the process died before the rename.
+    The next seal has to defend with that bundle, not report the king unresolved and not publish the scratch dir."""
+    repo, kp = _repo(tmp_path), _kp()
+    hk, digest = kp.ss58_address, bundle_digest(PROSE)
+    att = attest.sign(kp, "r0001", digest)
+    store = tmp_path / "state" / "incumbents"
+    staging = store / f".{hk}.new"
+    staging.mkdir(parents=True)
+    (staging / "SOUL.md").write_bytes(PROSE["SOUL.md"])
+    (staging / attest.FILE).write_text(json.dumps(att))
+    backup = store / f".{hk}.old"
+    backup.mkdir()
+    (backup / "SOUL.md").write_text("the crown it was replacing\n")
+
+    b = o._incumbent_bundle(_cfg(tmp_path, repo), "HEAD", hk, tmp_path / "staged", incumbents=store)
+    assert b and not b["problems"] and b["digest"] == digest
+    assert (store / hk / "SOUL.md").read_bytes() == PROSE["SOUL.md"]
+    assert not staging.exists() and not backup.exists()
+
+
+def test_a_staging_dir_beside_a_live_crown_is_dropped_not_published(tmp_path, monkeypatch):
+    """A scratch directory is not a marker's orphan. Releasing it would publish a second copy of a bundle that
+    is still defending, under a name the commitment does not use."""
+    repo, kp = _repo(tmp_path), _kp()
+    hk = kp.ss58_address
+    cfg = _cfg(tmp_path, repo)
+    rd = tmp_path / "rd"
+    rd.mkdir()
+    store = cfg.state / "incumbents"
+    live = store / hk
+    live.mkdir(parents=True)
+    (live / "SOUL.md").write_text("the crown\n")
+    staging = store / f".{hk}.new"
+    staging.mkdir()
+    (staging / "SOUL.md").write_text("half written, not the crown\n")
+
+    monkeypatch.setattr(o, "sh", lambda *_a, **_k: f"submissions/{hk}\n")
+    assert o._prune_orphan_incumbents(cfg, rd) == []
+    assert (live / "SOUL.md").read_text() == "the crown\n"
+    assert not staging.exists()
+    assert not (rd / "reveal").exists()

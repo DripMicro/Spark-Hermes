@@ -527,12 +527,50 @@ def _incumbent_bundle(cfg: Config, tip: str, hotkey: str, dest: Path, *, incumbe
     """A defending incumbent's bundle. Its prose is not public, so it comes from the private incumbents store;
     a legacy incumbent whose prose is still in `submissions/` comes from the tree. Its attestation was checked
     when it was first sealed, so the round binding is not re-checked (round_id=None)."""
-    kept = incumbents / hotkey
-    if kept.is_dir():
+    kept = _settle_incumbent_dir(incumbents, hotkey)
+    if kept is not None:
         shutil.rmtree(dest, ignore_errors=True)
         shutil.copytree(kept, dest)
         return _check_bundle_dir(dest, hotkey, round_id=None)
     return _bundle_from_tree(cfg, tip, hotkey, dest, round_id=None)
+
+
+def _staging_hotkey(name: str) -> str | None:
+    """`.<hotkey>.new` and `.<hotkey>.old` are a retain's scratch directories, not crowns. A name that is not one
+    of those is not a hotkey to recover."""
+    for suffix in (".new", ".old"):
+        if name.startswith(".") and name.endswith(suffix):
+            hotkey = name[1 : -len(suffix)]
+            if SS58.match(hotkey):
+                return hotkey
+    return None
+
+
+def _settle_incumbent_dir(store: Path, hotkey: str) -> Path | None:
+    """The directory this hotkey defends from, finishing a swap a crash left half-done.
+
+    The new bundle is written to `.<hotkey>.new` and the previous one moved to `.<hotkey>.old` before the new one
+    takes its place, so a kill never leaves the store with nothing. A finished directory wins; otherwise the new
+    bundle is put in place and the old one dropped, and a directory that was only moved aside is put back."""
+    dest = store / hotkey
+    if not SS58.match(hotkey):  # scratch dirs are only named for a real hotkey; anything else is just itself
+        return dest if dest.is_dir() else None
+    staging, backup = store / f".{hotkey}.new", store / f".{hotkey}.old"
+    if dest.is_dir():
+        if staging.is_dir():  # the swap finished; the scratch copy must not be published as its own crown
+            shutil.rmtree(staging, ignore_errors=True)
+        if backup.is_dir():
+            shutil.rmtree(backup, ignore_errors=True)
+        return dest
+    if staging.is_dir():
+        if backup.is_dir():
+            shutil.rmtree(backup, ignore_errors=True)
+        staging.rename(dest)
+        return dest
+    if backup.is_dir():
+        backup.rename(dest)
+        return dest
+    return None
 
 
 def _retain_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
@@ -541,20 +579,33 @@ def _retain_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
     src = rd / "bundles" / hotkey
     if not src.is_dir():
         return
-    dest = cfg.state / "incumbents" / hotkey
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    staging = dest.with_name(f".{hotkey}.new")  # copy first, swap last: a partial bundle would fail its own digest
+    store = cfg.state / "incumbents"
+    store.mkdir(parents=True, exist_ok=True)
+    dest = store / hotkey
+    staging, backup = store / f".{hotkey}.new", store / f".{hotkey}.old"
     shutil.rmtree(staging, ignore_errors=True)
-    shutil.copytree(src, staging)
-    shutil.rmtree(dest, ignore_errors=True)
-    staging.rename(dest)
+    try:
+        shutil.copytree(src, staging)  # copy first: a partial tree must never replace the crown
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+    shutil.rmtree(backup, ignore_errors=True)
+    if dest.exists():
+        dest.rename(backup)  # the previous crown is still on disk until the new one is in place
+    try:
+        staging.rename(dest)
+    except OSError:
+        if not dest.exists() and backup.is_dir():
+            backup.rename(dest)
+        raise
+    shutil.rmtree(backup, ignore_errors=True)
 
 
 def _release_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
     """A dethroned king leaves the competition, so its bundle is no longer defended: stage it for the round's
     reveal (auditors can match its committed digest) and drop it from the private store."""
-    kept = cfg.state / "incumbents" / hotkey
-    if not kept.is_dir():
+    kept = _settle_incumbent_dir(cfg.state / "incumbents", hotkey)
+    if kept is None:
         return
     reveal = rd / "reveal" / hotkey
     shutil.rmtree(reveal, ignore_errors=True)
@@ -565,7 +616,10 @@ def _release_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
 
 def _defending_digest(cfg: Config, hotkey: str) -> str | None:
     """The digest of the bundle this hotkey currently defends with, if it holds a crown privately."""
-    return (_read(cfg.state / "incumbents" / hotkey / attest.FILE, {}) or {}).get("bundle_sha256")
+    kept = _settle_incumbent_dir(cfg.state / "incumbents", hotkey)
+    if kept is None:
+        return None
+    return (_read(kept / attest.FILE, {}) or {}).get("bundle_sha256")
 
 
 def _reveal_bundles(cfg: Config, rd: Path, dest: Path, king: str | None) -> None:
@@ -1074,16 +1128,30 @@ def dethroned(
 def _prune_orphan_incumbents(cfg: Config, rd: Path) -> list[str]:
     """Drop anything in the private store that no marker in `submissions/` claims. Such an entry is a crown that
     never landed, or a marker removed outside the dethrone path: it would defend nothing, and because the reveal
-    skips a hotkey that is still in the store it would never be published either. Releasing it does both."""
-    markers = {
-        e.split("/")[-1]
-        for e in sh(
-            ["git", "ls-tree", "--name-only", f"origin/{BRANCH}", "submissions/"], cwd=cfg.repo, check=False
-        ).split()
-    }
+    skips a hotkey that is still in the store it would never be published either. Releasing it does both.
+
+    A listing that did not succeed is not an empty tree. `git ls-tree` prints nothing when it fails, and reading
+    that as "nobody defends" would release every crown and publish every bundle. Scratch directories from a retain
+    are not crowns either: they are put back in place or dropped, never revealed under their own name."""
     store = cfg.state / "incumbents"
+    if store.is_dir():
+        for name in sorted(p.name for p in store.iterdir()):
+            if hotkey := _staging_hotkey(name):
+                _settle_incumbent_dir(store, hotkey)
+    try:
+        listing = sh(["git", "ls-tree", "--name-only", f"origin/{BRANCH}", "submissions/"], cwd=cfg.repo)
+    except RuntimeError as exc:
+        log(rd, "incumbent_orphan_skipped", why=str(exc)[:160])
+        return []
+    markers = {e.split("/")[-1] for e in listing.split()}
     orphans = (
-        [p.name for p in sorted(store.iterdir()) if p.is_dir() and p.name not in markers] if store.is_dir() else []
+        [
+            p.name
+            for p in sorted(store.iterdir())
+            if p.is_dir() and p.name not in markers and _staging_hotkey(p.name) is None
+        ]
+        if store.is_dir()
+        else []
     )
     for hotkey in orphans:
         _release_incumbent(cfg, hotkey, rd)
