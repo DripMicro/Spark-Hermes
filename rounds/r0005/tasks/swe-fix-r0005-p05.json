@@ -1,0 +1,34 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0005-p05",
+ "round_id": "r0005",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nAssignment string representation is incorrect\n\n#### Description\n\nWhen converting assignment nodes to string representation, the output format is wrong. The assignment operator and operands are in the wrong order and using incorrect operators.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ncode = \"x = 5\"\nast = astroid.parse(code)\nprint(ast.as_string())\n```\n\nExpected output:\n```\nx = 5\n```\n\nActual output:\n```\n5 = x\n```\n\nThis also affects more complex assignments:\n\n```python\nimport astroid\n\ncode = \"a, b = c, d\"\nast = astroid.parse(code)\nprint(ast.as_string())\n```\n\nExpected output:\n```\na, b = c, d\n```\n\nActual output:\n```\nc, d = a + b\n```\n\nThe issue affects the string representation of assignment statements throughout the codebase, causing incorrect output when converting AST nodes back to source code.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__ld6z897d",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_nodes.py::AsStringTest::test_3k_as_string",
+   "tests/test_nodes.py::AsStringTest::test_as_string",
+   "tests/test_nodes.py::AsStringTest::test_f_strings",
+   "tests/test_nodes.py::AsStringTest::test_int_attribute",
+   "tests/test_nodes.py::AsStringTest::test_module2_as_string",
+   "tests/test_nodes.py::AsStringTest::test_module_as_string",
+   "tests/test_nodes.py::AsStringTest::test_operator_precedence",
+   "tests/test_nodes.py::AsStringTest::test_slice_and_subscripts",
+   "tests/test_python3.py::Python3TC::test_yield_from_as_string",
+   "tests/test_transforms.py::TestTransforms::test_transform_patches_locals"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

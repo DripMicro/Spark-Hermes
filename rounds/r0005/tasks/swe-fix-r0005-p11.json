@@ -1,0 +1,34 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0005-p11",
+ "round_id": "r0005",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nARXML SecOC parsing fails with NoneType division error\n\nWhen loading ARXML files with SecOC (Secure Onboard Communication) configurations, the parser crashes with a `TypeError: unsupported operand type(s) for //: 'NoneType' and 'int'` error.\n\n#### Steps to Reproduce\n\n```python\nimport cantools\n\n# This will fail when loading ARXML files with SecOC properties\ndb = cantools.db.load_file('tests/files/arxml/system-4.2.arxml')\n```\n\nThe error occurs when processing secured messages that contain freshness value configurations. The issue appears to be related to division operations on None values during SecOC property parsing.\n\n#### Expected Behavior\n\nARXML files with SecOC configurations should load successfully, allowing access to secured message properties and signal definitions.\n\n#### Actual Behavior\n\nLoading fails with:\n```\ncantools.database.UnsupportedDatabaseFormatError: ARXML: \"unsupported operand type(s) for //: 'NoneType' and 'int'\"\n```\n\nThis affects multiple test cases including:\n- `test_autosar4_secoc`\n- `test_autosar4_e2e` \n- `test_autosar4_e2e_profile5`\n- `test_system_4_arxml`\n\nThe error prevents proper parsing of secured CAN messages and their associated authentication/freshness properties.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__n528kjx8",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar3_e2e_profile2",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e_profile5",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_secoc",
+   "tests/test_database.py::CanToolsDatabaseTest::test_encode_decode_containers",
+   "tests/test_database.py::CanToolsDatabaseTest::test_encode_mixed_signal",
+   "tests/test_database.py::CanToolsDatabaseTest::test_gather_signals",
+   "tests/test_database.py::CanToolsDatabaseTest::test_system_4_arxml",
+   "tests/test_database.py::CanToolsDatabaseTest::test_unused_bit_pattern",
+   "tests/test_list.py::CanToolsListTest::test_arxml4"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

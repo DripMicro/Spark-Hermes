@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0005-p00",
+ "round_id": "r0005",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nGenerator inference broken after initialization changes\n\n#### Description\n\nGenerator objects created from function calls are not properly initialized, causing inference failures when trying to access generator attributes or use them in context managers.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ncode = '''\nimport contextlib\n\n@contextlib.contextmanager\ndef test():\n    yield 42\n\ngen = test()\nwith gen as value:\n    pass\n'''\n\nmodule = astroid.parse(code)\n# This will fail with AttributeError\ntry:\n    result = next(module['value'].infer())\n    print(\"Expected: 42, Got:\", result.value)\nexcept Exception as e:\n    print(\"Error:\", e)\n```\n\nAlso fails when trying to access generator special attributes:\n\n```python\ncode = '''\ndef test():\n    yield\n\ngen = test()\ngen.__name__\n'''\n\nmodule = astroid.parse(code)\nnode = astroid.extract_node(code)\n# This will fail due to None special_attributes\ntry:\n    result = next(node.infer())\n    print(\"Generator name:\", result.value)\nexcept Exception as e:\n    print(\"Error:\", e)\n```\n\nThe issue affects contextlib.contextmanager decorated functions and regular generator functions where the Generator object cannot properly infer yield types or access special attributes.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__ziigrfdp",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::InferenceTest::test_inferring_context_manager_unpacking_inference_error",
+   "tests/test_inference.py::InferenceTest::test_inferring_with_contextlib_contextmanager",
+   "tests/test_inference.py::InferenceTest::test_inferring_with_contextlib_contextmanager_failures",
+   "tests/test_inference.py::InferenceTest::test_nested_contextmanager",
+   "tests/test_inference.py::test_issue_1090_infer_yield_type_base_class",
+   "tests/test_object_model.py::GeneratorModelTest::test_model",
+   "tests/test_object_model.py::TestContextManagerModel::test_model",
+   "tests/test_scoped_nodes.py::ClassNodeTest::test_generator_from_infer_call_result_parent"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

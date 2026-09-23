@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0005-p10",
+ "round_id": "r0005",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Page break functionality broken in paragraphs\n\n### Bug description\n\nWhen working with documents containing page breaks, I'm encountering issues with the page break functionality. The code is unable to properly handle page breaks in paragraphs.\n\n### Reproduction steps\n\n1. Create a document with page breaks in paragraphs\n2. Try to access the content before a page break\n3. The operation fails when the page break is not the first element in a paragraph\n\n### Example code\n\n```python\nfrom docx import Document\n\ndoc = Document('my_document.docx')  # Document with page breaks\nfor paragraph in doc.paragraphs:\n    # This fails when trying to access content around page breaks\n    if hasattr(paragraph, 'has_page_break') and paragraph.has_page_break:\n        content_before = paragraph.preceding_fragment\n        print(content_before)\n```\n\n### Expected behavior\n\nThe code should properly handle page breaks in paragraphs and allow accessing content before the page break, regardless of the page break's position in the paragraph.\n\n### Actual behavior\n\nThe code fails when trying to access content before a page break that is not the first element in a paragraph. It also doesn't properly handle page breaks in hyperlinks.\n\n### Environment\n\n- python-docx version: latest\n- Python version: 3.10\n- OS: Windows 10\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_pm_class_rm_funcs__q1pnwtnn",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/text/test_pagebreak.py::DescribeRenderedPageBreak::and_it_can_split_off_the_preceding_paragraph_content_when_in_a_hyperlink",
+   "tests/text/test_pagebreak.py::DescribeRenderedPageBreak::it_can_split_off_the_preceding_paragraph_content_when_in_a_run",
+   "tests/text/test_pagebreak.py::DescribeRenderedPageBreak::it_produces_None_for_preceding_fragment_when_page_break_is_leading",
+   "tests/text/test_pagebreak.py::DescribeRenderedPageBreak::it_raises_on_preceding_fragment_when_page_break_is_not_first_in_paragrah"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

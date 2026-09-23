@@ -1,0 +1,33 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0005-p03",
+ "round_id": "r0005",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nC source generation produces incorrect signal choice names and ordering\n\n#### Description\n\nWhen generating C source code from DBC files, the signal choice constants are being generated with incorrect naming and ordering. The choice names are using lowercase signal names instead of uppercase, and the choices are being sorted in reverse order instead of the expected order.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a DBC file with signal choices\ndb = cantools.database.load_file('tests/files/dbc/motohawk.dbc')\n\n# Generate C source code\nheader, source = cantools.database.can.c_source.generate_c_source(db)\n\n# Check the generated header content\nprint(header)\n```\n\nThe generated header shows:\n```c\n#define MOTOHAWK_EXAMPLE_MESSAGE_ENABLE_DISABLED_CHOICE (0u)\n#define MOTOHAWK_EXAMPLE_MESSAGE_ENABLE_ENABLED_CHOICE (1u)\n```\n\nBut it should show:\n```c\n#define MOTOHAWK_EXAMPLE_MESSAGE_enable_ENABLED_CHOICE (1)\n#define MOTOHAWK_EXAMPLE_MESSAGE_enable_DISABLED_CHOICE (0)\n```\n\nThe issue affects both the case of the signal name in the constant (should be lowercase `enable` not uppercase `ENABLE`) and the ordering of the choices (ENABLED should come before DISABLED based on value ordering).\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_file__m8ex55o5",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_bit_fields",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_database_name",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_generate_fuzzer",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_no_signal_encode_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node_no_signal_encode_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sym",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_working_directory"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

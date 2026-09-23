@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0005-p08",
+ "round_id": "r0005",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nImageParts collection returns wrong length and incorrect image parts\n\nDescription\n\nWhen working with image parts in a document package, the ImageParts collection is returning an incorrect length (one less than expected) and the get_or_add_image_part method is behaving unexpectedly when matching existing images.\n\nSteps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.package import Package\n\n# Open a document with images\npackage = Package.open('document_with_images.docx')\nimage_parts = package.image_parts\n\n# Check the length - this returns one less than expected\nprint(f\"Image parts length: {len(image_parts)}\")  # Shows 2 instead of 3\n\n# Try to get or add an existing image\nimage_part = image_parts.get_or_add_image_part('existing_image.jpg')\n# This creates a new image part instead of returning the existing one\n```\n\nThe issue manifests in two ways:\n1. The `len()` method on ImageParts returns a count that's off by one\n2. When trying to get an existing image part, it creates a new one instead of returning the matching existing part\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.combine_file__z4mxkm1q",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_package.py::DescribeImageParts::but_it_adds_a_new_image_part_when_match_fails",
+   "tests/test_package.py::DescribeImageParts::it_can_get_a_matching_image_part",
+   "tests/test_package.py::DescribeImageParts::it_knows_the_next_available_image_partname[next_partname_fixture2]",
+   "tests/test_package.py::DescribePackage::it_gathers_package_image_parts_after_unmarshalling"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
