@@ -267,7 +267,7 @@ def test_a_forged_later_resubmission_cannot_take_a_miners_real_submission_out_of
         "h9": (1500, []),
     }
 
-    def fake_bundle(cfg, ref, hotkey, dest, *, round_id, store):
+    def fake_bundle(cfg, ref, hotkey, dest, *, round_id, store, **_k):
         at, problems = signed[ref]
         dest.mkdir(parents=True, exist_ok=True)
         (dest / "SOUL.md").write_text("Be careful.\n")
@@ -386,7 +386,7 @@ def test_a_strategy_pr_that_touches_anything_but_its_own_submission_directory_is
         "h5": [f"submissions/{HK}/SOUL.md"],
     }
 
-    def fake_bundle(cfg, ref, hotkey, dest, *, round_id, store):
+    def fake_bundle(cfg, ref, hotkey, dest, *, round_id, store, **_k):
         dest.mkdir(parents=True, exist_ok=True)
         (dest / "SOUL.md").write_text("Be careful.\n")
         (dest / "attestation.json").write_text(json.dumps({"signed_at": 100}))
