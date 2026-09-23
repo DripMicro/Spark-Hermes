@@ -319,6 +319,59 @@ def test_an_incumbent_no_marker_claims_is_released_not_left_to_rot(tmp_path, mon
     assert (rd / "reveal" / orphan / "SOUL.md").exists()  # ...and revealed rather than lost
 
 
+def test_a_failed_incumbent_listing_does_not_seal_a_round_without_its_king(tmp_path, monkeypatch):
+    """The same command the prune reads. At the seal, empty used to mean nobody defends, so a git error left the
+    king out and a challenger could be crowned over a king who never played."""
+    cfg = _cfg(tmp_path, _repo(tmp_path))
+    (cfg.rounds / "r0002").mkdir(parents=True)
+
+    def fake_sh(cmd, **_k):
+        if cmd[:2] == ["git", "ls-tree"]:
+            raise RuntimeError("git ls-tree… exited 128: fatal: not a git repository")
+        return ""
+
+    monkeypatch.setattr(o, "sh", fake_sh)
+    monkeypatch.setattr(o, "_strategy_prs", lambda cfg, tip: [])
+    with pytest.raises(RuntimeError, match="ls-tree"):
+        o.candidates(cfg, "r0002", tmp_path / "bundles")
+
+
+def test_a_failed_diff_is_not_an_empty_change(tmp_path, monkeypatch):
+    """Empty is what the seal reads as 'this PR touches no code'. A diff that did not run must not look like that,
+    and must not look like a PR that touches no submission either — that one reopens the window."""
+    cfg = _cfg(tmp_path, _repo(tmp_path))
+
+    def fail(*_a, **_k):
+        raise RuntimeError("git diff… exited 128: fatal: bad revision")
+
+    monkeypatch.setattr(o, "sh", fail)
+    with pytest.raises(RuntimeError, match="diff"):
+        o._changed_paths(cfg, "main", "abc")
+    with pytest.raises(RuntimeError, match="diff"):
+        o._changed_submissions(cfg, "main", "abc")
+
+
+def test_a_blob_that_does_not_read_is_not_written_into_the_bundle(tmp_path, monkeypatch):
+    """`git show` prints nothing when it fails. That stdout used to be written as the file, and an incumbent is
+    not attested again, so a hollow bundle could be sealed as the crown."""
+    repo, kp = _repo(tmp_path), _kp()
+    hk = kp.ss58_address
+    ref = _commit_submission(repo, hk, PROSE)
+    cfg = _cfg(tmp_path, repo)
+    real = subprocess.run
+
+    def flaky(cmd, **k):
+        if cmd[:2] == ["git", "show"]:
+            return subprocess.CompletedProcess(cmd, 128, stdout=b"", stderr=b"fatal: bad object")
+        return real(cmd, **k)
+
+    monkeypatch.setattr(o.subprocess, "run", flaky)
+    dest = tmp_path / "staged"
+    with pytest.raises(RuntimeError, match="git show"):
+        o._bundle_from_tree(cfg, ref, hk, dest, round_id=None)
+    assert not (dest / "SOUL.md").exists()
+
+
 def test_a_failed_marker_listing_does_not_release_every_crown(tmp_path, monkeypatch):
     """`git ls-tree` prints nothing when it fails. The prune used to read that as an empty tree and release
     every crown — and publish every bundle — because a hotkey still in the store is skipped by the reveal."""

@@ -104,6 +104,15 @@ def sh(
     return (r.stdout + r.stderr) if want_err and r.returncode else r.stdout
 
 
+def _git_bytes(cfg: Config, args: list[str]) -> bytes:
+    """A blob, as bytes. `sh` decodes text, and a failed `git show` prints nothing — writing that would seal a
+    hollow file as the bundle, or reject a real submission for a command that did not run."""
+    r = subprocess.run(args, cwd=cfg.repo, capture_output=True)
+    if r.returncode:
+        raise RuntimeError(f"{' '.join(args[:4])}… exited {r.returncode}: {r.stderr[-400:].decode('utf-8', 'replace')}")
+    return r.stdout
+
+
 def gh(*args: str) -> str:
     return sh(["gh", *args])
 
@@ -438,9 +447,7 @@ def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_i
     """Materialise `submissions/<hotkey>/` as of `ref` into `dest` and lint it; None if there is nothing there.
     With `round_id`, the bundle must carry a valid attestation for that round (a challenger); without, it is an
     incumbent whose attestation was checked when it was sealed."""
-    listing = sh(
-        ["git", "ls-tree", "-r", "-z", "--name-only", ref, f"submissions/{hotkey}/"], cwd=cfg.repo, check=False
-    )
+    listing = sh(["git", "ls-tree", "-r", "-z", "--name-only", ref, f"submissions/{hotkey}/"], cwd=cfg.repo)
     prefix = f"submissions/{hotkey}/"
     rels = [r for r in listing.split("\0") if r.startswith(prefix)]  # -z: a filename with spaces or newlines is one
     if not rels:
@@ -452,15 +459,14 @@ def _bundle_from_tree(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_i
         if not str(out.resolve()).startswith(str(dest.resolve()) + os.sep):  # a name climbing out of the bundle
             return {"problems": [f"path escapes the bundle: {rel[:60]}"], "digest": "", "attestation": None}
         out.parent.mkdir(parents=True, exist_ok=True)
-        blob = subprocess.run(["git", "show", f"{ref}:{rel}"], cwd=cfg.repo, capture_output=True)  # bytes, not text
-        out.write_bytes(blob.stdout)
+        out.write_bytes(_git_bytes(cfg, ["git", "show", f"{ref}:{rel}"]))  # bytes, not text: a bundle is not utf-8
     return _check_bundle_dir(dest, hotkey, round_id)
 
 
 def _tree_names(cfg: Config, ref: str, hotkey: str) -> list[str]:
     """The file names a PR carries under `submissions/<hotkey>/` at `ref`."""
     prefix = f"submissions/{hotkey}/"
-    listing = sh(["git", "ls-tree", "-r", "-z", "--name-only", ref, prefix], cwd=cfg.repo, check=False)
+    listing = sh(["git", "ls-tree", "-r", "-z", "--name-only", ref, prefix], cwd=cfg.repo)
     return [r[len(prefix) :] for r in listing.split("\0") if r.startswith(prefix)]
 
 
@@ -474,11 +480,9 @@ def _reveal_challenger(cfg: Config, ref: str, hotkey: str, dest: Path, *, round_
         return None
     att = None
     if "attestation.json" in names:
-        raw = subprocess.run(
-            ["git", "show", f"{ref}:submissions/{hotkey}/attestation.json"], cwd=cfg.repo, capture_output=True
-        )
+        raw = _git_bytes(cfg, ["git", "show", f"{ref}:submissions/{hotkey}/attestation.json"])
         try:
-            att = json.loads(raw.stdout.decode("utf-8"))
+            att = json.loads(raw.decode("utf-8"))
         except (ValueError, UnicodeDecodeError):
             att = None
     # The PR's own attestation is what claims this hotkey's slot, so it must carry the hotkey's signature over
@@ -654,15 +658,17 @@ def _reveal_bundles(cfg: Config, rd: Path, dest: Path, king: str | None) -> None
 
 
 def _changed_paths(cfg: Config, base: str, head: str) -> list[str]:
-    """Every path a head changes relative to where it forked from the base (three-dot)."""
-    names = sh(["git", "diff", "--name-only", "-z", f"{base}...{head}", "--"], cwd=cfg.repo, check=False)
+    """Every path a head changes relative to where it forked from the base (three-dot). A diff that did not run
+    is not an empty one: empty is what lets a PR that also edits code through the seal and onto the branch."""
+    names = sh(["git", "diff", "--name-only", "-z", f"{base}...{head}", "--"], cwd=cfg.repo)
     return [p for p in names.split("\0") if p]
 
 
 def _changed_submissions(cfg: Config, base: str, head: str) -> list[str]:
     """The submission directories a head changes relative to where it forked from the base (three-dot: the
-    merge base, not the base tip — a crown merged after the miner branched is not the miner's change)."""
-    names = sh(["git", "diff", "--name-only", f"{base}...{head}", "--", "submissions/"], cwd=cfg.repo, check=False)
+    merge base, not the base tip — a crown merged after the miner branched is not the miner's change). A failed
+    diff is not "this PR touches nothing": that hides a strategy, and a window that then sees no challenger reopens."""
+    names = sh(["git", "diff", "--name-only", f"{base}...{head}", "--", "submissions/"], cwd=cfg.repo)
     return sorted({p.split("/")[1] for p in names.split() if p.count("/") >= 2 and p.split("/")[1] != "README.md"})
 
 
@@ -745,7 +751,9 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
     store = Path(os.environ.get("SH_SUBMISSION_STORE") or (cfg.state / "submissions"))
     active: dict[str, dict] = {}
     rejected: dict[str, str] = {}
-    for entry in sh(["git", "ls-tree", "--name-only", tip, "submissions/"], cwd=cfg.repo, check=False).split():
+    # A failed listing is not an empty submissions/. Empty is a real answer (nobody defends); failure prints
+    # nothing too, and sealing on it would crown a challenger over a king who was never in the round.
+    for entry in sh(["git", "ls-tree", "--name-only", tip, "submissions/"], cwd=cfg.repo).split():
         hotkey = entry.split("/")[-1]
         if not SS58.match(hotkey):  # README.md and anything not an ss58 directory is not a submission
             continue
