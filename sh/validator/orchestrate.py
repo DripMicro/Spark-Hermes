@@ -64,6 +64,9 @@ DIGEST = re.compile(r"\A[0-9a-f]{64}\Z")
 _UNRESOLVED: set[tuple[str, str]] = set()  # incumbents already reported unresolved, so it is said once
 HF_REPO = "gittensor-model-hub/spark-hermes-rounds"
 LIVE = "docs/live/live.json"  # what the dashboard polls; committed on every stage change
+# The board calls the loop stale once `updated` is 900 s old (docs/live/index.html). A board whose content has not
+# changed is still republished this often, so a quiet window never reads as a dead loop.
+BOARD_HEARTBEAT_S = 600
 CLAIM_GRACE_S = 30  # after claiming the engine, how long a screen the daemon had just started is given to show up
 STAGES = ("open", "window", "seal", "evaluate", "close", "crown", "announce", "export", "publish_close", "done")
 
@@ -274,8 +277,12 @@ def live(
     }
     # Only the clock moved: the loop republishes the board on a timer, and while it waits for the daemon that is
     # every tick. Writing would make `git status` dirty and push a commit, so an idle loop filled the public
-    # history with identical "live — waiting" commits (25 in six hours, once). Say nothing rather than that.
-    if prev and {k: v for k, v in prev.items() if k != "updated"} == {k: v for k, v in state.items() if k != "updated"}:
+    # history with identical "live — waiting" commits (25 in six hours, once). Say nothing rather than that — but
+    # only for BOARD_HEARTBEAT_S: the board reads an old `updated` as a dead loop, and a quiet window is not one.
+    unchanged = prev and {k: v for k, v in prev.items() if k != "updated"} == {
+        k: v for k, v in state.items() if k != "updated"
+    }
+    if unchanged and state["updated"] - float(prev.get("updated") or 0) < BOARD_HEARTBEAT_S:
         return
     out = cfg.repo / LIVE
     out.parent.mkdir(parents=True, exist_ok=True)

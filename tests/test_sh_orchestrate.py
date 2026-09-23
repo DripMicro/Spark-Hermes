@@ -520,3 +520,25 @@ def test_the_board_is_not_republished_when_only_the_clock_moved(tmp_path):
     assert (cfg.repo / o.LIVE).read_text() == first  # nothing rewritten, so nothing to commit
     o.live(cfg, rd, "window", push=False)
     assert (cfg.repo / o.LIVE).read_text() != first  # a real change still publishes
+
+
+def test_a_quiet_board_is_still_republished_before_it_reads_as_stale(tmp_path):
+    """Nothing changed for BOARD_HEARTBEAT_S: the board is republished anyway, so it never shows a live loop as
+    stale (the page does so at 900 s). Within the heartbeat nothing is rewritten."""
+    import sh.validator.orchestrate as o
+
+    assert o.BOARD_HEARTBEAT_S < 900
+    cfg = _cfg(tmp_path)
+    rd = cfg.rounds / "r0001"
+    rd.mkdir(parents=True)
+    (rd / "window.json").write_text(json.dumps({"opens_at": 0, "closes_at": 1, "seconds": 1}))
+    (rd / "phases.jsonl").write_text(json.dumps({"t": 1000.0, "stage": "start"}) + "\n")
+
+    o.live(cfg, rd, "window", push=False)
+    board = json.loads((cfg.repo / o.LIVE).read_text())
+    board["updated"] -= o.BOARD_HEARTBEAT_S + 1  # the last publish was a heartbeat ago
+    (cfg.repo / o.LIVE).write_text(json.dumps(board, indent=1))
+    o.live(cfg, rd, "window", push=False)
+    again = json.loads((cfg.repo / o.LIVE).read_text())
+    assert again["updated"] > board["updated"] + o.BOARD_HEARTBEAT_S  # republished with a fresh clock
+    assert {k: v for k, v in again.items() if k != "updated"} == {k: v for k, v in board.items() if k != "updated"}
