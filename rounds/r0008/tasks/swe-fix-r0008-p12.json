@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0008-p12",
+ "round_id": "r0008",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nUnaryOp operator precedence calculation incorrect\n\n#### Description\n\nThe operator precedence calculation for unary operators is producing incorrect results, causing issues with code generation and AST string representation.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# Test with unary not operator\ncode = \"not x\"\nnode = astroid.parse(code)\nunary_op = node.body[0].value\n\n# The precedence calculation is wrong\nprint(f\"Precedence: {unary_op.op_precedence()}\")\n\n# This affects string representation of complex expressions\ncomplex_code = \"not a and b\"\ncomplex_node = astroid.parse(complex_code)\nprint(f\"Original: {complex_code}\")\nprint(f\"As string: {complex_node.as_string()}\")\n```\n\nThe precedence values don't match expected operator precedence rules, which can lead to incorrect parenthesization in generated code and wrong AST representations.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__sp0li0sb",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_nodes.py::AsStringTest::test_operator_precedence"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

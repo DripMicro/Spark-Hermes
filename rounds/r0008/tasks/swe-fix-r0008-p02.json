@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0008-p02",
+ "round_id": "r0008",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nStyle lookup returns wrong result due to code reordering\n\n#### Description\n\nWhen trying to get a style by ID, the method returns an incorrect result. The style lookup appears to be broken and doesn't properly validate the style type before returning it.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.styles.styles import Styles\nfrom docx.enum.style import WD_STYLE_TYPE\n\n# Create a document and access styles\ndoc = Document()\nstyles = doc.styles\n\n# Try to get a style by ID - this should work correctly\nstyle = styles._get_by_id('Normal', WD_STYLE_TYPE.PARAGRAPH)\nprint(f\"Got style: {style}\")\n\n# The method should return the correct style or default, but currently fails\n```\n\nThe `_get_by_id` method in the Styles class seems to have logic issues that prevent it from working correctly. When you call it with a valid style ID and type, it doesn't return the expected result.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_pm_ctrl_shuffle__cg6rgl4m",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/styles/test_styles.py::DescribeStyles::it_gets_a_style_by_id_to_help[_get_by_id_fixture0]",
+   "tests/styles/test_styles.py::DescribeStyles::it_gets_a_style_by_id_to_help[_get_by_id_fixture1]",
+   "tests/styles/test_styles.py::DescribeStyles::it_gets_a_style_by_id_to_help[_get_by_id_fixture2]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

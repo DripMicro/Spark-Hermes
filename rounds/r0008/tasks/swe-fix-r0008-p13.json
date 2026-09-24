@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0008-p13",
+ "round_id": "r0008",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# pass_original parameter in Schema processors is not working correctly\n\n## Description\n\nWhen using the `pass_original=True` parameter with schema processors like `@post_load` or `@post_dump`, the original data is not being passed to the processor functions. This happens in both single and many modes.\n\nFor example, given a schema definition:\n\n```python\nclass MySchema(Schema):\n    foo = fields.Field()\n\n    @post_load(pass_original=True)\n    def post_load(self, data, original_data, **kwargs):\n        ret = data.copy()\n        ret['_post_load'] = original_data['sentinel']\n        return ret\n\n    @post_dump(pass_original=True)\n    def post_dump(self, data, obj, **kwargs):\n        ret = data.copy()\n        ret['_post_dump'] = obj['sentinel']\n        return ret\n```\n\nWhen trying to load or dump data with this schema, it fails with:\n\n```\nTypeError: MySchema.post_load() missing 1 required positional argument: 'original_data'\n```\n\nThe same issue occurs when using `pass_original=True` with `pass_many=True`. The processor function expects the original data as a parameter, but it's not being passed.\n\nThis also affects nested schemas where both `pass_original=True` and `pass_many=True` are used together. The processor functions are not receiving the original data parameter they expect.\n\n## Steps to reproduce\n\n```python\nfrom marshmallow import Schema, fields, post_load, post_dump\n\nclass MySchema(Schema):\n    foo = fields.Field()\n\n    @post_load(pass_original=True)\n    def post_load(self, data, original_data, **kwargs):\n        ret = data.copy()\n        ret['_post_load'] = original_data['sentinel']\n        return ret\n\nschema = MySchema()\ndatum = {'foo': 42, 'sentinel': 24}\nitem_loaded = schema.load(datum)  # This will fail\n```\n\nThe error occurs because the `original_data` parameter is not being passed to the processor function, even though `pass_original=True` is specified in the decorator.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "marshmallow-code__marshmallow.9716fc62.lm_rewrite__mevj1jqj",
+  "environment": "jyangballin/swesmith.x86_64.marshmallow-code_1776_marshmallow.9716fc62",
+  "fail_to_pass": [
+   "tests/test_decorators.py::TestPassOriginal::test_pass_original_many",
+   "tests/test_decorators.py::TestPassOriginal::test_pass_original_single",
+   "tests/test_decorators.py::test_decorator_post_dump_with_nested_original_and_pass_many[data0-expected_data0-expected_original_data0]",
+   "tests/test_decorators.py::test_decorator_post_load_with_nested_original_and_pass_many[data0-expected_data0-expected_original_data0]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

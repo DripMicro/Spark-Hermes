@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0008-p01",
+ "round_id": "r0008",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Hidden property in Font class returns inverted value\n\n## Description\n\nI've discovered an issue with the `hidden` property in the `Font` class. When trying to check if text is hidden, the property returns the opposite of what it should.\n\n## Expected Result\n\nWhen text is marked as hidden in a Word document, the `hidden` property should return `True`. When text is not hidden, it should return `False`.\n\n## Actual Result\n\nThe property returns the opposite value - `True` when text is not hidden and `False` when it is hidden.\n\n## Reproduction Steps\n\n```python\nfrom docx import Document\n\n# Create a document\ndoc = Document()\np = doc.add_paragraph()\nrun = p.add_run(\"This text should be hidden\")\n\n# Set the text to be hidden\nrun.font.hidden = True\n\n# Check if the text is hidden\nprint(f\"Is text hidden? {run.font.hidden}\")  # Should print True but prints False\n\n# Set the text to be visible\nrun.font.hidden = False\n\n# Check if the text is hidden\nprint(f\"Is text hidden? {run.font.hidden}\")  # Should print False but prints True\n```\n\nThis issue affects any code that relies on checking the hidden state of text in a document, potentially causing hidden text to be treated as visible and vice versa.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__cj38oat4",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/text/test_font.py::DescribeFont::it_knows_its_bool_prop_states[w:r/w:rPr/w:vanish{w:val=0}-hidden-False]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
