@@ -635,6 +635,18 @@ def _settle_incumbent_dir(store: Path, hotkey: str) -> Path | None:
     return None
 
 
+def _crown_landed(cfg: Config, hotkey: str) -> bool:
+    """Whether `origin/main` has `submissions/<hotkey>/` after a fetch that succeeded.
+
+    A failed fetch, or a listing that does not run, is not an empty tree. The crown may have just merged, and
+    reading that failure as "the marker is absent" skips the retain and drops the king out of the next round.
+    An empty listing after a fetch that worked means the merge really did not land."""
+    sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo)
+    prefix = f"submissions/{hotkey}/"
+    listing = sh(["git", "ls-tree", "-r", "-z", "--name-only", f"origin/{BRANCH}", "--", prefix], cwd=cfg.repo)
+    return any(r.startswith(prefix) for r in listing.split("\0"))
+
+
 def _retain_incumbent(cfg: Config, hotkey: str, rd: Path) -> None:
     """Keep a freshly crowned bundle in the private incumbents store so it can defend future rounds without its
     prose ever being public. The seal already materialised it under the round's `bundles/`."""
@@ -1346,8 +1358,7 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
         # The exit code alone is the wrong test in both directions: a re-run after a crash fails with "already
         # merged" although the marker is there (that lost the bundle and dropped the king out silently), while a
         # merge that never landed would otherwise store a bundle whose commitment is not public.
-        sh(["git", "fetch", "-q", "origin"], cwd=cfg.repo, check=False)
-        if _tree_names(cfg, f"origin/{BRANCH}", king):
+        if _crown_landed(cfg, king):
             _retain_incumbent(cfg, king, rd)
         else:
             log(rd, "retain_skipped", king=king, why="no submissions/<king>/ in the tree: the crown did not land")

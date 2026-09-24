@@ -486,6 +486,24 @@ def test_without_a_server_a_prose_pr_still_seals_from_its_tree(tmp_path):
     assert b and not b["problems"] and b["digest"] == digest
 
 
+def test_a_failed_fetch_is_not_a_crown_that_failed_to_land(tmp_path):
+    """The retain reads origin/main. A fetch that does not run must raise, so the round retries, rather than
+    looking like the marker is gone and dropping the king. A fetch that works and finds no directory is real."""
+    repo = _repo(tmp_path)
+    hk = "5C" + "o" * 46
+    _commit_submission(repo, hk, {"SOUL.md": b"# Soul\n"})
+    _git(repo, "branch", "-M", "main")
+    bare = tmp_path / "origin.git"
+    _git(repo, "clone", "--bare", "-q", str(repo), str(bare))
+    _git(repo, "remote", "add", "origin", str(bare))
+    cfg = _cfg(tmp_path, repo)
+    assert o._crown_landed(cfg, hk) is True
+    assert o._crown_landed(cfg, f"{hk}x") is False
+    _git(repo, "remote", "set-url", "origin", str(tmp_path / "no-such.git"))
+    with pytest.raises(RuntimeError):
+        o._crown_landed(cfg, hk)
+
+
 def _king_with_pr(tmp_path, monkeypatch, pr_files, *, private=False):
     """A crowned hotkey defending from the private store, and one open PR from the same hotkey whose tree holds
     `pr_files` under its directory. Returns (cfg, hotkey, keypair, active, rejected)."""
