@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0009-p11",
+ "round_id": "r0009",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSetting paragraph space_after property removes existing spacing instead of updating it\n\n#### Description\n\nWhen setting the `space_after` property on a paragraph, the existing spacing is removed instead of being updated with the new value. This causes the paragraph to lose its spacing entirely when trying to modify it.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx import Presentation\nfrom pptx.util import Pt\n\n# Create a presentation and add some text\nprs = Presentation()\nslide = prs.slides.add_slide(prs.slide_layouts[0])\ntextbox = slide.shapes.add_textbox(0, 0, 100, 100)\nparagraph = textbox.text_frame.paragraphs[0]\n\n# Set initial spacing\nparagraph.space_after = Pt(12)\nprint(f\"Initial space_after: {paragraph.space_after}\")\n\n# Try to update the spacing\nparagraph.space_after = Pt(24)\nprint(f\"Updated space_after: {paragraph.space_after}\")\n```\n\nExpected output:\n```\nInitial space_after: 152400\nUpdated space_after: 304800\n```\n\nActual output:\n```\nInitial space_after: 152400\nUpdated space_after: None\n```\n\nThe spacing gets removed entirely instead of being updated to the new value.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.func_pm_ctrl_shuffle__sbeux8qd",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/text/test_text.py::Describe_Paragraph::it_can_change_its_space_after[after_set_fixture0]",
+   "tests/text/test_text.py::Describe_Paragraph::it_can_change_its_space_after[after_set_fixture1]",
+   "tests/text/test_text.py::Describe_Paragraph::it_can_change_its_space_after[after_set_fixture2]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
