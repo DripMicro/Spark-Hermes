@@ -1,0 +1,45 @@
+{
+ "schema": "sh-instance-v2",
+ "task_id": "swe-fix-r0008-13",
+ "family": "swe_fix",
+ "behaviour": "act",
+ "round_id": "r0008",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### AttributeError in Error Handling with Decorators\n\n#### Description\n\nIt seems there's an issue with error handling when using decorators in the schema. Specifically, an `AttributeError` is raised due to the `ErrorStore` object not having a `valid_data` attribute. This occurs during the error handling process when decorators are applied.\n\n#### Steps/Code to Reproduce\n\nHere's a minimal example to reproduce the issue:\n\n```python\nfrom marshmallow import Schema, ValidationError, pre_load\n\nclass ExampleSchema(Schema):\n\n    @pre_load\n    def raise_value_error(self, item, **kwargs):\n        raise ValidationError({'foo': 'error'}, 'nested_field')\n\nschema = ExampleSchema()\n\ntry:\n    schema.load({})\nexcept ValidationError as exc:\n    print(exc.messages)\n```\n\n#### Expected Results\n\nThe error should be handled gracefully, and the `ValidationError` should contain the expected error messages without raising an `AttributeError`.\n\n#### Actual Results\n\nAn `AttributeError` is raised indicating that the `ErrorStore` object lacks a `valid_data` attribute.\n\n#### Additional Information\n\nThis issue seems to affect the error handling mechanism when using decorators like `pre_load` and `post_load`. It might be related to recent changes in the error handling logic within the schema processing.\n</issue>\n",
+ "fixture": {},
+ "setup_commands": [],
+ "protected_paths": [
+  "pyproject.toml",
+  "tests/__init__.py",
+  "tests/base.py",
+  "tests/conftest.py",
+  "tests/foo_serializer.py",
+  "tests/mypy_test_cases/test_validation_error.py",
+  "tests/test_deserialization.py",
+  "tests/test_error_store.py",
+  "tests/test_exceptions.py",
+  "tests/test_fields.py",
+  "tests/test_options.py",
+  "tests/test_registry.py",
+  "tests/test_serialization.py",
+  "tests/test_utils.py",
+  "tests/test_validate.py",
+  "tests/test_version_attributes.py",
+  "tox.ini"
+ ],
+ "commands": [],
+ "published": {
+  "predicates": []
+ },
+ "withheld_commitment": "hmac-sha256:7f80ee2ec966990ba31a91cb2e1d067a4c2dc91bc81791d51275533a6b5c6a11",
+ "image": "swe-task:dba2976f5ead55c3",
+ "network": "none",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "workdir": "/testbed",
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "requires_self_check": false
+}

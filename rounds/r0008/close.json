@@ -1,0 +1,199 @@
+{
+ "schema": "sh-round-close-v3",
+ "scoring": "sh-scoring-v3 (credit)",
+ "round_id": "r0008",
+ "era": "e0",
+ "tasks": [
+  "swe-fix-r0008-01",
+  "swe-fix-r0008-02",
+  "swe-fix-r0008-06",
+  "swe-fix-r0008-07",
+  "swe-fix-r0008-12",
+  "swe-fix-r0008-13"
+ ],
+ "episodes": 204,
+ "family_stats": {
+  "swe_fix": {
+   "schema": "sh-family-stats-v2",
+   "family": "swe_fix",
+   "era": "e0",
+   "window": [
+    "r0001",
+    "r0002",
+    "r0003",
+    "r0004",
+    "r0005",
+    "r0006",
+    "r0007",
+    "r0008"
+   ],
+   "null": {
+    "n": 48,
+    "successes": 6,
+    "p": 0.125,
+    "mean_credit": 0.2058,
+    "wilson": [
+     0.0586,
+     0.247
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 12.5,
+      "p25": 11.0,
+      "n": 6
+     },
+     "tool_calls": {
+      "median": 13.5,
+      "p25": 11.0,
+      "n": 6
+     }
+    }
+   },
+   "canon": {
+    "n": 6,
+    "successes": 1,
+    "p": 0.16666666666666666,
+    "mean_credit": 0.2611,
+    "wilson": [
+     0.0301,
+     0.5635
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 25.0,
+      "p25": 25.0,
+      "n": 1
+     },
+     "tool_calls": {
+      "median": 32.0,
+      "p25": 32.0,
+      "n": 1
+     }
+    },
+    "delta_c": 0.0553,
+    "delta_e": {
+     "api_calls": -1.0833,
+     "tool_calls": -1.9091
+    },
+    "delta_e_paired_instances": 1
+   },
+   "label": "frontier",
+   "partial_rate": 0.0,
+   "in_rotation": true,
+   "retirement": null
+  }
+ },
+ "scores": {
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "hotkey": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
+   "n": 48,
+   "score": 0.140278,
+   "delta_c": 0.07273266724471492,
+   "delta_e": {
+    "api_calls": -0.8065107427502555,
+    "tool_calls": -0.8908621469516735
+   },
+   "gate": true,
+   "se": 0.05277,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.140278
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "hotkey": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
+   "n": 42,
+   "score": 0.113757,
+   "delta_c": 0.029562649735674143,
+   "delta_e": {
+    "api_calls": -0.8085944361086561,
+    "tool_calls": -0.8842199379859741
+   },
+   "gate": true,
+   "se": 0.065777,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 42,
+   "mean_d": 0.113757
+  },
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "hotkey": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
+   "n": 24,
+   "score": 0.102778,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -1.0,
+    "tool_calls": -1.0
+   },
+   "gate": true,
+   "se": 0.102778,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 24,
+   "mean_d": 0.102778
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "hotkey": "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
+   "n": 18,
+   "score": 0.12037,
+   "delta_c": 0.023103617459294915,
+   "delta_e": {
+    "api_calls": -0.7213468126753353,
+    "tool_calls": -0.6499778137806883
+   },
+   "gate": true,
+   "se": 0.07599,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 18,
+   "mean_d": 0.12037
+  },
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "hotkey": "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh",
+   "n": 12,
+   "score": -0.055556,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.135048,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "at or below the baseline: \u0394 -0.056 \u00b1 0.135",
+   "paired": 12,
+   "mean_d": -0.055556
+  },
+  "5DFad74TfJt5ZEMLhDhecHyuWcmVFnX4CpKbHxGJjZFGiJVf": {
+   "hotkey": "5DFad74TfJt5ZEMLhDhecHyuWcmVFnX4CpKbHxGJjZFGiJVf",
+   "n": 6,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": false,
+   "se": null,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "6 window episodes < 8"
+  }
+ },
+ "weights": {
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.2939710760861137,
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.23839281784975574,
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": 0.21538487330856293,
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.25225123275556754,
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": 0.0,
+  "5DFad74TfJt5ZEMLhDhecHyuWcmVFnX4CpKbHxGJjZFGiJVf": 0.0
+ },
+ "commitments_verified": {
+  "swe-fix-r0008-01": true,
+  "swe-fix-r0008-02": true,
+  "swe-fix-r0008-06": true,
+  "swe-fix-r0008-07": true,
+  "swe-fix-r0008-12": true,
+  "swe-fix-r0008-13": true
+ },
+ "commitments_ok": true
+}
