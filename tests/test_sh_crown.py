@@ -42,6 +42,19 @@ def test_ties_fall_to_the_pooled_lower_bound_then_a_hash_and_the_incumbent_keeps
     assert crown(eps, {"A", "B"}, round_id="r0002", pooled_delta_c={}, incumbent="B")["king"] == "B"
 
 
+def test_a_better_pooled_window_does_not_let_a_challenger_take_a_tie_from_the_incumbent():
+    """The pooled figure orders challengers among themselves; it never outranks the incumbent on a tie. It did once:
+    it came before the incumbent in the sort key, so r0006's incumbent kept its tie only because its pooled Δc
+    happened to be the higher one."""
+    eps = _round("11110000", {"A": "11111000", "B": "11111000", "C": "11111000"})
+    c = crown(eps, {"A", "B", "C"}, round_id="r0002", pooled_delta_c={"A": 0.0, "B": 0.5, "C": 0.3}, incumbent="A")
+    assert c["king"] == "A"
+    assert [c["standings"][h]["rank"] for h in ("A", "B", "C")] == [1, 2, 3]  # challengers still by pooled Δc
+    # a challenger that strictly beats the incumbent still takes the crown
+    eps = _round("11110000", {"A": "11111000", "B": "11111100"})
+    assert crown(eps, {"A", "B"}, round_id="r0002", pooled_delta_c={"A": 0.9}, incumbent="A")["king"] == "B"
+
+
 def test_a_strategy_disqualified_this_round_cannot_be_crowned():
     eps = _round("00000000", {"A": "11111111"})
     eps.append(_ep("A", "t0", True, disqualified=True))  # tampered on one instance
