@@ -107,6 +107,19 @@ def test_committed_digest_reads_the_attestation_in_private_mode(tmp_path):
     assert miner._committed_digest(dest, private=False) == digest  # legacy: over the committed prose
 
 
+def test_a_crowned_bundle_can_be_resubmitted_for_a_later_round_as_a_defense(tmp_path):
+    """The king's directory is on the base with the same digest, signed for the round it won. That must not read as
+    "already submitted": the same bundle signed for this round is the defense PR that lets a won round pay."""
+    kp, files = _kp(), {"SOUL.md": b"# Soul\n\nDebug carefully.\n"}
+    digest = bundle_digest(files)
+    dest = tmp_path / "submissions" / kp.ss58_address
+    dest.mkdir(parents=True)
+    (dest / attest.FILE).write_text(json.dumps(attest.sign(kp, "r0001", digest)))
+    assert miner._already_submitted(dest, True, digest, "r0001")  # a repeat within the same round: skipped
+    assert not miner._already_submitted(dest, True, digest, "r0002")  # the same bundle for a later round: a defense
+    assert not miner._already_submitted(dest, True, "0" * 64, "r0001")  # a different bundle is never a repeat
+
+
 def test_upload_reaches_a_real_ingest_server(tmp_path):
     import threading
     import time
