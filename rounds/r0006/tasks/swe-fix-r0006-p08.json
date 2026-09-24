@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0006-p08",
+ "round_id": "r0006",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSection iteration returns incorrect content across document sections\n\n#### Description\n\nWhen iterating through inner content of document sections using `iter_inner_content()`, the method returns incorrect paragraphs and tables. The content from different sections gets mixed up, with some sections showing content that belongs to other sections.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\n\n# Load a document with multiple sections\ndocument = Document('sct-inner-content.docx')\n\n# Check the sections\nprint(f\"Number of sections: {len(document.sections)}\")\n\n# Iterate through first section - should contain P1, T2, P3\nsection_0_content = list(document.sections[0].iter_inner_content())\nprint(f\"Section 0 content count: {len(section_0_content)}\")\nfor i, item in enumerate(section_0_content):\n    if hasattr(item, 'text'):\n        print(f\"  Item {i}: {item.text}\")\n    elif hasattr(item, 'rows'):\n        print(f\"  Item {i}: Table with {item.rows[0].cells[0].text}\")\n\n# Iterate through second section - should contain T4, P5, P6  \nsection_1_content = list(document.sections[1].iter_inner_content())\nprint(f\"Section 1 content count: {len(section_1_content)}\")\nfor i, item in enumerate(section_1_content):\n    if hasattr(item, 'text'):\n        print(f\"  Item {i}: {item.text}\")\n    elif hasattr(item, 'rows'):\n        print(f\"  Item {i}: Table with {item.rows[0].cells[0].text}\")\n```\n\nThe iteration returns content that doesn't match the expected section boundaries, with paragraphs and tables appearing in the wrong sections.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__fxz6ly8d",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_section.py::DescribeSection::it_can_iterate_its_inner_content"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
