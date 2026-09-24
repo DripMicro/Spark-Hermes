@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0006-p06",
+ "round_id": "r0006",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### Unexpected Behavior in Expression Hashing\n\n#### Description\n\nHello team,\n\nI've encountered an issue with the recent changes in the `hashable_args` method of the `Expression` class. It seems that the new implementation is causing some unexpected behavior when comparing expressions, particularly affecting equality checks and table parsing.\n\n#### Steps to Reproduce\n\n1. **Expression Equality Check:**\n   - Create two identical SQL expressions using `parse_one('SELECT x FROM t')`.\n   - Attempt to compare them using `assertEqual`.\n   - The expressions should be equal, but the comparison fails.\n\n2. **Table Parsing:**\n   - Parse a SQL statement with a table alias using `parse_one('select * from a b')`.\n   - Attempt to find the table using `find(exp.Table)`.\n   - The expected table object is not returned as anticipated.\n\n3. **Time Unit Parsing:**\n   - Parse a timestamp truncation expression like `parse_one('timestamp_trunc(current_timestamp, week(thursday))')`.\n   - Attempt to find the `exp.CurrentTimestamp` and `exp.Week`.\n   - The expected units are not found or do not match the expected values.\n\n#### Additional Information\n\nThe issue seems to be related to how the `hashable_args` method constructs the hashable representation of the expression's arguments. This change might be affecting the internal state or comparison logic of expressions, leading to these discrepancies.\n\nLooking forward to any insights or fixes from the team. Thanks!\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.lm_rewrite__w6ihcy4s",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_expressions.py::TestExpressions::test_eq",
+   "tests/test_expressions.py::TestExpressions::test_table",
+   "tests/test_expressions.py::TestExpressions::test_unit"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

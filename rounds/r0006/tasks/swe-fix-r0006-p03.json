@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0006-p03",
+ "round_id": "r0006",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nFillFormat.gradient_stops raises ValueError instead of TypeError for non-gradient fills\n\n#### Description\n\nThe `gradient_stops` property on `FillFormat` is raising a `ValueError` when accessed on non-gradient fills, but it should raise a `TypeError` to be consistent with other gradient-related properties.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx.dml.fill import FillFormat\nfrom pptx.enum.dml import MSO_FILL\n\n# Create a fill format that is not a gradient\nfill = FillFormat(None, some_non_gradient_fill)\n\n# This should raise TypeError but raises ValueError instead\ntry:\n    stops = fill.gradient_stops\nexcept Exception as e:\n    print(f\"Got {type(e).__name__}: {e}\")\n    # Expected: TypeError\n    # Actual: ValueError\n```\n\nAlso, when the fill IS a gradient type, the gradient_stops property returns a truncated list (missing the last element) instead of the complete list of gradient stops.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.func_basic__n8d307nw",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/dml/test_fill.py::DescribeFillFormat::it_provides_access_to_the_gradient_stops",
+   "tests/dml/test_fill.py::DescribeFillFormat::it_raises_on_non_gradient_fill"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

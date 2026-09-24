@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790207035.7985935,
- "round_id": "r0005",
- "stage": "evaluate",
+ "updated": 1790250963.857838,
+ "round_id": "r0009",
+ "stage": "window",
  "stages": [
   "open",
   "window",
@@ -15,168 +15,130 @@
   "publish_close",
   "done"
  ],
- "started": 1790191528.1214504,
+ "started": 1790249863.752725,
  "phases": [
   {
    "stage": "start",
-   "t": 1790191528.1214504
+   "t": 1790249863.752725
   },
   {
    "stage": "open",
-   "t": 1790191533.370174
+   "t": 1790249867.1205378
   },
   {
    "stage": "resume",
-   "t": 1790197138.4656427
-  },
-  {
-   "stage": "reopen",
-   "t": 1790198719.8123713
-  },
-  {
-   "stage": "resume",
-   "t": 1790198727.8100529
-  },
-  {
-   "stage": "resume",
-   "t": 1790202593.2826936
-  },
-  {
-   "stage": "window",
-   "t": 1790205882.8973603
-  },
-  {
-   "stage": "seal",
-   "t": 1790205888.7584608
-  },
-  {
-   "stage": "images",
-   "t": 1790205912.0542595
+   "t": 1790250962.4915473
   }
  ],
  "window": {
-  "opens_at": 1790198680.8673608,
-  "closes_at": 1790205880.8673608,
-  "seconds": 7200,
-  "reopened": 1,
-  "first_opened_at": 1790191528.1075637,
-  "reason": "reopened: submissions are private-only from now (#212); PRs that carried their prose were closed"
+  "opens_at": 1790249863.7510514,
+  "closes_at": 1790257063.7510514,
+  "seconds": 7200
  },
  "submissions": [
   {
-   "pr": 213,
+   "pr": 232,
+   "hotkey": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
+   "created_at": "2026-09-24T11:53:08Z",
+   "updated_at": "2026-09-24T11:54:57Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/232"
+  },
+  {
+   "pr": 231,
+   "hotkey": "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh",
+   "created_at": "2026-09-24T11:41:37Z",
+   "updated_at": "2026-09-24T11:42:04Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/231"
+  },
+  {
+   "pr": 230,
+   "hotkey": "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
+   "created_at": "2026-09-24T11:39:18Z",
+   "updated_at": "2026-09-24T11:39:54Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/230"
+  },
+  {
+   "pr": 229,
+   "hotkey": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
+   "created_at": "2026-09-24T11:38:21Z",
+   "updated_at": "2026-09-24T11:39:55Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/229"
+  },
+  {
+   "pr": 228,
    "hotkey": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
-   "created_at": "2026-09-23T21:48:01Z",
-   "updated_at": "2026-09-23T21:49:48Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/213"
+   "created_at": "2026-09-24T11:38:20Z",
+   "updated_at": "2026-09-24T11:39:57Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/228"
   }
  ],
  "github": {
   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": "dato-bitar",
   "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": "Tet-9",
-  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben"
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben",
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": "kaivaryn",
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": "kaivexa",
+  "5DFad74TfJt5ZEMLhDhecHyuWcmVFnX4CpKbHxGJjZFGiJVf": "shinyuser2345-svg"
  },
  "standings": {
   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
-   "score": 0.236111,
-   "weight": 0.4009431318975223,
-   "mean_d": 0.236111,
-   "delta_c": 0.11367034514801744,
-   "n": 24
+   "score": 0.140278,
+   "weight": 0.2939710760861137,
+   "mean_d": 0.140278,
+   "delta_c": 0.07273266724471492,
+   "n": 48
   },
   "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
-   "score": 0.25,
-   "weight": 0.42452822178712796,
-   "mean_d": 0.25,
-   "delta_c": 0.11612744086781793,
-   "n": 18
+   "score": 0.113757,
+   "weight": 0.23839281784975574,
+   "mean_d": 0.113757,
+   "delta_c": 0.029562649735674143,
+   "n": 42
   },
   "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
    "score": 0.102778,
-   "weight": 0.17452864631534976,
+   "weight": 0.21538487330856293,
    "mean_d": 0.102778,
    "delta_c": 0.0,
    "n": 24
-  }
- },
- "last_round": "r0004",
- "tasks": 6,
- "active": {
-  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
-   "pr": null,
-   "head": "origin/main",
-   "bundle_sha256": "1a91f44ad19c10b43ab1dfad0a678d0a545a8e62b86660256b925a5779244c12",
-   "incumbent": true
   },
-  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
-   "pr": 213,
-   "head": "80ef7b4964578cb5409585c2d1ddb56680f47ab9",
-   "bundle_sha256": "a157012e92ac24574058c72494e6277a8e3d7e2a578282291682428419c3f3b1",
-   "incumbent": false,
-   "was_incumbent": false,
-   "github": "dato-bitar"
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "score": 0.12037,
+   "weight": 0.25225123275556754,
+   "mean_d": 0.12037,
+   "delta_c": 0.023103617459294915,
+   "n": 18
+  },
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "score": -0.055556,
+   "weight": 0.0,
+   "mean_d": -0.055556,
+   "delta_c": 0.0,
+   "n": 12
+  },
+  "5DFad74TfJt5ZEMLhDhecHyuWcmVFnX4CpKbHxGJjZFGiJVf": {
+   "score": 0.0,
+   "weight": 0.0,
+   "mean_d": null,
+   "delta_c": 0.0,
+   "n": 6
   }
  },
+ "last_round": "r0008",
+ "tasks": 6,
+ "active": {},
  "rejected": {},
- "progress": {
-  "done": 6,
-  "total": 18,
-  "by_surface": {
-   "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
-    "n": 1,
-    "verified": 0,
-    "credit": 0.0,
-    "tasks": {
-     "swe-fix-r0005-00": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     }
-    }
-   },
-   "null": {
-    "n": 5,
-    "verified": 0,
-    "credit": 0.1778,
-    "tasks": {
-     "swe-fix-r0005-08": {
-      "credit": 0.8889,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0005-00": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0005-11": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0005-05": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0005-03": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     }
-    }
-   }
-  }
- },
+ "progress": {},
  "crown": null,
  "scores": null,
- "queue": [],
+ "queue": [
+  {
+   "round_id": "r0010",
+   "tasks_sha256": "ab044da1e0658e46d4d9b10a2951cecdca015c28ac984eb1f54b9be9d14f774a",
+   "tasks": 6,
+   "minted_at": 1790240192.330284
+  }
+ ],
  "history": [
   {
    "round_id": "r0001",
@@ -451,6 +413,314 @@
     "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben"
    },
    "pr": 198
+  },
+  {
+   "round_id": "r0005",
+   "closed_at": 1790210418.0327015,
+   "window": {
+    "opens_at": 1790198680.8673608,
+    "closes_at": 1790205880.8673608,
+    "seconds": 7200,
+    "reopened": 1,
+    "first_opened_at": 1790191528.1075637,
+    "reason": "reopened: submissions are private-only from now (#212); PRs that carried their prose were closed"
+   },
+   "episodes": 108,
+   "king": null,
+   "weights": {
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.40197017288490516,
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.3793104182095219,
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": 0.218719408905573
+   },
+   "scores": {
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+     "score": 0.188889,
+     "weight": 0.40197017288490516,
+     "mean_d": 0.188889,
+     "delta_c": 0.08880923761582114,
+     "n": 30
+    },
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+     "score": 0.178241,
+     "weight": 0.3793104182095219,
+     "mean_d": 0.178241,
+     "delta_c": 0.07261150804421976,
+     "n": 24
+    },
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+     "score": 0.102778,
+     "weight": 0.218719408905573,
+     "mean_d": 0.102778,
+     "delta_c": 0.0,
+     "n": 24
+    }
+   },
+   "crown": {},
+   "commitments_ok": true,
+   "sft_rows": 0,
+   "dpo_pairs": 0,
+   "hf": null,
+   "github": {
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": "Tet-9",
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": "dato-bitar",
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben"
+   },
+   "pr": null
+  },
+  {
+   "round_id": "r0006",
+   "closed_at": 1790222527.8430524,
+   "window": {
+    "opens_at": 1790210420.9292777,
+    "closes_at": 1790217620.9292777,
+    "seconds": 7200
+   },
+   "episodes": 132,
+   "king": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
+   "weights": {
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.36093334036518226,
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.40339730022861153,
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": 0.23566935940620623,
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.0
+   },
+   "scores": {
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+     "score": 0.157407,
+     "weight": 0.36093334036518226,
+     "mean_d": 0.157407,
+     "delta_c": 0.07286312335492193,
+     "n": 36
+    },
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+     "score": 0.175926,
+     "weight": 0.40339730022861153,
+     "mean_d": 0.175926,
+     "delta_c": 0.08292150183368917,
+     "n": 30
+    },
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+     "score": 0.102778,
+     "weight": 0.23566935940620623,
+     "mean_d": 0.102778,
+     "delta_c": 0.0,
+     "n": 24
+    },
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": null,
+     "delta_c": 0.0,
+     "n": 6
+    }
+   },
+   "crown": {
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+     "n": 6,
+     "verified": 2,
+     "dq": 0,
+     "credit": 0.333333,
+     "delta": 0.166667,
+     "rank": 2
+    },
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+     "n": 6,
+     "verified": 2,
+     "dq": 0,
+     "credit": 0.333333,
+     "delta": 0.166667,
+     "rank": 1
+    }
+   },
+   "commitments_ok": true,
+   "sft_rows": 2,
+   "dpo_pairs": 1,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0006",
+   "github": {
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": "dato-bitar",
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben",
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": "kaivaryn",
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": "Tet-9"
+   },
+   "pr": null
+  },
+  {
+   "round_id": "r0007",
+   "closed_at": 1790234489.299448,
+   "window": {
+    "opens_at": 1790222530.6464748,
+    "closes_at": 1790229730.6464748,
+    "seconds": 7200
+   },
+   "episodes": 162,
+   "king": "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
+   "weights": {
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.25339561124758664,
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.24055877337299889,
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": 0.1930277283210505,
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.3130178870583639,
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": 0.0
+   },
+   "scores": {
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+     "score": 0.134921,
+     "weight": 0.25339561124758664,
+     "mean_d": 0.134921,
+     "delta_c": 0.06176812644014222,
+     "n": 42
+    },
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+     "score": 0.128086,
+     "weight": 0.24055877337299889,
+     "mean_d": 0.128086,
+     "delta_c": 0.030155829590598773,
+     "n": 36
+    },
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+     "score": 0.102778,
+     "weight": 0.1930277283210505,
+     "mean_d": 0.102778,
+     "delta_c": 0.0,
+     "n": 24
+    },
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+     "score": 0.166667,
+     "weight": 0.3130178870583639,
+     "mean_d": 0.166667,
+     "delta_c": 0.022837362674508366,
+     "n": 12
+    },
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": null,
+     "delta_c": 0.0,
+     "n": 6
+    }
+   },
+   "crown": {
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+     "n": 6,
+     "verified": 2,
+     "dq": 0,
+     "credit": 0.631945,
+     "delta": 0.166667,
+     "rank": 1
+    }
+   },
+   "commitments_ok": true,
+   "sft_rows": 2,
+   "dpo_pairs": 2,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0007",
+   "github": {
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": "kaivexa",
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": "dato-bitar",
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": "kaivaryn",
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": "Tet-9",
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben"
+   },
+   "pr": 218
+  },
+  {
+   "round_id": "r0008",
+   "closed_at": 1790249860.999175,
+   "window": {
+    "opens_at": 1790234492.3923006,
+    "closes_at": 1790241692.3923006,
+    "seconds": 7200
+   },
+   "episodes": 204,
+   "king": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
+   "weights": {
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.2939710760861137,
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.23839281784975574,
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": 0.21538487330856293,
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.25225123275556754,
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": 0.0,
+    "5DFad74TfJt5ZEMLhDhecHyuWcmVFnX4CpKbHxGJjZFGiJVf": 0.0
+   },
+   "scores": {
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+     "score": 0.140278,
+     "weight": 0.2939710760861137,
+     "mean_d": 0.140278,
+     "delta_c": 0.07273266724471492,
+     "n": 48
+    },
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+     "score": 0.113757,
+     "weight": 0.23839281784975574,
+     "mean_d": 0.113757,
+     "delta_c": 0.029562649735674143,
+     "n": 42
+    },
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+     "score": 0.102778,
+     "weight": 0.21538487330856293,
+     "mean_d": 0.102778,
+     "delta_c": 0.0,
+     "n": 24
+    },
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+     "score": 0.12037,
+     "weight": 0.25225123275556754,
+     "mean_d": 0.12037,
+     "delta_c": 0.023103617459294915,
+     "n": 18
+    },
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+     "score": -0.055556,
+     "weight": 0.0,
+     "mean_d": -0.055556,
+     "delta_c": 0.0,
+     "n": 12
+    },
+    "5DFad74TfJt5ZEMLhDhecHyuWcmVFnX4CpKbHxGJjZFGiJVf": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": null,
+     "delta_c": 0.0,
+     "n": 6
+    }
+   },
+   "crown": {
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+     "n": 6,
+     "verified": 2,
+     "dq": 0,
+     "credit": 0.411111,
+     "delta": 0.177778,
+     "rank": 1
+    },
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+     "n": 6,
+     "verified": 1,
+     "dq": 0,
+     "credit": 0.261111,
+     "delta": 0.027778,
+     "rank": 3
+    },
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+     "n": 6,
+     "verified": 1,
+     "dq": 0,
+     "credit": 0.261111,
+     "delta": 0.027778,
+     "rank": 2
+    }
+   },
+   "commitments_ok": true,
+   "sft_rows": 2,
+   "dpo_pairs": 2,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0008",
+   "github": {
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": "kaivexa",
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": "dato-bitar",
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": "kaivaryn",
+    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": "Tet-9",
+    "5DFad74TfJt5ZEMLhDhecHyuWcmVFnX4CpKbHxGJjZFGiJVf": "shinyuser2345-svg",
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben"
+   },
+   "pr": 225
   }
  ],
  "repo": "gittensor-model-hub/Spark-Hermes",

@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0009-p01",
+ "round_id": "r0009",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nALTER COLUMN USING clause parsing broken\n\nWhen parsing ALTER TABLE statements with USING clauses, the parser incorrectly handles the order of operations for the USING keyword, causing the clause to be ignored or parsed incorrectly.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should parse correctly but doesn't\nsql = \"ALTER TABLE integers ALTER i TYPE VARCHAR COLLATE foo USING bar\"\nresult = sqlglot.transpile(sql)[0]\nprint(\"Result:\", result)\nprint(\"Expected: ALTER TABLE integers ALTER COLUMN i SET DATA TYPE VARCHAR COLLATE foo USING bar\")\n```\n\nThe USING clause gets lost during parsing, resulting in incorrect SQL generation.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_swap__j4z7mbu1",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_transpile.py::TestTranspile::test_alter",
+   "tests/test_transpile.py::TestTranspile::test_identity"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

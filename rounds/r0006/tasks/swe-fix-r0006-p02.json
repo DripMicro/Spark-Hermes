@@ -1,0 +1,30 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0006-p02",
+ "round_id": "r0006",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCDD file loading fails with bitstruct format error\n\nWhen loading CDD files, the diagnostics database fails with a bitstruct format error like \"bad format 'p2f3p3f0f0f0f0'\". This happens for both big-endian and little-endian CDD files.\n\n#### Steps to Reproduce\n\n```python\nimport cantools\n\n# This will fail\ndb = cantools.db.load_file('tests/files/cdd/example.cdd', encoding='iso-8859-1')\n```\n\nThe error occurs when trying to load any CDD file:\n\n```\nbitstruct.Error: bad format 'p2f3p3f0f0f0f0'\n```\n\nor \n\n```\ncantools.database.UnsupportedDatabaseFormatError: CDD: \"bad format 'p4f3f0f0f0f0p1'\"\n```\n\nThis affects both the `load_file` function and the `add_cdd_file` method on diagnostics databases. The issue appears to be related to how the bit format strings are being constructed for the bitstruct library when parsing CDD data elements.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_module__8hk3s1jl",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_cdd_add",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd_repr",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_cdd_add",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd_repr"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

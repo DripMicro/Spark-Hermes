@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0009-p09",
+ "round_id": "r0009",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nMissing builtin types in astroid builtin module after bootstrapping changes\n\n#### Description\n\nAfter recent changes to the bootstrapping process, several builtin types are no longer available in the astroid builtin module. This causes inference issues when trying to access attributes of exception instances and other builtin types.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# This should work but fails to infer properly\ncode = '''\ntry:\n    x[42]\nexcept ValueError as err:\n    err.__traceback__\n'''\n\nmodule = astroid.parse(code)\n# The __traceback__ attribute inference now fails where it used to work\n```\n\nThe issue appears to affect various builtin types that were previously registered during the bootstrapping process but are now missing from the astroid builtin module.\n\n#### Expected Behavior\n\nBuiltin types should be properly registered in the astroid builtin module during bootstrapping, allowing proper inference of their attributes and methods.\n\n#### Actual Behavior\n\nBuiltin types are missing from the astroid builtin module, causing inference failures for attributes like `__traceback__` on exception instances.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_remove_loop__wvyl3rh1",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_object_model.py::ExceptionModelTest::test_valueerror_py3"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

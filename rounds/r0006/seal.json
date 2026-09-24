@@ -1,0 +1,30 @@
+{
+ "schema": "sh-seal-v3",
+ "round_id": "r0006",
+ "sealed_at": 1790217624.9639232,
+ "active": {
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "pr": null,
+   "head": "origin/main",
+   "bundle_sha256": "1a91f44ad19c10b43ab1dfad0a678d0a545a8e62b86660256b925a5779244c12",
+   "incumbent": true
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "pr": 216,
+   "head": "63f55de57af66957f61bd3cd5ad246c92a6bdce3",
+   "bundle_sha256": "b9fa18b0f06027bd58e7f29cc78046ba303d890c381772c9dd48a61e5918bead",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "kaivaryn"
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": 217,
+   "head": "709781fea5c12866faa4657a0477524417245ff6",
+   "bundle_sha256": "a157012e92ac24574058c72494e6277a8e3d7e2a578282291682428419c3f3b1",
+   "incumbent": false,
+   "was_incumbent": false,
+   "github": "dato-bitar"
+  }
+ },
+ "rejected": {}
+}

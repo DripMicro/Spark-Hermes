@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0008-p06",
+ "round_id": "r0008",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nLength.pt property returns incorrect values\n\n#### Description\n\nThe `Length.pt` property is returning incorrect floating point values when converting from EMUs (English Metric Units) to points. The conversion appears to be off by 1 point.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom pptx.util import Length\n\n# Create a Length object with a known EMU value\nlength = Length(12700)  # This should be 1 point in EMUs\n\n# Check the pt property\nprint(f\"Expected: 1.0 pt\")\nprint(f\"Actual: {length.pt} pt\")\n\n# Try with other values\nlength2 = Length(25400)  # This should be 2 points\nprint(f\"Expected: 2.0 pt\") \nprint(f\"Actual: {length2.pt} pt\")\n```\n\nThe conversion from EMUs to points should follow the standard conversion where 12700 EMUs = 1 point, but the current implementation is returning values that are 1 point less than expected.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "scanny__python-pptx.278b47b1.func_basic__8sg2z8zw",
+  "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1",
+  "fail_to_pass": [
+   "tests/test_util.py::DescribeLength::it_can_self_convert_to_convenient_units[units_fixture5]",
+   "tests/text/test_text.py::DescribeTextFrame::it_knows_its_margin_settings[margin_get_fixture6]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0007-p10",
+ "round_id": "r0007",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSnowflake stage parsing broken for string paths\n\nWhen parsing Snowflake queries that reference staged files using string paths (e.g., `'@mystage'`), the parser fails to handle the table correctly.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should work but fails\nsql = \"SELECT * FROM '@mystage'\"\nparsed = sqlglot.parse_one(sql, read='snowflake')\nprint(parsed.sql(dialect='snowflake'))\n```\n\nThe issue occurs when trying to parse staged file references that use string literals instead of bare identifiers. For example:\n\n- `SELECT * FROM '@mystage'` - fails\n- `SELECT * FROM @mystage` - works fine\n\nThis affects various Snowflake stage operations including COPY commands and SELECT statements that reference external stages with string paths.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_assign__8bct3bvl",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_copy",
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_staged_files"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

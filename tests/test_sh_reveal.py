@@ -502,3 +502,84 @@ def test_a_failed_fetch_is_not_a_crown_that_failed_to_land(tmp_path):
     _git(repo, "remote", "set-url", "origin", str(tmp_path / "no-such.git"))
     with pytest.raises(RuntimeError):
         o._crown_landed(cfg, hk)
+
+
+def _king_with_pr(tmp_path, monkeypatch, pr_files, *, private=False):
+    """A crowned hotkey defending from the private store, and one open PR from the same hotkey whose tree holds
+    `pr_files` under its directory. Returns (cfg, hotkey, keypair, active, rejected)."""
+    repo, kp = _repo(tmp_path), _kp()
+    hk, digest = kp.ss58_address, bundle_digest(PROSE)
+    crowned = attest.sign(kp, "r0001", digest)
+    _commit_submission(repo, hk, _attestation_only(crowned))  # the public marker of the crown
+    kept = tmp_path / "state" / "incumbents" / hk
+    kept.mkdir(parents=True)
+    (kept / "SOUL.md").write_bytes(PROSE["SOUL.md"])
+    (kept / attest.FILE).write_text(json.dumps(crowned))
+    _git(repo, "checkout", "-q", "-b", "pr")
+    ref = _commit_submission(repo, hk, pr_files(kp))
+    cfg = _cfg(tmp_path, repo)
+    cfg.submit_server = "https://ingest.example" if private else ""
+    (cfg.rounds / "r0002").mkdir(parents=True)
+    real = o.sh
+
+    def fake_sh(cmd, **k):
+        if cmd[:2] == ["git", "fetch"]:
+            return ""
+        if cmd[:2] == ["git", "ls-tree"] and cmd[-1] == "submissions/" and "-r" not in cmd:
+            return f"submissions/{hk}\nsubmissions/README.md\n"
+        return real(cmd, **k)
+
+    monkeypatch.setattr(o, "sh", fake_sh)
+    monkeypatch.setattr(
+        o,
+        "_strategy_prs",
+        lambda cfg, tip: [{"number": 7, "headRefOid": ref, "changed": [hk], "author": {"login": "k"}}],
+    )
+    monkeypatch.setattr(o, "_changed_paths", lambda cfg, base, head: [f"submissions/{hk}/{attest.FILE}"])
+    monkeypatch.setattr(o, "_prose_added", lambda cfg, base, head, hotkey: [])
+    active, rejected = o.candidates(cfg, "r0002", tmp_path / "bundles")
+    return cfg, hk, kp, active, rejected
+
+
+@pytest.mark.parametrize("private", [False, True])
+def test_a_defense_pr_keeps_the_incumbent_and_gives_it_a_pr_to_merge(tmp_path, monkeypatch, private):
+    """The king re-signs its unchanged bundle for this round. It is still the incumbent — ties still go to it, it is
+    not a new bundle that could cost it the crown — but a round it wins now has a PR to merge, which is what pays."""
+    cfg, hk, _, active, rejected = _king_with_pr(
+        tmp_path,
+        monkeypatch,
+        lambda kp: _attestation_only(attest.sign(kp, "r0002", bundle_digest(PROSE))),
+        private=private,
+    )
+    assert rejected == {}
+    info = active[hk]
+    assert info["pr"] == 7 and info["incumbent"] and info["defense"] and not info["was_incumbent"]
+    assert info["bundle_sha256"] == bundle_digest(PROSE)
+    staged = tmp_path / "bundles" / hk
+    assert (staged / "SOUL.md").read_bytes() == PROSE["SOUL.md"]
+    assert json.loads((staged / attest.FILE).read_text())["round_id"] == "r0002"  # this round's signature
+    assert o.challenger_count(active) == 0  # a defense alone is still nothing to evaluate against
+    assert o.outcome({"active": active}, hk)["merge"] == 7
+
+
+def test_a_new_bundle_from_the_incumbent_still_replaces_its_crown(tmp_path, monkeypatch):
+    other = {"SOUL.md": b"# Soul\n\nA different strategy.\n"}
+    _, hk, _, active, rejected = _king_with_pr(
+        tmp_path,
+        monkeypatch,
+        lambda kp: {**other, **_attestation_only(attest.sign(kp, "r0002", bundle_digest(other)))},
+    )
+    assert rejected == {}
+    info = active[hk]
+    assert info["pr"] == 7 and not info["incumbent"] and not info["defense"] and info["was_incumbent"]
+    assert info["bundle_sha256"] == bundle_digest(other)
+
+
+def test_a_defense_signed_for_another_round_is_refused_and_the_crown_defends_without_it(tmp_path, monkeypatch):
+    _, hk, _, active, rejected = _king_with_pr(
+        tmp_path,
+        monkeypatch,
+        lambda kp: _attestation_only(attest.sign(kp, "r0001", bundle_digest(PROSE))),  # a replay of the old round
+    )
+    assert "7" in rejected
+    assert active[hk]["incumbent"] and active[hk]["pr"] is None  # still defends, with nothing to merge

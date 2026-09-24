@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0007-p11",
+ "round_id": "r0007",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nEnvironmentVariable minimum setter adds 1 to input value\n\n#### Description\n\nWhen setting the minimum value on an EnvironmentVariable, the setter incorrectly adds 1 to the provided value instead of storing it directly.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a database with environment variables\ndb = cantools.database.load_file('tests/files/emc32.dbc')\n\n# Get an environment variable\nenv_var = db.environment_variables[0]\n\n# Set minimum value\nenv_var.minimum = -180\n\n# Check the actual stored value\nprint(f\"Expected: -180, Actual: {env_var.minimum}\")\n```\n\nThe output shows that when setting minimum to -180, the actual stored value becomes -179.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__gft9ch5z",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_emc32"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

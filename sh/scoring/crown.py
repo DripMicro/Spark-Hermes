@@ -77,10 +77,12 @@ def crown(
     eligible = [
         h for h, s in st.items() if s["n"] >= min_paired and s["delta"] is not None and s["delta"] > 0 and not s["dq"]
     ]
-    # the incumbent wins ties: sort it ahead of any challenger with the same delta (a lower rank key)
+    # The incumbent wins ties: on the same delta it sorts ahead of every challenger, whatever their pooled Δc — the
+    # pooled figure only orders challengers among themselves. (It came first once, so a challenger with a better
+    # pooled window outranked the incumbent on a tie, which the rule forbids.)
     ranked = sorted(
         eligible,
-        key=lambda h: (-st[h]["delta"], -pooled_delta_c.get(h, 0.0), h != incumbent, _tiebreak(round_id, h)),
+        key=lambda h: (-st[h]["delta"], h != incumbent, -pooled_delta_c.get(h, 0.0), _tiebreak(round_id, h)),
     )
     for i, h in enumerate(ranked, 1):
         st[h]["rank"] = i

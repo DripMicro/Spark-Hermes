@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0009-p00",
+ "round_id": "r0009",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDummy node creation fails with incorrect parameter order\n\n#### Description\n\nWhen creating dummy nodes using `attach_dummy_node`, the function call fails due to incorrect parameter ordering. The `build_dummy` function is being called with the wrong arguments, causing issues when building AST nodes from runtime objects.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\nfrom astroid.raw_building import attach_dummy_node\nfrom astroid import nodes\n\n# Create a simple module node\nmodule = nodes.Module(name='test', doc='')\n\n# Try to attach a dummy node - this should work but fails\ntry:\n    attach_dummy_node(module, 'dummy_name', 'some_value')\n    print(\"Success: Dummy node attached\")\nexcept Exception as e:\n    print(f\"Error: {e}\")\n```\n\nThis also affects building AST from builtin modules:\n\n```python\nimport astroid\n\nmanager = astroid.MANAGER\ntry:\n    builtin_ast = manager.ast_from_module_name('builtins')\n    builtin_ast.getattr('open')\n    print(\"Success: Built builtins module\")\nexcept Exception as e:\n    print(f\"Error building builtins: {e}\")\n```\n\nThe issue manifests when trying to access builtin functions and classes, causing failures in AST construction from runtime objects.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.combine_file__alnuege3",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_brain.py::TypeBrain::test_builtin_subscriptable",
+   "tests/test_builder.py::BuilderTest::test_inspect_build0",
+   "tests/test_inference.py::InferenceTest::test_builtin_open"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

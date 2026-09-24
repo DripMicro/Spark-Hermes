@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0009-p05",
+ "round_id": "r0009",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSection top_margin setter incorrectly halves the value\n\n#### Description\n\nWhen setting the `top_margin` property on a Section object, the value is being halved unexpectedly. This causes the actual margin to be half of what was intended.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.shared import Inches\n\n# Create a document and get the first section\ndoc = Document()\nsection = doc.sections[0]\n\n# Set top margin to 1 inch\nsection.top_margin = Inches(1)\n\n# The actual margin is now 0.5 inches instead of 1 inch\nprint(f\"Expected: {Inches(1)}\")\nprint(f\"Actual: {section.top_margin}\")\n```\n\nThe expected output should show both values as the same, but the actual top_margin will be half the value that was set.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__8fifzt5r",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_section.py::DescribeSection::it_can_change_its_page_margins[w:sectPr-top_margin--228600-w:sectPr/w:pgMar{w:top=-360}]",
+   "tests/test_section.py::DescribeSection::it_can_change_its_page_margins[w:sectPr/w:pgMar{w:top=-360}-top_margin-548640-w:sectPr/w:pgMar{w:top=864}]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

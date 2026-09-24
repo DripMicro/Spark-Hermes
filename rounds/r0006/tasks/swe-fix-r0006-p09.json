@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0006-p09",
+ "round_id": "r0006",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSignalGroup repetitions property returns incorrect value\n\n#### Description\n\nWhen creating a SignalGroup instance, the repetitions property returns a value that is 1 higher than expected.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom cantools.database.can.signal_group import SignalGroup\n\n# Create a signal group with 1 repetition\nsg = SignalGroup(name=\"test_group\", repetitions=1)\nprint(f\"Expected repetitions: 1, Actual repetitions: {sg.repetitions}\")\n\n# Create a signal group with 5 repetitions  \nsg2 = SignalGroup(name=\"test_group2\", repetitions=5)\nprint(f\"Expected repetitions: 5, Actual repetitions: {sg2.repetitions}\")\n```\n\nExpected output:\n```\nExpected repetitions: 1, Actual repetitions: 1\nExpected repetitions: 5, Actual repetitions: 5\n```\n\nActual output:\n```\nExpected repetitions: 1, Actual repetitions: 2\nExpected repetitions: 5, Actual repetitions: 6\n```\n\nThe repetitions property consistently returns a value that is 1 higher than what was passed to the constructor.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__r8zhym0a",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_dbc_issue_228_empty_signal_groups",
+   "tests/test_database.py::CanToolsDatabaseTest::test_dbc_with_signal_groups"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

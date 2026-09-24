@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0006-p25",
+ "round_id": "r0006",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### Bug: Incorrect Error Messages for Signal Encoding and Multiplexing\n\n**Describe the bug**\n\nWhen attempting to encode messages with missing or incorrect signal values, the error messages returned are not as expected. This issue affects the clarity of error reporting, making it difficult to diagnose problems with signal encoding and multiplexing.\n\n**To Reproduce**\n\n1. Load a database file with multiplexed signals, such as `multiplex_choices.dbc`.\n2. Attempt to encode a message with a multiplexer value that is not part of the expected set, e.g., `{'Multiplexor': 7}`.\n3. Observe the error message returned.\n\nAdditionally, for signal encoding:\n\n1. Load a database file with signal range constraints, such as `signal_range.kcd`.\n2. Attempt to encode a message with a signal value outside the defined range, e.g., `{'Signal1': 0}` for a signal that expects values between 1 and 2.\n3. Observe the error message returned.\n\n**Expected behavior**\n\nThe error messages should clearly indicate the expected values and the actual value provided, helping users to quickly identify and correct the issue. For example, when a multiplexer value is incorrect, the message should specify the valid range of values.\n\n**Environment info**\n\n- OS: Linux\n- Python version: 3.10.15\n- Relevant libraries: cantools\n\n**Additional context**\n\nThis issue impacts the usability of the library by providing less informative error messages, which can lead to confusion during debugging and development.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__yrmw0zoy",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_encode_signal_strict",
+   "tests/test_database.py::CanToolsDatabaseTest::test_multiplex_bad_multiplexer"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

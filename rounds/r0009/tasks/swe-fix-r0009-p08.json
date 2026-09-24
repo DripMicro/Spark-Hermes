@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0009-p08",
+ "round_id": "r0009",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nsix.with_metaclass detection broken for classes with multiple inheritance\n\n#### Description\n\nWhen using `six.with_metaclass` with classes that have multiple base classes, the metaclass detection fails and the class hierarchy is not properly resolved.\n\n#### Steps/Code to Reproduce\n\n```python\nimport six\nimport astroid\n\n# This should work but doesn't\ncode = '''\nimport six\n\nclass WithMeta(six.with_metaclass(type, object, SomeOtherBase)):\n    pass\n'''\n\nmodule = astroid.parse(code)\nklass = module.body[1]  # Get the class definition\nprint(\"Ancestors:\", [base.name for base in klass.ancestors()])\nprint(\"Metaclass:\", klass.metaclass().name if klass.metaclass() else None)\n```\n\nThe metaclass detection logic seems to fail when there are multiple base classes in the inheritance chain. The issue appears to be related to how the `six.with_metaclass` pattern is detected and processed.\n\nAlso affects cases where the class uses different forms of six imports:\n\n```python\nfrom six import with_metaclass\n\nclass MultipleInheritance(with_metaclass(type, BaseA, BaseB)):\n    pass\n```\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.combine_file__x5mtjvip",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_brain.py::ModuleExtenderTest::test_extension_modules",
+   "tests/brain/test_six.py::SixBrainTest::test_attribute_access",
+   "tests/brain/test_six.py::SixBrainTest::test_attribute_access_with_six_moves_imported",
+   "tests/test_nodes.py::AsStringTest::test_module2_as_string",
+   "tests/test_scoped_nodes.py::ClassNodeTest::test_metaclass_generator_hack"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

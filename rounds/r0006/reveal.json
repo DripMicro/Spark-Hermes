@@ -1,0 +1,166 @@
+{
+ "swe-fix-r0006-02": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd_repr"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd_repr"
+    ]
+   ],
+   "assets_sha256": "45a5e0d6264e5cb75c09f25e81090e3fcbf3e553a5cbf3819952c206914bdb1f",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "5d51b7c0b942af8961c4d94f6cc33ddba80108af37b1ecdfbd1854a45b4cd1df",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.combine_module__pjvgsc7d",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0006-03": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/shapes/test_autoshape.py::DescribeShape::and_it_knows_its_shape_type_when_its_not_a_placeholder"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/shapes/test_autoshape.py::DescribeShape::but_it_raises_when_shape_type_called_on_unrecognized_shape"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/shapes/test_autoshape.py::DescribeShape::it_knows_its_shape_type_when_its_a_placeholder"
+    ]
+   ],
+   "assets_sha256": "151b23d9184e2633e83e7e225435c5bc404f2c4bf03b8a46af58cd6b878fdeed",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "37fa2e83fc975fb68ab6467f5222495eb98216c75cfb0c53040fad1516b38e0c",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "scanny__python-pptx.278b47b1.lm_rewrite__n2tneu4a",
+   "environment": "jyangballin/swesmith.x86_64.scanny_1776_python-pptx.278b47b1"
+  }
+ },
+ "swe-fix-r0006-06": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_dialect.py::TestDialect::test_limit"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_mysql.py::TestMySQL::test_canonical_functions"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_mysql.py::TestMySQL::test_ddl"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_prql.py::TestPRQL::test_prql"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_sqlite.py::TestSQLite::test_ddl"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_sqlite.py::TestSQLite::test_longvarchar_dtype"
+    ]
+   ],
+   "assets_sha256": "057e2706c8ae92570bbebd1695e73eb468b5e055085aa98b5e34870fe176bd13",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "b957b5625b6b4b759d245f923156801e5a1a3ad6ceaf3439b5f90edfdcb2dd56",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.combine_module__x3rzaudu",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0006-08": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_run.py::DescribeRun::it_can_iterate_its_inner_content_items[w:r/(w:t\"abc\",w:br,w:lastRenderedPageBreak,w:noBreakHyphen,w:t\"def\")-expected2]"
+    ]
+   ],
+   "assets_sha256": "a81487780950aa4f6403b92d75d81024e3c5bf34607e06b1d963fd70827eb09e",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "505fb4accaaf3a426490ab830e8914adfbe451b3df83144e6c1bfb95c18afa4a",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.lm_rewrite__l6qhe7eh",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0006-09": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_get_signal_by_name"
+    ]
+   ],
+   "assets_sha256": "afb2d150824e0fa7daaae2ab906d1f1de0b79f576f7909cb80ef9e93e506696e",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "8ba81362132eb66c8634b5a052ad553a8118d03c29a77508d3494be04e6119d3",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.func_basic__exzb81a5",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0006-25": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e_profile5"
+    ]
+   ],
+   "assets_sha256": "7e4d66488ea8c4c7a576be1d0a691adcebbfb1a62ae598c78ebee22d244dc765",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "2bc4b89919e9932e204c1113ba097415562e7805f695b9ac238371f3d23a974b",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.func_basic__mi6y0029",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ }
+}

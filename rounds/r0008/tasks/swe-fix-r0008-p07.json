@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0008-p07",
+ "round_id": "r0008",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPRQL dialect parser fails with UnboundLocalError on derive operations\n\n#### Description\n\nWhen parsing PRQL queries with `derive` operations, the parser throws an `UnboundLocalError` for the variable `selects`. This affects basic PRQL functionality where you want to add computed columns to your query.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should work but throws UnboundLocalError\nsqlglot.transpile('from x derive a + 1', read='prql', write='')\n```\n\nThe error occurs when trying to parse any PRQL query that uses the `derive` keyword to add computed columns. For example:\n\n- `from x derive a + 1`\n- `from x derive x = a + 1` \n- `from x derive {a + 1}`\n- `from x derive {x = a + 1, b}`\n\nAll of these basic PRQL patterns fail with the same `UnboundLocalError: local variable 'selects' referenced before assignment` error.\n\n#### Expected Behavior\n\nThese queries should parse successfully and transpile to their SQL equivalents:\n- `from x derive a + 1` \u2192 `SELECT *, a + 1 FROM x`\n- `from x derive x = a + 1` \u2192 `SELECT *, a + 1 AS x FROM x`\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__j9g715a2",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_prql.py::TestPRQL::test_prql"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
