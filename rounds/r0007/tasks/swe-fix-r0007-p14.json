@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0007-p14",
+ "round_id": "r0007",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCDD database loading fails with \"'int' object is not iterable\" error\n\n#### Description\n\nWhen loading CDD diagnostic database files, the system throws a TypeError with the message \"'int' object is not iterable\". This affects all CDD file operations including loading files directly and adding CDD files to existing databases.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# This will fail\ndb = cantools.db.load_file('tests/files/cdd/example.cdd', encoding='iso-8859-1')\n\n# This will also fail\ndb = cantools.db.diagnostics.Database()\ndb.add_cdd_file('tests/files/cdd/example.cdd', encoding='iso-8859-1')\n```\n\nBoth operations result in:\n```\nTypeError: 'int' object is not iterable\n```\n\nor \n\n```\ncantools.database.UnsupportedDatabaseFormatError: CDD: \"'int' object is not iterable\"\n```\n\nThe issue appears to affect all CDD database operations, preventing any diagnostic database functionality from working properly.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_module__bay51hdh",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_cdd_add",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd_repr",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_datarefs",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_cdd_add",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd_repr"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

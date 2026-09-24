@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0007-p05",
+ "round_id": "r0007",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSetting theme_color to None creates color element instead of removing it\n\n#### Description\n\nWhen setting `theme_color` to `None` on a `ColorFormat` object, the code incorrectly creates a new color element before checking if the value is `None`. This results in an unwanted color element being added to the XML structure instead of properly removing the existing color element.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx.dml.color import ColorFormat\n\n# Create a ColorFormat instance and set theme_color to None\ncolor_format = ColorFormat(some_element)  # assume some_element is properly initialized\ncolor_format.theme_color = None\n\n# The color element should be removed, but instead a new one is created\nprint(color_format._element.xml)  # Shows unexpected color element\n```\n\nThe issue occurs because the setter method creates the color element before checking if the value is `None`, causing the element to persist even when it should be removed.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_pm_ctrl_shuffle__m7xvt544",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/dml/test_color.py::DescribeColorFormat::it_can_change_its_theme_color[theme_color_set_fixture5]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

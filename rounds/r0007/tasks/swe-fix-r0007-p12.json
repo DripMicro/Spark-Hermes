@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0007-p12",
+ "round_id": "r0007",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\ngenerate_token returns tokens one character shorter than requested\n\n#### Description\n\nThe `generate_token` function is returning tokens that are one character shorter than the requested length. When calling `generate_token(length=30)`, it returns a 29-character token instead of 30.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.common import generate_token\n\n# This should return a 30-character token but returns 29\ntoken = generate_token(length=30)\nprint(f\"Expected length: 30, Actual length: {len(token)}\")\n\n# Same issue with custom length\ntoken = generate_token(length=44)\nprint(f\"Expected length: 44, Actual length: {len(token)}\")\n\n# And with custom characters\ntoken = generate_token(length=6, chars='python')\nprint(f\"Expected length: 6, Actual length: {len(token)}\")\n```\n\nThis affects other functions that depend on `generate_token` like `generate_client_id` which also returns shorter tokens than expected.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__k2u2gpod",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth2/rfc6749/clients/test_base.py::ClientTest::test_create_code_verifier_length",
+   "tests/test_common.py::GeneratorTest::test_generate_client_id",
+   "tests/test_common.py::GeneratorTest::test_generate_token"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
