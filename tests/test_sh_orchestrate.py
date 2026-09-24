@@ -542,3 +542,18 @@ def test_a_quiet_board_is_still_republished_before_it_reads_as_stale(tmp_path):
     again = json.loads((cfg.repo / o.LIVE).read_text())
     assert again["updated"] > board["updated"] + o.BOARD_HEARTBEAT_S  # republished with a fresh clock
     assert {k: v for k, v in again.items() if k != "updated"} == {k: v for k, v in board.items() if k != "updated"}
+
+
+def test_a_pr_that_was_not_crowned_is_told_what_happened_to_it():
+    """A dethroned king must not be told its crown still defends (r0008's #227 was)."""
+    from sh.validator.orchestrate import _closing_note
+
+    plain = _closing_note("r0008", {"pr": 1}, crowned_over=True, lost=False)
+    assert "Submit again in the next window" in plain and "defense" not in plain
+    lost = _closing_note("r0008", {"pr": 2, "defense": True}, crowned_over=True, lost=True)
+    assert "crown it defended is lost" in lost and "challenger was crowned over it" in lost
+    assert "still defends" not in lost
+    lost_quietly = _closing_note("r0008", {"pr": 2, "defense": True}, crowned_over=False, lost=True)
+    assert "pooled window or its rounds without a win" in lost_quietly
+    kept = _closing_note("r0008", {"pr": 2, "defense": True}, crowned_over=False, lost=False)
+    assert "The crown still defends" in kept and "open a new defense PR" in kept

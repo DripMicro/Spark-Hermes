@@ -1241,6 +1241,24 @@ def _prune_orphan_incumbents(cfg: Config, rd: Path) -> list[str]:
     return orphans
 
 
+def _closing_note(round_id: str, info: dict, *, crowned_over: bool, lost: bool) -> str:
+    """The last line on a PR that was not crowned. A defense PR's crown either still stands — a new defense next round
+    keeps it paid — or was lost this round, and telling a dethroned king to defend a crown it no longer holds is
+    wrong. Pure."""
+    if not info.get("defense"):
+        return f"Not crowned in `{round_id}`; this PR is closed with the round. Submit again in the next window."
+    if lost:
+        why = "a challenger was crowned over it" if crowned_over else "its pooled window or its rounds without a win"
+        return (
+            f"Not crowned in `{round_id}`; this defense PR is closed with the round, and the crown it defended is lost "
+            f"({why}). Submit again in the next window to challenge for it."
+        )
+    return (
+        f"Not crowned in `{round_id}`; this defense PR is closed with the round. The crown still defends: open a new "
+        "defense PR in the next window to be paid for a round it wins."
+    )
+
+
 def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, crowned: dict) -> str | None:
     """Scorecards on every PR; `scored` on every PR; the crown moved to the king; the king's PR merged; every
     other competition PR closed with the reason; PRs that arrived after the seal closed as outside the window."""
@@ -1267,6 +1285,12 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
             )
         )
     }
+    # Who leaves the competition this round — decided now only so each PR's note can say so; the tree changes below.
+    leaving = set(
+        dethroned(
+            sealed, king, record.get("scores"), _read(cfg.repo / "rounds" / "index.json", {"rounds": []})["rounds"]
+        )
+    )
     for hotkey, info in sealed["active"].items():
         st = crowned["standings"].get(hotkey, {})
         this_round = (
@@ -1282,13 +1306,8 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
         body = card
         if hotkey == king:
             body = "👑 **Crowned: best against the baseline on this round's instances. Merging.**\n\n" + body
-        elif info.get("defense"):
-            body += (
-                f"\n\n---\nNot crowned in `{round_id}`; this defense PR is closed with the round. Open a new one "
-                "in the next window to be paid for a round your crown wins."
-            )
         else:
-            body += f"\n\n---\nNot crowned in `{round_id}`; this PR is closed with the round. Submit again in the next window."
+            body += "\n\n---\n" + _closing_note(round_id, info, crowned_over=king is not None, lost=hotkey in leaving)
         gh("pr", "comment", str(info["pr"]), "--repo", REPO, "--body", body)
         _label(info["pr"], LABEL_SCORED)
     # The round's crown, applied to the merged PR and never moved: each round's winner keeps its own
