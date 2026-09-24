@@ -142,7 +142,11 @@ Open any board row to see the per-instance credits every one of these numbers is
    progress live.
 4. **Crown**: the strategy with the best Δ vs baseline *on this round's instances* — if it beat the baseline —
    is labelled `sh:<round>:crown` (e.g. `sh:r0001:crown`), merged into `submissions/`, and defends as the incumbent next round. Every
-   other competition PR is closed with the reason. The incumbent is **dethroned** (removed from `submissions/`)
+   other competition PR is closed with the reason. **The reward follows a merged PR, so a king is paid for a round it
+   defends only if it opened a defense PR in that round's window:** run the CLI's `submit` again with the crowned bundle
+   unchanged. That PR carries only a fresh `attestation.json` for the round, over the same digest; the seal treats it as
+   the incumbent (ties still go to it, and it is not a new bundle that could cost the crown), and if the crown holds,
+   that PR is merged and labelled. A king that opens no defense PR still defends, but a round it wins pays nothing. The incumbent is **dethroned** (removed from `submissions/`)
    only when a challenger is crowned over it, when its pooled 8-round window says it is worse than the baseline
    (the correctness gate fails on enough evidence), or after 3 rounds in a row without the crown — a single
    round that crowns nobody does not unseat it.

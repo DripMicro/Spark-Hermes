@@ -153,6 +153,17 @@ def _committed_digest(dest: Path, private: bool) -> str | None:
     return bundle_digest(inc_files)
 
 
+def _already_submitted(dest: Path, private: bool, digest: str, round_id: str) -> bool:
+    """This bundle is already committed on the base *for this round* — nothing to submit. A king's crown is on the
+    base too, signed for the round it was won; the same bundle for a later round is a defense PR, not a repeat."""
+    if _committed_digest(dest, private) != digest:
+        return False
+    try:
+        return json.loads((dest / attest.FILE).read_text()).get("round_id") == round_id
+    except (OSError, ValueError):
+        return False
+
+
 def submit_bundle(
     bundle: Path,
     keypair,
@@ -193,7 +204,7 @@ def submit_bundle(
     try:
         _run(["git", "worktree", "add", "-q", "--detach", str(wt), f"{remote}/{base}"], cwd=checkout)
         dest = wt / "submissions" / hotkey
-        if _committed_digest(dest, private) == digest:
+        if _already_submitted(dest, private, digest, round_id):
             return {
                 "ok": True,
                 "hotkey": hotkey,

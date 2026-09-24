@@ -493,13 +493,19 @@ def _reveal_challenger(
     store: Path,
     base: str = f"origin/{BRANCH}",
     private_only: bool = False,
+    defending: tuple[str, Path] | None = None,
 ) -> dict | None:
     """A challenger's bundle for the seal. The PR carries the signed commitment (`attestation.json`); the prose
     is fetched from the private submission store by the digest that commitment names. With `private_only` (the
     board advertises a submission server) that is the only way in: a PR that adds prose of its own is refused —
     it made the strategy public for every rival to read — and there is no fallback to the PR tree. Without it, a
     PR that still carries the prose seals from its tree. Same shape as `_bundle_from_tree`; None if the PR has
-    nothing under `submissions/<hotkey>/`."""
+    nothing under `submissions/<hotkey>/`.
+
+    `defending` is `(digest, bundle dir)` of the crown this hotkey already defends with. A PR whose commitment
+    names that same digest is a **defense**: the king re-signing its unchanged bundle for this round, so that a
+    round it wins has a PR to merge (the reward follows merged PRs). The bundle is the one already defending,
+    carrying the PR's new attestation; the result says `defense`."""
     names = _tree_names(cfg, ref, hotkey)
     if not names:
         return None
@@ -537,6 +543,11 @@ def _reveal_challenger(
             }
     digest = att.get("bundle_sha256") if isinstance(att, dict) else None
     signed_at = att.get("signed_at") if isinstance(att, dict) else None
+    if defending and digest == defending[0] and defending[1].is_dir():
+        shutil.rmtree(dest, ignore_errors=True)
+        shutil.copytree(defending[1], dest, ignore=shutil.ignore_patterns(attest.FILE, "receipt.json"))
+        (dest / attest.FILE).write_text(json.dumps(att))  # this round's signature over the bundle it defends with
+        return {**_check_bundle_dir(dest, hotkey, round_id), "defense": True}
     prose_in_pr = [n for n in names if n not in ("attestation.json", "receipt.json")]
     if (
         isinstance(digest, str)
@@ -836,6 +847,7 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
             store=store,
             base=tip,
             private_only=bool(cfg.submit_server),
+            defending=(active[hotkey]["bundle_sha256"], bundles / hotkey) if hotkey in active else None,
         )
         if b is not None and not b["problems"] and answers:
             files, _ = collect(staged)
@@ -846,20 +858,29 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
             shutil.rmtree(staged, ignore_errors=True)
             continue
         valid.append(
-            {**pr, "signed_at": _read(staged / "attestation.json", {}).get("signed_at"), "digest": b["digest"]}
+            {
+                **pr,
+                "signed_at": _read(staged / "attestation.json", {}).get("signed_at"),
+                "digest": b["digest"],
+                "defense": bool(b.get("defense")),
+            }
         )
     keep, superseded = one_per_hotkey(valid)
     rejected.update({str(n): why for n, why in superseded.items()})
     for hotkey, pr in keep.items():
-        was_incumbent = (bundles / hotkey).is_dir()  # its old bundle is in submissions/; it must still be dethroned
+        # A defense is the incumbent itself, now with a PR to merge if it wins. Any other PR from an incumbent's
+        # hotkey replaces the bundle it defended with, and that bundle must still be dethroned.
+        defense = pr["defense"]
+        was_incumbent = (bundles / hotkey).is_dir() and not defense
         shutil.rmtree(bundles / hotkey, ignore_errors=True)  # a challenger supersedes the hotkey's incumbent
         (bundles / f".pr{pr['number']}").rename(bundles / hotkey)
         active[hotkey] = {
             "pr": pr["number"],
             "head": pr["headRefOid"],
             "bundle_sha256": pr["digest"],
-            "incumbent": False,
+            "incumbent": defense,
             "was_incumbent": was_incumbent,
+            "defense": defense,
             "github": (pr.get("author") or {}).get("login"),
         }
     for staged in bundles.glob(".pr*"):
@@ -1136,7 +1157,8 @@ def crown_round(cfg: Config, rd: Path, record: dict, sealed: dict) -> dict:
         incumbent=incumbent,  # a tie does not dethrone
     )
     (rd / "close" / "crown.json").write_text(json.dumps(result, indent=1))
-    log(rd, "crown", king=result["king"], ranked=[h for h, s in result["standings"].items() if "rank" in s])
+    ranked = sorted((s["rank"], h) for h, s in result["standings"].items() if "rank" in s)
+    log(rd, "crown", king=result["king"], ranked=[h for _, h in ranked])
     return result
 
 
@@ -1260,6 +1282,11 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
         body = card
         if hotkey == king:
             body = "👑 **Crowned: best against the baseline on this round's instances. Merging.**\n\n" + body
+        elif info.get("defense"):
+            body += (
+                f"\n\n---\nNot crowned in `{round_id}`; this defense PR is closed with the round. Open a new one "
+                "in the next window to be paid for a round your crown wins."
+            )
         else:
             body += f"\n\n---\nNot crowned in `{round_id}`; this PR is closed with the round. Submit again in the next window."
         gh("pr", "comment", str(info["pr"]), "--repo", REPO, "--body", body)
@@ -1293,8 +1320,8 @@ def announce(cfg: Config, round_id: str, rd: Path, record: dict, sealed: dict, c
                 ["gh", "pr", "merge", str(plan["merge"]), "--repo", REPO, "--squash", "--match-head-commit",
                  sealed_head, "--subject", f"crown {round_id}: {king}"], capture_output=True, text=True)  # fmt: skip
         log(rd, "merge", pr=plan["merge"], ok=merged.returncode == 0, head=sealed_head[:8], err=merged.stderr[-200:])
-    elif king:
-        log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown")
+    elif king:  # an incumbent that won without a defense PR: it keeps the crown, but there is nothing to merge
+        log(rd, "merge", pr=None, ok=True, note="incumbent retains the crown (no defense PR: nothing merged)")
     if king:
         # Retained whenever the crown actually landed in `submissions/`, which is what the next round's seal reads.
         # The exit code alone is the wrong test in both directions: a re-run after a crash fails with "already
