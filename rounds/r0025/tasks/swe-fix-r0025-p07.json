@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0025-p07",
+ "round_id": "r0025",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nToken repr format is broken\n\n#### Description\n\nThe string representation of SQL tokens is displaying incorrect information. The token type and value appear to be swapped, and the memory address format is also wrong.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlparse\nfrom sqlparse import sql, tokens as T\n\n# Create a simple token\ntoken = sql.Token(T.Keyword, 'foo')\nprint(repr(token))\n\n# Parse a single quoted string\np = sqlparse.parse(\"'test'\")[0]\nprint(repr(p.tokens[0]))\n\n# Parse an identifier list\np = sqlparse.parse('foo, bar, baz')[0]\nprint(repr(p.tokens[0]))\n```\n\nExpected output should show something like:\n```\n<Keyword 'foo' at 0x...>\n<Single \"'test'\" at 0x...>\n<IdentifierList 'foo, b...' at 0x...>\n```\n\nBut instead the format appears to be incorrect with swapped values and wrong quoting.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "andialbrecht__sqlparse.e57923b3.func_basic__z8kanzy5",
+  "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3",
+  "fail_to_pass": [
+   "tests/test_tokenize.py::test_single_quotes",
+   "tests/test_tokenize.py::test_token_repr",
+   "tests/test_tokenize.py::test_tokenlist_repr"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

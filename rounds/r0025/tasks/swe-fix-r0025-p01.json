@@ -1,0 +1,33 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0025-p01",
+ "round_id": "r0025",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSignal matching order changed when using wildcards in plot command\n\n#### Description\n\nWhen using wildcard patterns to match signals in the plot command, the order in which signals are matched and plotted has changed unexpectedly. This affects the visual output and breaks existing plotting behavior where users expect signals to be processed in a consistent order.\n\n#### Steps/Code to Reproduce\n\n```bash\ncantools plot example.dbc '*fl*' < input_data.log\n```\n\nWith input data containing multiple signals that match the wildcard pattern `*fl*`, the signals are now being plotted in reverse order compared to the expected behavior. For example, when both `BREMSE_2.whlspeed_FL_Bremse2` and `BREMSE_33.whlspeed_FL` match the pattern, they appear in the opposite order than before.\n\nThe issue can be reproduced with any DBC file and log data that contains multiple signals matching a wildcard pattern. The signals will be processed and plotted in reverse order from what was previously expected.\n\n#### Expected vs Actual Behavior\n\n**Expected:** Signals matching wildcard patterns should be processed in their original order (e.g., BREMSE_2 signals first, then BREMSE_33 signals)\n\n**Actual:** Signals are now processed in reverse order (e.g., BREMSE_33 signals first, then BREMSE_2 signals)\n\nThis change affects the visual appearance of plots and breaks compatibility with existing scripts that depend on the signal ordering.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__v3kdptog",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_plot.py::CanToolsPlotTest::test_autocolor",
+   "tests/test_plot.py::CanToolsPlotTest::test_color",
+   "tests/test_plot.py::CanToolsPlotTest::test_empty_line",
+   "tests/test_plot.py::CanToolsPlotTest::test_global_title",
+   "tests/test_plot.py::CanToolsPlotTest::test_global_xlabel",
+   "tests/test_plot.py::CanToolsPlotTest::test_title",
+   "tests/test_plot.py::CanToolsPlotTest::test_two_axes_with_auto_ylabels_and_one_legend",
+   "tests/test_plot.py::CanToolsPlotTest::test_wildcards_caseinsensitive",
+   "tests/test_plot.py::CanToolsPlotTest::test_xlabel"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

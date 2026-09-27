@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0025-p11",
+ "round_id": "r0025",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nContainer builtin inference broken for various edge cases\n\n#### Description\n\nThe builtin inference for container types (list, tuple, set, frozenset) is producing incorrect results in several scenarios. When creating containers from iterables, the inference logic appears to have issues with element handling and string processing.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# String reversal issue\ncode = 'tuple(\"abc\")'\nnode = astroid.extract_node(code)\ninferred = next(node.infer())\nprint(f\"Expected: ('a', 'b', 'c')\")\nprint(f\"Actual: {inferred.as_string()}\")\n\n# Dict key extraction issue  \ncode = 'set({1: 2})'\nnode = astroid.extract_node(code)\ninferred = next(node.infer())\nprint(f\"Expected: {{1}}\")\nprint(f\"Actual: {inferred.as_string()}\")\n\n# Element filtering issue\ncode = 'list([ValueError, 0, TypeError])'\nnode = astroid.extract_node(code)\ninferred = next(node.infer())\nprint(f\"Expected: [ValueError, 0, TypeError]\")\nprint(f\"Actual: {inferred.as_string()}\")\n```\n\nThe inference is returning unexpected results - strings are being reversed, dictionary value extraction is using wrong indices, and zero values are being incorrectly filtered out from containers.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__pljwptyq",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_brain.py::RandomSampleTest::test_no_crash_on_evaluatedobject",
+   "tests/test_inference.py::InferenceTest::test_conversion_of_dict_methods",
+   "tests/test_inference.py::InferenceTest::test_frozenset_builtin_inference",
+   "tests/test_inference.py::InferenceTest::test_list_builtin_inference",
+   "tests/test_inference.py::InferenceTest::test_set_builtin_inference",
+   "tests/test_inference.py::InferenceTest::test_tuple_builtin_inference",
+   "tests/test_inference.py::test_builtin_inference_list_of_exceptions",
+   "tests/test_nodes.py::AsStringTest::test_frozenset_as_string"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

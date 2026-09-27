@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0025-p00",
+ "round_id": "r0025",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nNameError in simplify_datetrunc function after variable removal\n\n#### Description\n\nThe `simplify_datetrunc` function in the optimizer is throwing a `NameError` for undefined variables. It appears that some variable assignments were removed but the variables are still being referenced later in the code.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# This will trigger the NameError\nsql = \"SELECT * FROM table WHERE DATE_TRUNC('day', date_col) IN ('2023-01-01', '2023-01-02')\"\nresult = optimizer.optimize(sql)\n```\n\nThe error occurs when the optimizer tries to process DATE_TRUNC expressions with IN clauses. Variables like `rs`, `unit`, `drange`, and `ranges` are being referenced but not defined in their respective scopes.\n\n#### Expected Behavior\n\nThe optimizer should successfully process DATE_TRUNC simplifications without throwing NameError exceptions.\n\n#### Actual Behavior\n\n```\nNameError: name 'rs' is not defined\n```\n\nSimilar errors occur for other undefined variables in the same function.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_assign__xf56plfv",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_optimize",
+   "tests/test_optimizer.py::TestOptimizer::test_simplify",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds",
+   "tests/test_optimizer.py::TestOptimizer::test_tpch"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

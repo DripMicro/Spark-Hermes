@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0025-p05",
+ "round_id": "r0025",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nextract_params returns None for iterable objects\n\n#### Description\n\nThe `extract_params` function in `oauthlib.common` now returns `None` for any iterable object, breaking parameter extraction for dictionaries, lists, and tuples.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.common import extract_params\n\n# These should work but now return None\nprint(extract_params({'key': 'value'}))  # Expected: [('key', 'value')], Got: None\nprint(extract_params([('key', 'value')]))  # Expected: [('key', 'value')], Got: None\nprint(extract_params((('key', 'value'),)))  # Expected: [('key', 'value')], Got: None\n```\n\nThe function should extract parameters from these common iterable formats but instead returns `None` for all of them.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_pm_ctrl_invert_if__1ciu6xc0",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth1/rfc5849/test_client.py::SignatureTypeTest::test_params_in_body",
+   "tests/test_common.py::ParameterTest::test_extract_params_dict",
+   "tests/test_common.py::ParameterTest::test_extract_params_empty_list",
+   "tests/test_common.py::ParameterTest::test_extract_params_twotuple",
+   "tests/test_common.py::RequestTest::test_dict_body",
+   "tests/test_common.py::RequestTest::test_empty_dict_body",
+   "tests/test_common.py::RequestTest::test_empty_list_body",
+   "tests/test_common.py::RequestTest::test_list_body"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

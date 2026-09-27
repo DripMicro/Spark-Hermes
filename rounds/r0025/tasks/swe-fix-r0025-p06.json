@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0025-p06",
+ "round_id": "r0025",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSignalGroup repetitions and signal_names properties return incorrect values\n\n#### Description\n\nWhen creating or accessing SignalGroup objects, the `repetitions` property returns an incorrect value (off by 1) and the `signal_names` property returns the signal names in reverse order.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools.database.can.signal_group\n\n# Create a signal group with repetitions=1 and some signal names\nsignal_group = cantools.database.can.signal_group.SignalGroup(\n    name='test_group',\n    repetitions=1,\n    signal_names=['signal1', 'signal2', 'signal3']\n)\n\nprint(f\"Expected repetitions: 1, Actual: {signal_group.repetitions}\")\nprint(f\"Expected signal_names: ['signal1', 'signal2', 'signal3'], Actual: {signal_group.signal_names}\")\n```\n\nExpected output:\n```\nExpected repetitions: 1, Actual: 1\nExpected signal_names: ['signal1', 'signal2', 'signal3'], Actual: ['signal1', 'signal2', 'signal3']\n```\n\nActual output:\n```\nExpected repetitions: 1, Actual: 2\nExpected signal_names: ['signal1', 'signal2', 'signal3'], Actual: ['signal3', 'signal2', 'signal1']\n```\n\nThis affects loading DBC files with signal groups where the repetitions value is incorrect and signal names appear in reverse order.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_file__mak6dwat",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_dbc_issue_228_empty_signal_groups",
+   "tests/test_database.py::CanToolsDatabaseTest::test_dbc_with_signal_groups",
+   "tests/test_database.py::CanToolsDatabaseTest::test_long_names_dbc"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
