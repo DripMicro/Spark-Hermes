@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790546140.341754,
+ "updated": 1790546267.678261,
  "round_id": "r0027",
- "stage": "window",
+ "stage": "evaluate",
  "stages": [
   "open",
   "window",
@@ -24,6 +24,10 @@
   {
    "stage": "open",
    "t": 1790539057.193634
+  },
+  {
+   "stage": "window",
+   "t": 1790546256.5579677
   }
  ],
  "window": {
@@ -124,9 +128,59 @@
  },
  "last_round": "r0026",
  "tasks": 6,
- "active": {},
+ "active": {
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "pr": 316,
+   "head": "28b3e6247f44a67f2d452c9345240123de42765a",
+   "bundle_sha256": "05895823a1e259fcb316894e389716b3099be45faf5d6433803c0e9dd6e7acfc",
+   "incumbent": true,
+   "was_incumbent": false,
+   "defense": true,
+   "github": "kaivaryn"
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "pr": 319,
+   "head": "a779dad0c4aa3a163e4935b6b14f9dc5ec534c04",
+   "bundle_sha256": "a9b425166fc621b522fccad45f400586c5ed6e7b7eecae1876da5c8829aaa0f9",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "harrythomasben"
+  },
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "pr": 320,
+   "head": "f95e9ae90be7248f82d3649be4674fa6c3c08e2f",
+   "bundle_sha256": "ec08da23734667a58a18c9866b748eef6d76cf5b1e73bc4323eaeaa647dd8697",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "kaivexa"
+  },
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+   "pr": 321,
+   "head": "a3d4ddf835fd634ea35b64ccfc07f71114445629",
+   "bundle_sha256": "1dce6a1e0c2bb8976db4e005055371aee528180fc21a09782e18ce6e8e37d9b3",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "K-3-LT"
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": 318,
+   "head": "3c6f0bb5a59d362c972f9bd08f445bc7686c4ba7",
+   "bundle_sha256": "d5d12fe9508a3672a96b3d252326bde960d85d642196ff2a169830fa632ffd0d",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "dato-bitar"
+  }
+ },
  "rejected": {},
- "progress": {},
+ "progress": {
+  "done": 0,
+  "total": 0,
+  "by_surface": {}
+ },
  "crown": null,
  "scores": null,
  "queue": [
