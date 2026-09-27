@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790514479.7968576,
+ "updated": 1790514788.4251592,
  "round_id": "r0025",
- "stage": "window",
+ "stage": "evaluate",
  "stages": [
   "open",
   "window",
@@ -28,6 +28,10 @@
   {
    "stage": "resume",
    "t": 1790514478.4255188
+  },
+  {
+   "stage": "window",
+   "t": 1790514777.6960325
   }
  ],
  "window": {
@@ -128,9 +132,59 @@
  },
  "last_round": "r0024",
  "tasks": 6,
- "active": {},
+ "active": {
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": 309,
+   "head": "5d55ad284e2f542fc0c73e12ceef0bf55419fa0d",
+   "bundle_sha256": "edec1bea142249fed22f4af498f3176d59ef149280252dc981cbb4ed8a542dd8",
+   "incumbent": true,
+   "was_incumbent": false,
+   "defense": true,
+   "github": "dato-bitar"
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "pr": 307,
+   "head": "07281c675dc0645e825d747c1f4331b5a99b5338",
+   "bundle_sha256": "069e5df4bb031f604ba4f82fcad786f6e668ae282d2d625598fce3ac6685941f",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "harrythomasben"
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "pr": 308,
+   "head": "40a317c04a0df3078524edb152228156030902bb",
+   "bundle_sha256": "05895823a1e259fcb316894e389716b3099be45faf5d6433803c0e9dd6e7acfc",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "kaivaryn"
+  },
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+   "pr": 310,
+   "head": "cf9cf5360a58191183d939b087898642ad28d631",
+   "bundle_sha256": "1dce6a1e0c2bb8976db4e005055371aee528180fc21a09782e18ce6e8e37d9b3",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "K-3-LT"
+  },
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "pr": 311,
+   "head": "a70d820683d53ade97bd6714a61b31ddf384d558",
+   "bundle_sha256": "8d48f900e7307e07b83e609126a331eabd9bc690897fb3d2d0523bd8f9cd90a1",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "kaivexa"
+  }
+ },
  "rejected": {},
- "progress": {},
+ "progress": {
+  "done": 0,
+  "total": 0,
+  "by_surface": {}
+ },
  "crown": null,
  "scores": null,
  "queue": [
