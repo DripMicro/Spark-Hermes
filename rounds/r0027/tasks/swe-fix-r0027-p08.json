@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0027-p08",
+ "round_id": "r0027",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDuckDB struct generation produces incorrect output for BigQuery inline structs\n\nWhen transpiling DuckDB struct expressions to other dialects, the logic for handling BigQuery inline structs is inverted, causing incorrect SQL generation.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should generate a BigQuery inline struct but produces wrong output\nsql = \"SELECT {'a': 1, 'b': 2}\"\nresult = sqlglot.transpile(sql, read=\"duckdb\", write=\"bigquery\")\nprint(result[0])\n# Expected: SELECT STRUCT(1 AS a, 2 AS b)\n# Actual: SELECT ROW('a': 1, 'b': 2)\n```\n\nThe issue occurs when converting DuckDB struct literals to BigQuery format. The conditional logic appears to be handling the BigQuery inline struct case incorrectly, resulting in malformed output that uses ROW syntax with key-value pairs instead of the proper STRUCT syntax.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_invert_if__tdrra8m5",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_duckdb.py::TestDuckDB::test_array_index",
+   "tests/dialects/test_duckdb.py::TestDuckDB::test_cast",
+   "tests/dialects/test_duckdb.py::TestDuckDB::test_duckdb"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

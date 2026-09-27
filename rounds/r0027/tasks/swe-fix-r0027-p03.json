@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0027-p03",
+ "round_id": "r0027",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nget_bus_by_name always raises KeyError regardless of bus name\n\n#### Description\n\nThe `get_bus_by_name` method in the Database class always raises a KeyError, even when the bus name exists in the database.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a database file with buses\ndb = cantools.db.load_file('tests/files/kcd/the_homer.kcd')\n\n# Try to get a bus that exists - this should work but raises KeyError\nbus = db.get_bus_by_name('Comfort')\n```\n\nThis raises:\n```\nKeyError: 'Comfort'\n```\n\nBut it should return the bus object for the 'Comfort' bus that exists in the database.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_ctrl_shuffle__83fcvmj4",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_get_bus_by_name"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

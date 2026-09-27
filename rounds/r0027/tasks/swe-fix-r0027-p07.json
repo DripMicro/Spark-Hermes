@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0027-p07",
+ "round_id": "r0027",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCustom attributes in `to_xml` not escaped properly\nIt seems that if `to_xml()` is called to produce a XML file, certain conditions can cause a XML with invalid syntax to be produced.\r\n\r\nThis happens whenever there are custom attributes in a waypoint. Even though the regular attributes seem to escape properly (e.g. `&` to `&amp;`), this validation doesn't seem to be done for the custom attributes. Here is an example of a failure case:\r\n\r\n```\r\n  <wpt lat=\"52.4824535\" lon=\"13.4451467\">\r\n    <time>2024-02-12T12:48:53Z</time>\r\n    <name>Du Beast drinks &amp; coffee</name>\r\n    <desc>Innstra\u00dfe 4, Neuk\u00f6lln</desc>\r\n    <sym>amenity_pub</sym>\r\n    <extensions>\r\n      <osmand:amenity_name>Du Beast drinks & coffee</osmand:amenity_name>\r\n      <osmand:amenity_origin>Amenity:Du Beast drinks & coffee: sustenance:bar</osmand:amenity_origin>\r\n    </extensions>\r\n  </wpt>\r\n```\r\n\r\nThis is invalid XML cause there is a disallowed ampersand at line 7 (`drinks & coffee`).\r\n\r\nThis can easily be reproduced by using a GPX file with custom attributes (e.g. from OSMAnd in this case) that contain any of the special characters that are invalid in XML such as `&`.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.pr_282",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_xml_chars_encode_decode_extensions"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

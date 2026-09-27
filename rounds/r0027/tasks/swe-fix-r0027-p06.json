@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0027-p06",
+ "round_id": "r0027",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nJPEG image DPI values swapped in APP1 marker\n\n#### Description\n\nWhen working with JPEG images that contain EXIF data, the horizontal and vertical DPI values are being swapped. This affects image processing where correct DPI information is crucial for proper scaling and display.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx.image.jpeg import _App1Marker\n\n# Create an APP1 marker with specific DPI values\nhorz_dpi = 42\nvert_dpi = 24\napp1 = _App1Marker(None, None, None, horz_dpi, vert_dpi)\n\n# Check the DPI values\nprint(f\"Expected horizontal DPI: {horz_dpi}\")\nprint(f\"Actual horizontal DPI: {app1.horz_dpi}\")\nprint(f\"Expected vertical DPI: {vert_dpi}\")\nprint(f\"Actual vertical DPI: {app1.vert_dpi}\")\n```\n\nExpected output:\n```\nExpected horizontal DPI: 42\nActual horizontal DPI: 42\nExpected vertical DPI: 24\nActual vertical DPI: 24\n```\n\nActual output:\n```\nExpected horizontal DPI: 42\nActual horizontal DPI: 24\nExpected vertical DPI: 24\nActual vertical DPI: 42\n```\n\nThe horizontal and vertical DPI values are reversed, which could cause issues when processing images that rely on correct aspect ratio information from EXIF data.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__30lx30a2",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/image/test_image.py::Describe_ImageHeaderFactory::it_constructs_the_right_class_for_a_given_image_stream[call_fixture2]",
+   "tests/image/test_jpeg.py::Describe_App1Marker::it_knows_the_image_dpi"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
