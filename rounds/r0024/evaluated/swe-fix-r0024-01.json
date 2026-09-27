@@ -1,0 +1,44 @@
+{
+ "schema": "sh-instance-v2",
+ "task_id": "swe-fix-r0024-01",
+ "family": "swe_fix",
+ "behaviour": "act",
+ "round_id": "r0024",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nMapping field deserialization returns None instead of deserialized data\n\n#### Description\n\nWhen deserializing data with the Mapping field (including Dict field), the deserialization process returns `None` instead of the expected deserialized mapping object.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom marshmallow import fields\n\n# Basic dict field deserialization\nfield = fields.Dict()\nresult = field.deserialize({'foo': 'bar'})\nprint(f\"Expected: {{'foo': 'bar'}}, Got: {result}\")\n\n# Dict field with value validation\nfield_with_values = fields.Dict(values=fields.String())\nresult2 = field_with_values.deserialize({'key': 'value'})\nprint(f\"Expected: {{'key': 'value'}}, Got: {result2}\")\n```\n\nExpected output:\n```\nExpected: {'foo': 'bar'}, Got: {'foo': 'bar'}\nExpected: {'key': 'value'}, Got: {'key': 'value'}\n```\n\nActual output:\n```\nExpected: {'foo': 'bar'}, Got: None\nExpected: {'key': 'value'}, Got: None\n```\n\nThis affects all mapping-based field deserialization including nested schemas that use Dict fields.\n</issue>\n",
+ "fixture": {},
+ "setup_commands": [],
+ "protected_paths": [
+  "pyproject.toml",
+  "tests/__init__.py",
+  "tests/base.py",
+  "tests/conftest.py",
+  "tests/foo_serializer.py",
+  "tests/mypy_test_cases/test_validation_error.py",
+  "tests/test_decorators.py",
+  "tests/test_error_store.py",
+  "tests/test_exceptions.py",
+  "tests/test_options.py",
+  "tests/test_registry.py",
+  "tests/test_serialization.py",
+  "tests/test_utils.py",
+  "tests/test_validate.py",
+  "tests/test_version_attributes.py",
+  "tox.ini"
+ ],
+ "commands": [],
+ "published": {
+  "predicates": []
+ },
+ "withheld_commitment": "hmac-sha256:a2be5ff8ebdf2ba1fae38cf1b706d468896336c6df5904f83666636d3df963e7",
+ "image": "swe-task:4700ae9628a2534a",
+ "network": "none",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "workdir": "/testbed",
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "requires_self_check": false
+}

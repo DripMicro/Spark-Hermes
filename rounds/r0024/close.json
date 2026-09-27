@@ -1,0 +1,187 @@
+{
+ "schema": "sh-round-close-v3",
+ "scoring": "sh-scoring-v3 (credit)",
+ "round_id": "r0024",
+ "era": "e0",
+ "tasks": [
+  "swe-fix-r0024-01",
+  "swe-fix-r0024-04",
+  "swe-fix-r0024-05",
+  "swe-fix-r0024-10",
+  "swe-fix-r0024-11",
+  "swe-fix-r0024-13"
+ ],
+ "episodes": 294,
+ "family_stats": {
+  "swe_fix": {
+   "schema": "sh-family-stats-v2",
+   "family": "swe_fix",
+   "era": "e0",
+   "window": [
+    "r0017",
+    "r0018",
+    "r0019",
+    "r0020",
+    "r0021",
+    "r0022",
+    "r0023",
+    "r0024"
+   ],
+   "null": {
+    "n": 48,
+    "successes": 4,
+    "p": 0.08333333333333333,
+    "mean_credit": 0.1295,
+    "wilson": [
+     0.0329,
+     0.1955
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 26.0,
+      "p25": 25.0,
+      "n": 4
+     },
+     "tool_calls": {
+      "median": 26.5,
+      "p25": 26.0,
+      "n": 4
+     }
+    }
+   },
+   "canon": {
+    "n": 6,
+    "successes": 0,
+    "p": 0.0,
+    "mean_credit": 0.0,
+    "wilson": [
+     0.0,
+     0.3903
+    ],
+    "efficiency": {},
+    "delta_c": -0.1295,
+    "delta_e": {},
+    "delta_e_paired_instances": 0
+   },
+   "label": "frontier",
+   "partial_rate": 0.0,
+   "in_rotation": true,
+   "retirement": null
+  }
+ },
+ "scores": {
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "hotkey": "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh",
+   "n": 48,
+   "score": 0.079448,
+   "delta_c": 0.0050400672645545125,
+   "delta_e": {
+    "api_calls": 0.013047425397419654,
+    "tool_calls": -0.02760109742677075
+   },
+   "gate": true,
+   "se": 0.058131,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.079448
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "hotkey": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
+   "n": 48,
+   "score": 0.230142,
+   "delta_c": 0.153146566889988,
+   "delta_e": {
+    "api_calls": 0.1923165242297557,
+    "tool_calls": 0.17138306287505
+   },
+   "gate": true,
+   "se": 0.060153,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.230142
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "hotkey": "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
+   "n": 48,
+   "score": 0.199884,
+   "delta_c": 0.13111705320141154,
+   "delta_e": {
+    "api_calls": 0.09052629419403563,
+    "tool_calls": 0.04429155231704851
+   },
+   "gate": true,
+   "se": 0.053724,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.199884
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "hotkey": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
+   "n": 48,
+   "score": 0.164864,
+   "delta_c": 0.08698864852993074,
+   "delta_e": {
+    "api_calls": -0.2519262490677643,
+    "tool_calls": -0.29663939073896595
+   },
+   "gate": true,
+   "se": 0.06084,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.164864
+  },
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "hotkey": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
+   "n": 30,
+   "score": 0.088889,
+   "delta_c": 0.015319146549685303,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.057476,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 30,
+   "mean_d": 0.088889
+  },
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+   "hotkey": "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc",
+   "n": 18,
+   "score": 0.060802,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.097657,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 18,
+   "mean_d": 0.060802
+  }
+ },
+ "weights": {
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": 0.09641408251408629,
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.2792887143534997,
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.24256913288245924,
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.2000706285822465,
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": 0.10787120356201055,
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": 0.07378623810569773
+ },
+ "commitments_verified": {
+  "swe-fix-r0024-01": true,
+  "swe-fix-r0024-04": true,
+  "swe-fix-r0024-05": true,
+  "swe-fix-r0024-10": true,
+  "swe-fix-r0024-11": true,
+  "swe-fix-r0024-13": true
+ },
+ "commitments_ok": true
+}
