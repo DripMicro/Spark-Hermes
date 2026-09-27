@@ -557,3 +557,17 @@ def test_a_pr_that_was_not_crowned_is_told_what_happened_to_it():
     assert "pooled window or its rounds without a win" in lost_quietly
     kept = _closing_note("r0008", {"pr": 2, "defense": True}, crowned_over=False, lost=False)
     assert "The crown still defends" in kept and "open a new defense PR" in kept
+
+
+def test_every_closed_round_is_published_where_the_site_serves_it(tmp_path):
+    """live.json carries only the last 20 closed rounds (it is rewritten on every heartbeat), so the board lists them
+    all from docs/rounds/index.json — the same file as rounds/index.json, written at every close."""
+    from sh.validator.orchestrate import _publish_index
+
+    cfg = _cfg(tmp_path)
+    (cfg.repo / "rounds").mkdir(parents=True)
+    index = {"schema": "sh-rounds-index-v2", "rounds": [{"round_id": f"r{i:04d}"} for i in range(1, 26)]}
+    _publish_index(cfg, index)
+    record = (cfg.repo / "rounds" / "index.json").read_text()
+    assert (cfg.repo / "docs" / "rounds" / "index.json").read_text() == record
+    assert len(json.loads(record)["rounds"]) == 25  # nothing capped

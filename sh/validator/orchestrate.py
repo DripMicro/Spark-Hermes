@@ -1453,6 +1453,17 @@ def export_and_upload(cfg: Config, round_id: str, rd: Path, king: str | None) ->
     return {"manifest": manifest, "upload": result}
 
 
+def _publish_index(cfg: Config, index: dict) -> None:
+    """`rounds/index.json` is the record of every closed round; `docs/rounds/index.json` is the same file where the
+    site serves it. The board lists every closed round from the second, so `live.json` — rewritten on every
+    heartbeat — can keep carrying only the last few."""
+    body = json.dumps(index, indent=1)
+    (cfg.repo / "rounds" / "index.json").write_text(body)
+    site = cfg.repo / "docs" / "rounds"
+    site.mkdir(parents=True, exist_ok=True)
+    (site / "index.json").write_text(body)
+
+
 def publish_close(
     cfg: Config, round_id: str, rd: Path, record: dict, crowned: dict, exported: dict, king: str | None
 ) -> None:
@@ -1498,7 +1509,7 @@ def publish_close(
     index_path = cfg.repo / "rounds" / "index.json"
     index = _read(index_path, {"schema": "sh-rounds-index-v2", "rounds": []})
     index["rounds"] = [r for r in index["rounds"] if r["round_id"] != round_id] + [entry]
-    index_path.write_text(json.dumps(index, indent=1))
+    _publish_index(cfg, index)
     page = cfg.repo / "docs" / "rounds" / round_id  # the round's page, where Pages serves it
     page.mkdir(parents=True, exist_ok=True)
     (page / "index.html").write_text(
