@@ -1,0 +1,251 @@
+{
+ "swe-fix-r0023-00": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_dump_j1939"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_j1939_frame_id_pack_bad_data"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_j1939_frame_id_pack_unpack"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_j1939_frame_id_unpack_bad_data"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_j1939_pgn_pack_unpack"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_j1939_pgn_unpack_bad_data"
+    ]
+   ],
+   "assets_sha256": "e1c06ae1490f8db3a40103cd71112a26111f4472e92c7e8265161337ea8cc138",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "2d28876ac9083ce198d6e9c09ddd8bde2f7f02c75ea15bff067979cb7850735b",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.combine_file__xnkmoktv",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0023-01": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_track_points_data"
+    ]
+   ],
+   "assets_sha256": "c45ef1052ed785809888403f0edbf8c4e55dc7f2a6066f22d03876ab468fdbb4",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "fd7e177aeb981fee8b8bf25b605428593ec283e02b21a53401afaf9b3cb21608",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tkrajina__gpxpy.09fc46b3.lm_rewrite__7ws8195u",
+   "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3"
+  }
+ },
+ "swe-fix-r0023-02": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd_repr"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd_repr"
+    ]
+   ],
+   "assets_sha256": "c34744acb1fdd2f3a1772d78fe12ee3df8b2757d0a81c0e3b931de50418b5d83",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "bc9e05c026d220d6fcbe85a9dadc0b0706313bbd9112cdaeb7dc7c8c52974baa",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__wxmvwx55",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0023-03": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/clients/test_mobile_application.py::MobileApplicationClientTest::test_parse_token_response"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/clients/test_web_application.py::WebApplicationClientTest::test_parse_grant_uri_response"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/clients/test_web_application.py::WebApplicationClientTest::test_populate_attributes"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/test_parameters.py::ParameterTests::test_grant_response"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/test_parameters.py::ParameterTests::test_implicit_token_response"
+    ]
+   ],
+   "assets_sha256": "f7756da1f9eedbee4de4424f6abd6bd5d8152741d5441895eac7715cea91949a",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "8297685fbd1c28b5676da7a294df3846c21d4ad29cb29f7bdad11839f768aa89",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "oauthlib__oauthlib.1fd52536.combine_file__vw550k00",
+   "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536"
+  }
+ },
+ "swe-fix-r0023-05": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_fields.py::TestDictNested::test_dict_nested_only_and_exclude_merged_with_nested[exclude-expected1]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_fields.py::TestDictNested::test_dict_nested_only_and_exclude_merged_with_nested[only-expected0]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_fields.py::TestDictNested::test_dict_nested_only_exclude_dump_only_load_only_propagated_to_nested[dump_only]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_fields.py::TestDictNested::test_dict_nested_only_exclude_dump_only_load_only_propagated_to_nested[exclude]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_fields.py::TestDictNested::test_dict_nested_only_exclude_dump_only_load_only_propagated_to_nested[load_only]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_fields.py::TestDictNested::test_dict_nested_only_exclude_dump_only_load_only_propagated_to_nested[only]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_fields.py::TestDictNested::test_dict_nested_partial_propagated_to_nested"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_schema.py::TestContext::test_nested_dict_fields_inherit_context"
+    ]
+   ],
+   "assets_sha256": "45cc0509b37fa87520fabcda661fca7bb7f01dbdd18ab024e6f83a89d1851346",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "4db0625d3de2290885d51676987be2fce401a44839ec9bcfca1274bb444027de",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "marshmallow-code__marshmallow.9716fc62.lm_rewrite__173siroi",
+   "environment": "jyangballin/swesmith.x86_64.marshmallow-code_1776_marshmallow.9716fc62"
+  }
+ },
+ "swe-fix-r0023-08": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_client_authentication.py::ClientAuthenticationTest::test_basicauth_revoke"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_bad_post_request"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_invalid_request_method"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token_client_authentication_failed"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token_public_client_authentication"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token_public_client_authentication_failed"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_unsupported_token"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_with_callback"
+    ]
+   ],
+   "assets_sha256": "09962693db572301415a680ae5603e8c2e87ee9d988ca3938c356314a3df8d0e",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "58fa9f7b712924b2ba0dfdc11f16a4e17459cc235cf6ef8c016c4272f8cc47a7",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "oauthlib__oauthlib.1fd52536.combine_file__ho0hneaj",
+   "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536"
+  }
+ }
+}
