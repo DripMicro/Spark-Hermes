@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0026-p05",
+ "round_id": "r0026",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nOSError.strerror attribute returns None instead of empty string\n\n#### Description\n\nWhen accessing the `strerror` attribute of an `OSError` instance in astroid, it returns `None` instead of an empty string as expected.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\nnode = astroid.extract_node('''\ntry:\n    1/0\nexcept OSError as exc:\n    exc #@\n''')\ninferred = next(node.infer())\nstrerror = next(inferred.igetattr('strerror'))\nprint(f\"strerror value: {strerror.value}\")\nprint(f\"Expected: ''\")\n```\n\nExpected output:\n```\nstrerror value: \nExpected: ''\n```\n\nActual output:\n```\nstrerror value: None\nExpected: ''\n```\n\nThe `strerror` attribute should return an empty string (`''`) but instead returns `None`.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__moqdqxqe",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_brain.py::test_oserror_model"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

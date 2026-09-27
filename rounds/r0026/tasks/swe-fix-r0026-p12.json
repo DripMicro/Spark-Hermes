@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0026-p12",
+ "round_id": "r0026",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCompare node as_string produces incorrect operator order\n\n#### Description\n\nWhen converting Compare nodes back to string representation using `as_string()`, the operators and operands are being output in the wrong order, resulting in syntactically incorrect code.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# Simple comparison\ncode = \"a == 2\"\nast = astroid.builder.string_build(code).body[0]\nprint(f\"Original: {code}\")\nprint(f\"as_string(): {ast.as_string()}\")\n\n# More complex comparison\ncode2 = \"x < y <= z\"\nast2 = astroid.builder.string_build(code2).body[0] \nprint(f\"Original: {code2}\")\nprint(f\"as_string(): {ast2.as_string()}\")\n```\n\nExpected output:\n```\nOriginal: a == 2\nas_string(): a == 2\nOriginal: x < y <= z\nas_string(): x < y <= z\n```\n\nActual output:\n```\nOriginal: a == 2\nas_string(): 2 == a\nOriginal: x < y <= z  \nas_string(): y <= z < x\n```\n\nThe comparison operators and operands are being reversed, making the generated string representation syntactically different from the original code.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__zwjqr4iw",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_nodes.py::AsStringTest::test_module_as_string",
+   "tests/test_nodes.py::AsStringTest::test_operator_precedence",
+   "tests/test_nodes.py::AsStringTest::test_slice_and_subscripts",
+   "tests/test_nodes.py::CmpNodeTest::test_as_string",
+   "tests/test_nodes.py::TestPatternMatching::test_match_sequence"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

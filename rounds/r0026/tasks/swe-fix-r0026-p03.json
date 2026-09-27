@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0026-p03",
+ "round_id": "r0026",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nParser fails to handle user-defined types correctly\n\nWhen parsing SQL with user-defined types, the parser incorrectly advances the index, causing parsing to fail or produce unexpected results.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should parse correctly but fails\nsql = \"CAST(x AS my_custom_type)\"\nresult = sqlglot.parse(sql)\nprint(result)\n```\n\nThe parser encounters issues when trying to parse user-defined types in CAST expressions and other type contexts. The problem occurs in the type parsing logic where the parser index is not properly managed when handling custom types.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_change__c07gxz00",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_bigquery.py::TestBigQuery::test_bigquery",
+   "tests/test_transpile.py::TestTranspile::test_types"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

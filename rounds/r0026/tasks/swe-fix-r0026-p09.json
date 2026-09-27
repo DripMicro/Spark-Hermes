@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0026-p09",
+ "round_id": "r0026",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nParagraph.insert_paragraph_before() returns None instead of new paragraph\n\n#### Description\n\nWhen calling `insert_paragraph_before()` on a paragraph, the method returns `None` instead of the newly created paragraph object. This breaks existing code that expects to work with the returned paragraph.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\n\ndoc = Document()\nparagraph = doc.add_paragraph(\"Original paragraph\")\n\n# This should return a new paragraph object, but returns None\nnew_paragraph = paragraph.insert_paragraph_before(\"New text\", \"Heading 1\")\nprint(new_paragraph)  # Prints: None\n\n# Expected behavior: new_paragraph should be a Paragraph object\n# that can be used for further operations\n```\n\nThe method should return the newly inserted paragraph so it can be used for additional formatting or content manipulation, but currently returns `None` making it impossible to work with the inserted paragraph.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__nhaohetx",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/text/test_paragraph.py::DescribeParagraph::it_can_insert_a_paragraph_before_itself[insert_before_fixture0]",
+   "tests/text/test_paragraph.py::DescribeParagraph::it_can_insert_a_paragraph_before_itself[insert_before_fixture1]",
+   "tests/text/test_paragraph.py::DescribeParagraph::it_can_insert_a_paragraph_before_itself[insert_before_fixture2]",
+   "tests/text/test_paragraph.py::DescribeParagraph::it_can_insert_a_paragraph_before_itself[insert_before_fixture3]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

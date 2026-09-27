@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0026-p10",
+ "round_id": "r0026",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTO_TIMESTAMP function not handling string inputs correctly\n\nWhen using `TO_TIMESTAMP` with string inputs in Snowflake dialect, the function is not being parsed correctly. The transpilation is failing for basic string timestamp conversions.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should work but doesn't\nsql = \"SELECT TO_TIMESTAMP('2024-01-15 12:30:00.000')\"\nresult = sqlglot.transpile(sql, read=\"snowflake\", write=\"snowflake\")\nprint(result)\n\n# Also fails for formatted strings\nsql2 = \"SELECT TO_TIMESTAMP('04/05/2013 01:02:03', 'mm/DD/yyyy hh24:mi:ss')\"\nresult2 = sqlglot.transpile(sql2, read=\"snowflake\", write=\"snowflake\")\nprint(result2)\n```\n\nThe issue appears to be related to how the Snowflake dialect handles `TO_TIMESTAMP` function parsing when the input is a string literal rather than a numeric value.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_cond__bmvdvej0",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_snowflake"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
