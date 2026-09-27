@@ -1,0 +1,30 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0023-p03",
+ "round_id": "r0023",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nUserInfoEndpoint constructor arguments swapped causing AttributeError\n\n#### Description\n\nThe UserInfoEndpoint constructor has incorrect argument order when initializing the BearerToken, causing the request_validator to be set to None and breaking userinfo endpoint functionality.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.openid.connect.core.endpoints.userinfo import UserInfoEndpoint\n\nclass MockValidator:\n    def validate_bearer_token(self, token, scopes, request):\n        return True\n    \n    def get_userinfo_claims(self, request):\n        return {'sub': '123', 'name': 'Test User'}\n\nvalidator = MockValidator()\nendpoint = UserInfoEndpoint(validator)\n\n# This will fail with AttributeError\ntry:\n    headers, body, status = endpoint.create_userinfo_response(\n        'http://example.com/userinfo',\n        headers={'Authorization': 'Bearer test_token'}\n    )\n    print(f\"Status: {status}\")\nexcept AttributeError as e:\n    print(f\"Error: {e}\")\n```\n\nThe endpoint fails to work because the request_validator is incorrectly set to None instead of the provided validator instance, causing AttributeError when trying to access validator methods.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__tqm0hr1d",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_json_response",
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_jwt_response",
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_no_auth",
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_token_expired",
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_token_no_openid_scope",
+   "tests/openid/connect/core/endpoints/test_userinfo_endpoint.py::UserInfoEndpointTest::test_userinfo_wrong_auth"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

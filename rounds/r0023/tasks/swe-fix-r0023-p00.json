@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0023-p00",
+ "round_id": "r0023",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nKCD signal type assignment incorrect for signed and float signals\n\n#### Description\n\nWhen dumping signals to KCD format, the type assignment logic is incorrect. Signed integer signals are not getting the \"signed\" type attribute, and 32-bit float signals are incorrectly assigned \"double\" instead of \"single\" type.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a KCD file and dump it back\ndb = cantools.database.load_file('vehicle.kcd')\nkcd_string = db.as_kcd_string()\nprint(kcd_string)\n```\n\nThe output shows that:\n- Signed integer signals have no type attribute instead of `type=\"signed\"`\n- 32-bit float signals get `type=\"double\"` instead of `type=\"single\"`\n- 64-bit float signals get `type=\"single\"` instead of `type=\"double\"`\n\nExpected behavior:\n- Signed integer signals should have `type=\"signed\"`\n- 32-bit float signals should have `type=\"single\"`\n- 64-bit float signals should have `type=\"double\"`\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_ctrl_invert_if__u6y5fy76",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_convert.py::CanToolsConvertFullTest::test_kcd_dump_default_sort_signals",
+   "tests/test_convert.py::CanToolsConvertFullTest::test_kcd_dump_sort_signals_by_name",
+   "tests/test_database.py::CanToolsDatabaseTest::test_as_kcd_string"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

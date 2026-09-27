@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0023-p05",
+ "round_id": "r0023",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPluck field deserialization broken for single values and many=True collections\n\n#### Description\n\nThe Pluck field is not working correctly during deserialization. When deserializing single values (many=False), it's treating them as collections, and when deserializing collections (many=True), it's failing with validation errors.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom marshmallow import Schema, fields\n\nclass ANestedSchema(Schema):\n    pk = fields.Str()\n\nclass MainSchema(Schema):\n    pk = fields.Str()\n    child = fields.Pluck(ANestedSchema, 'pk')\n    children = fields.Pluck(ANestedSchema, 'pk', many=True)\n\nsch = MainSchema()\n\n# This should work but fails\nresult = sch.load({'pk': '123', 'child': '456'})\nprint(result)  # Expected: {'pk': '123', 'child': {'pk': '456'}}\n\n# This should also work but fails  \nresult = sch.load({'pk': '123', 'children': ['456', '789']})\nprint(result)  # Expected: {'pk': '123', 'children': [{'pk': '456'}, {'pk': '789'}]}\n```\n\nThe first case raises a ValidationError about unknown fields, and the second case raises a ValidationError about invalid input type.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "marshmallow-code__marshmallow.9716fc62.func_basic__sjz92wyz",
+  "environment": "jyangballin/swesmith.x86_64.marshmallow-code_1776_marshmallow.9716fc62",
+  "fail_to_pass": [
+   "tests/test_deserialization.py::TestSchemaDeserialization::test_nested_only_basestring",
+   "tests/test_deserialization.py::TestSchemaDeserialization::test_nested_only_basestring_with_list_data",
+   "tests/test_schema.py::TestPluckSchema::test_pluck_with_data_key"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

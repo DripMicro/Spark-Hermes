@@ -1,0 +1,34 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0023-p02",
+ "round_id": "r0023",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nC source generation produces incorrect signal choice names and attribute minimum values\n\n#### Description\n\nWhen generating C source code from DBC files, the signal choice constants are generated with incorrect casing and the attribute minimum values are negated unexpectedly.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a DBC file with signal choices\ndb = cantools.database.load_file('tests/files/dbc/motohawk.dbc')\n\n# Generate C source\nc_source = db.as_c_source()\nprint(c_source)\n```\n\nThe generated C header shows signal choice constants with lowercase signal names instead of uppercase:\n```c\n#define MOTOHAWK_EXAMPLE_MESSAGE_enable_ENABLED_CHOICE (1)\n#define MOTOHAWK_EXAMPLE_MESSAGE_enable_DISABLED_CHOICE (0)\n```\n\nExpected output should have uppercase signal names:\n```c\n#define MOTOHAWK_EXAMPLE_MESSAGE_ENABLE_ENABLED_CHOICE (1u)\n#define MOTOHAWK_EXAMPLE_MESSAGE_ENABLE_DISABLED_CHOICE (0u)\n```\n\nAlso, when loading DBC files with attribute definitions that have minimum values, the minimum gets negated:\n\n```python\ndb = cantools.database.load_file('tests/files/dbc/big_numbers.dbc')\nattr_def = db.dbc.attribute_definitions['TheNodeAttribute']\nprint(f\"Minimum: {attr_def.minimum}\")  # Shows positive value when should be negative\n```\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_module__3340xvuk",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_bit_fields",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_database_name",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_no_signal_encode_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node_no_signal_encode_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_working_directory",
+   "tests/test_database.py::CanToolsDatabaseTest::test_attributes",
+   "tests/test_database.py::CanToolsDatabaseTest::test_big_numbers",
+   "tests/test_database.py::CanToolsDatabaseTest::test_vehicle"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

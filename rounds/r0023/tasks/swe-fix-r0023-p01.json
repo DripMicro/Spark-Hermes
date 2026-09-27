@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0023-p01",
+ "round_id": "r0023",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nGPX length_3d() returns 0 for tracks with valid segments\n\n#### Description\n\nWhen calling `length_3d()` on a GPX object that contains tracks with valid track segments, the method returns 0 instead of the expected 3D length calculation.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\n\n# Load a GPX file with track data\nwith open('test_files/korita-zbevnica.gpx', 'r') as f:\n    gpx = gpxpy.parse(f)\n\n# This should return the 3D length but returns 0\nlength_3d = gpx.length_3d()\nprint(f\"3D Length: {length_3d}\")  # Expected: some positive value, Actual: 0\n\n# For comparison, 2D length works correctly\nlength_2d = gpx.length_2d()\nprint(f\"2D Length: {length_2d}\")  # Returns expected positive value\n```\n\nThe issue affects any GPX file with track data. The `length_3d()` method should calculate and return the total 3D distance of all tracks, but instead returns 0 even when tracks contain valid segments with elevation data.\n\nThis breaks functionality that depends on 3D length calculations, such as comparing 2D vs 3D distances or calculating moving distance statistics.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_basic__gf0dgfuy",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_clone_and_smooth",
+   "test.py::GPXTests::test_moving_stopped_times",
+   "test.py::GPXTests::test_reduce_gpx_file",
+   "test.py::GPXTests::test_track_points_data"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
