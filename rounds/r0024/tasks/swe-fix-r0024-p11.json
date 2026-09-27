@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0024-p11",
+ "round_id": "r0024",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSQL statement splitting broken for CREATE procedures with nested control structures\n\n#### Description\n\nWhen parsing SQL files containing CREATE procedures with nested control structures like CASE statements, BEGIN/END blocks, and loops, the statement splitter incorrectly splits what should be single statements into multiple parts.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlparse\n\n# Example with CREATE procedure containing CASE statement\nsql = \"\"\"\nCREATE PROCEDURE test_proc()\nBEGIN\n    CASE \n        WHEN condition1 THEN\n            SELECT 'option1';\n        WHEN condition2 THEN  \n            SELECT 'option2';\n        ELSE\n            SELECT 'default';\n    END CASE;\nEND\n\"\"\"\n\nstmts = sqlparse.split(sql)\nprint(f\"Number of statements: {len(stmts)}\")\n# Expected: 1 statement\n# Actual: Multiple statements (incorrectly split)\n```\n\nThe issue affects various SQL constructs including:\n- CREATE FUNCTION/PROCEDURE with nested CASE statements\n- BEGIN/END blocks with multiple CASE constructs  \n- MySQL handler procedures with FOR loops\n- PostgreSQL functions with control flow statements\n\nThis breaks parsing of legitimate stored procedure definitions that should be treated as single statements.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "andialbrecht__sqlparse.e57923b3.func_pm_remove_assign__82o7iaqq",
+  "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3",
+  "fail_to_pass": [
+   "tests/test_regressions.py::test_issue193_splitting_function",
+   "tests/test_regressions.py::test_issue194_splitting_function",
+   "tests/test_split.py::test_split_begintag_2",
+   "tests/test_split.py::test_split_casewhen_procedure",
+   "tests/test_split.py::test_split_create_function[function.sql]",
+   "tests/test_split.py::test_split_multiple_case_in_begin",
+   "tests/test_split.py::test_split_mysql_handler_for",
+   "tests/test_split.py::test_split_strip_semicolon_procedure"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0024-p05",
+ "round_id": "r0024",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Bug: NodeNG.repr_tree() produces incorrect output\n\n## Description\n\nI've found an issue with the `repr_tree()` method in the `NodeNG` class. The method is supposed to generate a string representation of an astroid node, but it's producing incorrect output.\n\nWhen using the `repr_tree()` method, the output is malformed with incorrect indentation, missing parentheses, and wrong field ordering. This makes debugging and inspecting AST nodes very difficult.\n\n## Steps to reproduce\n\nHere's a simple example that demonstrates the issue:\n\n```python\nimport astroid\nfrom astroid import parse\n\n# Parse a simple Python code\nmodule = parse('''\ndef hello():\n    print(\"Hello, world!\")\n''')\n\n# Get the function node\nfunction = module.body[0]\n\n# Print the representation\nprint(function.repr_tree())\n```\n\n## Actual output\n\nThe output is malformed with incorrect indentation, wrong field ordering, and inconsistent formatting:\n\n```\nFunctionDef<0x7f8a1c3e4f70>\n  col_offset=0\n  lineno=2,\n  name='hello',\n  args=Arguments(\n    vararg=None,\n    kwarg=None,\n    args=[],\n    defaults=[],\n    kw_defaults=[],\n    kwonlyargs=[],\n    posonlyargs=[],\n  ),\n  body=[\n    Expr<0x7f8a1c3e4fd0>\n      value=Call<0x7f8a1c3e4fd0>\n        func=Name<0x7f8a1c3e4fd0>\n          name='print',\n        args=[\n          Const<0x7f8a1c3e4fd0>\n            value='Hello, world!',\n        ],\n        keywords=[],\n  ],\n  decorator_list=[],\n  returns=None,\n  type_comment=None,\n)\n```\n\n## Expected output\n\nThe output should be properly indented, with correct field ordering and consistent formatting:\n\n```\nFunctionDef(\n    name='hello',\n    args=Arguments(\n        args=[],\n        defaults=[],\n        kwonlyargs=[],\n        kw_defaults=[],\n        kwarg=None,\n        vararg=None,\n        posonlyargs=[]\n    ),\n    body=[\n        Expr(\n            value=Call(\n                func=Name(name='print'),\n                args=[Const(value='Hello, world!')],\n                keywords=[]\n            )\n        )\n    ],\n    decorator_list=[],\n    returns=None,\n    type_comment=None,\n    lineno=2,\n    col_offset=0\n)\n```\n\n## Additional information\n\nThis issue affects the readability and usability of the AST representation, which is crucial for debugging and understanding the structure of Python code when working with astroid.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__gppbdbzw",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_nodes.py::AsStringTest::test_operator_precedence"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0024-p13",
+ "round_id": "r0024",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nMonitor page down navigation broken after recent changes\n\n#### Description\n\nThe monitor's page down functionality is not working correctly. When pressing Page Down to navigate through CAN messages, the display doesn't update properly and shows incorrect content.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a DBC file and start monitoring\ndb = cantools.database.load_file('your_file.dbc')\n# Run: cantools monitor your_file.dbc\n# Send multiple CAN messages (more than can fit on one screen)\n# Press Page Down key multiple times\n# Expected: Should scroll down through messages\n# Actual: Display doesn't refresh or shows wrong content\n```\n\nWhen using the monitor with a DBC file and receiving many CAN messages:\n1. Start the monitor with `cantools monitor file.dbc`\n2. Generate enough CAN traffic to fill multiple pages\n3. Press Page Down (or use arrow keys to navigate)\n4. Notice the display doesn't update correctly\n\nThe pagination seems to get stuck or display the wrong messages after pressing Page Down.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__g800bdex",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_monitor.py::CanToolsMonitorTest::test_display_paginated_data"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

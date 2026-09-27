@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0024-p01",
+ "round_id": "r0024",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nEnum field deserialization broken for by_value mode\n\n#### Description\n\nThe Enum field deserialization is not working correctly when `by_value=True` or when using a field for `by_value`. The logic for handling enum lookups by value vs by name appears to be swapped.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom marshmallow import fields\nfrom enum import Enum\n\nclass GenderEnum(Enum):\n    male = 1\n    female = 2\n    non_binary = 3\n\n# This should work but raises ValidationError\nfield = fields.Enum(GenderEnum, by_value=True)\nresult = field.deserialize(1)  # Should return GenderEnum.male\n\n# This should also work but raises ValidationError  \nfield = fields.Enum(GenderEnum, by_value=fields.Integer())\nresult = field.deserialize(1)  # Should return GenderEnum.male\n\n# This should work but returns ValidationError instead of the enum value\nfield = fields.Enum(GenderEnum)\nresult = field.deserialize('male')  # Should return GenderEnum.male\n```\n\nThe deserialization fails when it should succeed, and in some cases returns a ValidationError object instead of raising it properly.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "marshmallow-code__marshmallow.9716fc62.func_basic__nimnki9z",
+  "environment": "jyangballin/swesmith.x86_64.marshmallow-code_1776_marshmallow.9716fc62",
+  "fail_to_pass": [
+   "tests/test_deserialization.py::TestFieldDeserialization::test_enum_field_by_symbol_deserialization",
+   "tests/test_deserialization.py::TestFieldDeserialization::test_enum_field_by_symbol_invalid_value",
+   "tests/test_deserialization.py::TestFieldDeserialization::test_enum_field_by_value_field_deserialization",
+   "tests/test_deserialization.py::TestFieldDeserialization::test_enum_field_by_value_field_invalid_value",
+   "tests/test_deserialization.py::TestFieldDeserialization::test_enum_field_by_value_true_deserialization",
+   "tests/test_deserialization.py::TestFieldDeserialization::test_enum_field_by_value_true_invalid_value",
+   "tests/test_deserialization.py::TestFieldDeserialization::test_enum_field_by_value_true_wrong_type"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

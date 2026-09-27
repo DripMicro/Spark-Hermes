@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0024-p10",
+ "round_id": "r0024",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# [Bug]: OAuth1 Signature Validation Issues\n\n## Description\n\nI've discovered several issues with the OAuth1 signature validation in the latest version:\n\n1. Duplicate OAuth parameters are not properly detected\n2. The signature validation always returns True, even when signatures are invalid\n3. Non-form-urlencoded request bodies are incorrectly handled\n\n## Steps to Reproduce\n\n```python\nimport oauthlib\nfrom oauthlib.oauth1 import Client\nfrom oauthlib.oauth1.rfc5849.endpoints import SignatureOnlyEndpoint\nfrom oauthlib.oauth1.rfc5849 import RequestValidator\n\n# Example 1: Duplicate parameters not detected\nuri = 'https://example.com/?oauth_version=1.0&oauth_version=2.0'\nvalidator = RequestValidator()\nendpoint = SignatureOnlyEndpoint(validator)\ntry:\n    endpoint.validate_request(uri, http_method='GET')\n    print(\"Error: Duplicate parameters should be rejected\")\nexcept:\n    print(\"Expected error for duplicate parameters\")\n\n# Example 2: Invalid signatures are accepted\nclient = Client('client_key')\nuri = 'https://example.com/resource'\nwrong_uri = 'https://example.com/different_resource'\n_, headers, _ = client.sign(wrong_uri)\nvalid, request = endpoint.validate_request(uri, headers=headers)\nprint(f\"Validation result: {valid}\")  # Should be False but returns True\n\n# Example 3: Non-form-urlencoded bodies\nbody = '{\"key\": \"value\"}'\nheaders = {'Content-Type': 'application/json'}\nrequest = endpoint.validate_request(uri, http_method='POST', body=body, headers=headers)\n# Body is incorrectly processed\n```\n\n## Expected Behavior\n\n1. Duplicate OAuth parameters should raise an InvalidRequestError\n2. Invalid signatures should return False during validation\n3. Non-form-urlencoded bodies should be handled correctly\n\n## Actual Behavior\n\n1. Duplicate OAuth parameters are accepted\n2. Invalid signatures return True during validation\n3. Non-form-urlencoded bodies are processed incorrectly\n\n## Environment\n\n- oauthlib version: 3.2.2\n- Python version: 3.10\n\nThis issue affects security-sensitive applications that rely on proper OAuth1 signature validation.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.combine_module__snl82dez",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth1/rfc5849/endpoints/test_base.py::BaseEndpointTest::test_duplicate_params",
+   "tests/oauth1/rfc5849/endpoints/test_signature_only.py::SignatureOnlyEndpointTest::test_validate_client_key",
+   "tests/oauth1/rfc5849/endpoints/test_signature_only.py::SignatureOnlyEndpointTest::test_validate_signature"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

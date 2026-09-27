@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0024-p04",
+ "round_id": "r0024",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nAutosarMessageSpecifics properties return incorrect values after initialization\n\n#### Description\n\nThe AutosarMessageSpecifics class has incorrect default values and property implementations that cause several AUTOSAR-related properties to return wrong values. This affects message security status, network management flags, and end-to-end protection properties.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load an AUTOSAR database file\ndb = cantools.db.load_file('tests/files/arxml/system-4.2.arxml')\n\n# Get a message that should have specific AUTOSAR properties\nmsg = db.get_message_by_name('Message3')\n\n# Check security properties - should be True but returns False\nprint(f\"Is secured: {msg.autosar.is_secured}\")  # Expected: True, Actual: False\n\n# Check network management flag\nnm_msg = db.get_message_by_name('AlarmStatus') \nprint(f\"Is NM: {nm_msg.autosar.is_nm}\")  # Expected: True, Actual: False\n\n# Check end-to-end properties\nmsg1 = db.get_message_by_name('Message1')\nprint(f\"E2E properties: {msg1.autosar.e2e}\")  # Expected: E2E object, Actual: None\n```\n\nThe properties return inverted or incorrect values due to faulty initialization and property getter logic in the AutosarMessageSpecifics class.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_file__r5t1bqz1",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar3_e2e_profile2",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e_profile5",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_secoc",
+   "tests/test_database.py::CanToolsDatabaseTest::test_system_3_arxml",
+   "tests/test_database.py::CanToolsDatabaseTest::test_system_4_arxml",
+   "tests/test_list.py::CanToolsListTest::test_arxml4"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
