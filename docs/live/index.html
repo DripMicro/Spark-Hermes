@@ -59,7 +59,7 @@
   </section>
 
   <section class="panel rise" id="rounds">
-    <h2>Closed rounds <small>open a round for its scores, weights and king; the full page and artefacts are linked inside</small></h2>
+    <h2>Closed rounds <span id="rounds-count" class="muted"></span> <small>open a round for its scores, weights and king; the full page and artefacts are linked inside</small></h2>
     <div class="wrap"><table>
       <thead><tr><th class="l">round</th><th class="l">king</th><th title="the king's Δ vs baseline on that round's instances">Δ round</th><th title="the king's pooled score at that close">score</th><th title="the king's weight at that close">weight</th><th>episodes</th><th>SFT</th><th>DPO</th><th class="l">commitments</th><th>closed</th></tr></thead>
       <tbody id="history"><tr><td class="empty" colspan="10">none yet</td></tr></tbody>
@@ -84,6 +84,10 @@
 <script>
 (function () {
   let LIVE = null, deepLinked = false, lastHistory = "", lastKing = "", lastFocus = null
+  // Every closed round, from ../rounds/index.json (rewritten only when a round closes). live.json carries just the
+  // last 20, so older rounds fell off the table; when the index cannot be read, the last 20 are still shown.
+  let ALL = null, indexTried = false;  // a deep link waits for the index, or an old round would miss it
+  const closedRounds = () => (Array.isArray(ALL) && ALL.length ? ALL : (LIVE && LIVE.history) || []);
   const opened = new Set();  // surfaces whose per-instance detail is expanded
   const ROUND_ID = /^[a-z]\d{1,4}$/;  // r0004, s1 — what a deep link or a row may name
   const $ = (id) => document.getElementById(id);
@@ -305,8 +309,9 @@
     $("rejected").hidden = !rej.length;
     $("rejected").innerHTML = rej.length ? "Rejected at seal: " + rej.map(([n, why]) => pr(live, n) + " — " + esc(why)).join(" · ") : "";
 
-    const hist = (live.history || []).slice().reverse();
-    const histKey = JSON.stringify([live.history || [], live.github || {}, live.repo]);  // re-render only on change:
+    const hist = closedRounds().slice().reverse();
+    $("rounds-count").textContent = hist.length ? "(" + hist.length + ")" : "";
+    const histKey = JSON.stringify([closedRounds(), live.github || {}, live.repo]);  // re-render only on change:
     if (histKey !== lastHistory) { lastHistory = histKey;                                 // every row carries an <img>
     $("history").innerHTML = hist.length ? hist.map((h) => {
       const ks = h.king && h.scores ? h.scores[h.king] : null, kc = h.king && h.crown ? h.crown[h.king] : null;
@@ -324,7 +329,7 @@
     if (live.repo) $("nav-repo").href = "https://github.com/" + live.repo;
     if (live.hf_repo) $("nav-hf").href = "https://huggingface.co/datasets/" + live.hf_repo;
     if (live.repo && live.branch) $("link-rounds").href = "https://github.com/" + live.repo + "/tree/" + live.branch + "/rounds";
-    if (!deepLinked) {  // last, and on its own: a bad deep link must not take the board down with it
+    if (!deepLinked && indexTried) {  // last, and on its own: a bad deep link must not take the board down with it
       deepLinked = true;
       const m = location.hash.match(/^#round-([a-z]\d{1,4})$/);
       if (m) { try { openRound(m[1]); } catch (e) { console.warn("round modal", e); } }
@@ -365,7 +370,7 @@
   const behind = () => document.querySelectorAll("main, nav, footer");  // what a modal takes out of the tab order
   function openRound(id) {
     if (!ROUND_ID.test(id)) return;
-    const h = ((LIVE && LIVE.history) || []).find((x) => x.round_id === id);
+    const h = closedRounds().find((x) => x.round_id === id);
     if (!h) { location.href = "../rounds/" + id + "/"; return; }  // older than the window: fall back to the static page
     const modal = $("round-modal"), card = modal.querySelector(".modal-card");
     $("rm-body").innerHTML = roundDetail(LIVE, h);
@@ -426,7 +431,18 @@
       $("status").innerHTML = '<span class="pulse bad"></span>unreachable';
     }
   }
-  tick(); setInterval(tick, 15000); setInterval(paint, 1000);
+  async function loadRounds() {
+    const before = JSON.stringify(ALL);
+    try {
+      const r = await fetch("../rounds/index.json?t=" + Date.now(), { cache: "no-store" });
+      const j = r.ok ? await r.json() : null;
+      if (j && Array.isArray(j.rounds)) ALL = j.rounds;
+    } catch (e) { /* the last 20 from live.json stay on the table */ }
+    const first = !indexTried;
+    indexTried = true;
+    if (LIVE && (first || JSON.stringify(ALL) !== before)) render(LIVE);
+  }
+  tick(); loadRounds(); setInterval(tick, 15000); setInterval(loadRounds, 60000); setInterval(paint, 1000);
 })();
 </script>
 </body>
