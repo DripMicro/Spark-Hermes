@@ -1,0 +1,44 @@
+{
+ "schema": "sh-seal-v3",
+ "round_id": "r0026",
+ "sealed_at": 1790529201.9852479,
+ "active": {
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "pr": 316,
+   "head": "63987c98c26e98c99a1fcf8918f5bc8a65bb0324",
+   "bundle_sha256": "05895823a1e259fcb316894e389716b3099be45faf5d6433803c0e9dd6e7acfc",
+   "incumbent": true,
+   "was_incumbent": false,
+   "defense": true,
+   "github": "kaivaryn"
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "pr": 315,
+   "head": "f31b2062dc7374118bbf15878b0587ff6244fdd1",
+   "bundle_sha256": "3c104056c8481a30eb55c4e7cdbcb4830fdcc0bd863c25ae43d5473b0b5dd773",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "harrythomasben"
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": 314,
+   "head": "068250f41272fc70b0f27dd88610b380b1e00e2a",
+   "bundle_sha256": "0641f3566ed7b3a4d907eafd215c0625f9198e7034a0a75dfee61d525d3fccc2",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "dato-bitar"
+  },
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "pr": 317,
+   "head": "6f19f0b4b217c3eb7f89071fb591ed9d792ad6c3",
+   "bundle_sha256": "729e8b85ac8d70cb9ec64ed756ea4f7a767a05683d4b3111993cd660b1d0bf10",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "kaivexa"
+  }
+ },
+ "rejected": {}
+}
