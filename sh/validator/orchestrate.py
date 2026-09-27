@@ -1485,6 +1485,8 @@ def publish_close(
         "sft_rows": exported["manifest"]["sft_rows"],
         "dpo_pairs": exported["manifest"]["dpo_pairs"],
         "hf": exported["upload"].get("url"),
+        # the bundles this close published (out of the competition), so the board can link them
+        "revealed": sorted(p.name for p in (dest / "revealed").iterdir()) if (dest / "revealed").is_dir() else [],
     }
     # hotkey -> GitHub login, published with the round so the page stays recomputable. This round's seal is the
     # authority (attested); the live map, accumulated from earlier seals, covers an incumbent carried without a PR.

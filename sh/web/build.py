@@ -126,6 +126,7 @@ def render(close: dict, meta: dict | None = None) -> str:
         (f"{blob}/reveal.json", "reveal.json"),
         (f"{tree}/evaluated", "evaluated tasks"),
         (f"{tree}/scorecards", "scorecards"),
+        (f"{tree}/revealed", "revealed bundles"),
         (f"{tree}/checks", "checks"),
         (f"{blob}/manifest.json", "manifest.json"),
     ]
