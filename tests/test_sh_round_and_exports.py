@@ -222,3 +222,17 @@ def test_the_round_page_escapes_a_github_login(tmp_path):
     record = close(rd, eps, tmp_path / "out")
     page = render(record, {"github": {"5Fminer": '"><b'}})
     assert '"><b' not in page and "&quot;&gt;&lt;b" in page
+
+
+def test_the_round_page_links_the_revealed_bundles_only_when_the_round_published_some(tmp_path):
+    """A close publishes every bundle now out of the competition under `revealed/`; the page links them so anyone
+    can hash them against the commitments. A round that revealed nothing must not link to a 404."""
+    from sh.web.build import render
+
+    rd = _round(tmp_path)
+    eps = _episodes(tmp_path, [("null", False), ("5Fminer", True)])
+    record = close(rd, eps, tmp_path / "out")
+    meta = {"repo": "o/r", "branch": "main", "round_id": record["round_id"]}
+    with_reveal = render(record, {**meta, "artefacts": ["close.json", "crown.json", "reveal.json", "revealed"]})
+    assert "revealed bundles" in with_reveal and "/revealed" in with_reveal
+    assert "revealed bundles" not in render(record, {**meta, "artefacts": ["close.json", "crown.json", "reveal.json"]})

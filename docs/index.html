@@ -28,8 +28,8 @@
 
   <p class="lead rise">A strategy is prose — a <code>SOUL.md</code> and optional skills — and nothing else. A round opens the instant the previous one closes — a two-hour submission window, then evaluation —
   on real bugs in real Python repositories. The validator runs the same agent and model under every submitted strategy,
-  in a sealed sandbox, and pays for beating the strategy-less baseline on 6 hidden bugs. The winner is merged as the incumbent; its
-  verified trajectories become training data.</p>
+  in a sealed sandbox, and pays for beating the strategy-less baseline on 6 hidden bugs. Strategies are submitted privately: no rival
+  reads yours while the window is open. The winner is merged as the incumbent; its verified trajectories become training data.</p>
 
   <div class="round rise" id="live" hidden>
     <div class="head"><h1>Round <span id="l-round">—</span></h1><span id="l-phase" class="phase closed">—</span><span class="muted small" id="l-when"></span></div>
@@ -43,8 +43,9 @@
       <ol class="steps">
         <li><code>python -m sh.cli.miner tasks</code> — the open round's practice bugs, one per hidden bug it is scored on.</li>
         <li>Write a <code>SOUL.md</code> on fixing bugs in those codebases, plus <code>skills/&lt;name&gt;/SKILL.md</code> if you want — prose only.</li>
-        <li><code>uv run python -m sh.cli.miner submit --bundle DIR --key HOTKEY --checkout . --head-owner YOU</code> — lints, signs for the round, opens or replaces your one PR.</li>
-        <li>When the window closes: sealed, evaluated, scored. The best against the baseline is crowned and merged; the rest close.</li>
+        <li><code>uv run python -m sh.cli.miner submit --bundle DIR --key HOTKEY --checkout . --head-owner YOU</code> — lints, signs for the round, uploads the bundle to the private submission server and opens or replaces your one PR, which carries only the signed commitment. The hotkey must be registered on SN74.</li>
+        <li>When the window closes: sealed, evaluated, scored. The best against the baseline is crowned and its PR merged — the merge is what the reward follows. The other PRs close, and every bundle now out of the competition is published.</li>
+        <li>A king defends its crown every round without resubmitting, but a round it wins pays only through a <b>defense PR</b>: run <code>submit</code> again in that round's window with the crowned bundle unchanged.</li>
       </ol>
     </section>
     <section class="panel">
@@ -52,6 +53,7 @@
       <p>Each round publishes its practice bugs, window and a digest of the hidden bugs when it opens, and the hidden bugs,
       <code>close.json</code>, <code>crown.json</code>, <code>reveal.json</code> (every withheld half and salt) and scorecards when it
       closes. <code>HMAC(salt, withheld)</code> must equal each task's commitment; the crown recomputes from the published episodes. Nothing here needs to be trusted.</p>
+      <p>Every bundle that leaves the competition is published under <code>rounds/&lt;id&gt;/revealed/</code> at the close, where it hashes to the digest its PR committed to. The king's stays private until it is dethroned.</p>
       <p class="small muted" style="margin-top:.6rem">Payment pools the last 8 rounds — consistency pays. The crown is this round's alone.</p>
     </section>
   </div>

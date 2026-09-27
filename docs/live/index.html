@@ -31,6 +31,7 @@
     </div>
     <div class="stages" id="stages"></div>
     <p class="note" id="window-line"></p>
+    <p class="note" id="submit-line" hidden></p>
   </section>
 
   <div class="strip rise">
@@ -41,7 +42,7 @@
   </div>
 
   <section class="panel rise" id="subs-panel" hidden>
-    <h2>Submissions <small>open pull requests, one per hotkey; the latest signed bundle counts at the seal</small></h2>
+    <h2>Submissions <small>open pull requests, one per hotkey, each carrying only a signed commitment; the strategy itself is private until the round is scored, and the latest signed bundle counts at the seal</small></h2>
     <div class="wrap"><table>
       <thead><tr><th class="l">miner</th><th class="l">pull request</th><th>submitted</th><th>last push</th><th title="weight after the last close">weight</th><th title="score after the last close">score</th><th title="Δc after the last close">Δc</th></tr></thead>
       <tbody id="subs"><tr><td class="empty" colspan="7">no submission yet</td></tr></tbody>
@@ -156,7 +157,8 @@
     let tag = "";
     if (s === "null") tag = '<span class="tag">baseline</span>';
     else if (s === "canon") tag = '<span class="tag">canon</span>';
-    else if (info && info.incumbent) tag = '<span class="tag king">incumbent</span>';
+    else if (info && info.incumbent && info.pr) tag = '<span class="tag king" title="the crown defends with this PR, merged if it holds">incumbent · defense ' + pr(live, info.pr) + "</span>";
+    else if (info && info.incumbent) tag = '<span class="tag king" title="defends without a PR: a round it wins pays nothing">incumbent</span>';
     else if (info && info.pr) tag = '<span class="tag">' + pr(live, info.pr) + "</span>";
     else tag = '<span class="tag" title="scored on its episodes from earlier rounds in the window; not sealed this round">window</span>';
     return '<td class="l">' + (s === "null" || s === "canon" ? '<span class="hk">' + s + "</span>" : ident(live, s, crowned)) + tag + "</td>";
@@ -188,14 +190,14 @@
       const st = (cr && cr.standings) || {};
       $("board-title").firstChild.textContent = "Final ";
       const nullShare = fs.null_credit != null ? fs.null_credit : fs.null_p, canonShare = fs.canon_credit != null ? fs.canon_credit : fs.canon_p;
-      $("board-sub").textContent = "baseline passes " + pct(nullShare) + " of checks · canon " + pct(canonShare) + " — the crown is this round's and is what the reward follows; score is Δ over the window, weight its share among strategies above the baseline";
+      $("board-sub").textContent = "baseline passes " + pct(nullShare) + " of checks" + (by["canon"] ? " · canon " + pct(canonShare) : "") + " — the crown is this round's and is what the reward follows; score is Δ over the window, weight its share among strategies above the baseline";
       $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("rank", "this round: by Δ vs baseline on these instances") +
         th("Δ round", "mean of (share of checks passed − the baseline's) per instance, this round only") + th("checks", "mean share of withheld checks passed, this round") +
         th("episodes", "pooled window") + th("Δ window", "mean paired delta over the pooled window") +
         th("Δc", "one-sided 90% lower bound of Δ window — how sure the gain is") +
         th("score", "Δ window after the overfit and copy penalties — above zero means better than the baseline") +
         th("weight", "share among the strategies above the baseline; the shares sum to 1") + "</tr>";
-      const refs = ["null", "canon"].map((s) =>
+      const refs = ["null", "canon"].filter((s) => s === "null" || by[s]).map((s) =>  // canon runs in calibration rounds only
         '<tr class="ref expandable' + (opened.has(s) ? " open" : "") + '" data-surface="' + s + '" tabindex="0">' +
         caretCell(surfaceCell(live, s), s) +
         "<td></td><td></td><td>" + pct(share(by[s])) + "</td><td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
@@ -223,7 +225,7 @@
     $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("episodes") + th("full passes", "episodes where every withheld check held") +
       th("checks passed", "mean share of the withheld checks that held — what is scored") +
       th("vs baseline", "checks passed so far minus the baseline's, in points") + "</tr>";
-    const order = ["null", "canon", ...miners.sort((a, b) => (rate(b) ?? -1) - (rate(a) ?? -1) || a.localeCompare(b))];
+    const order = ["null", ...(by["canon"] ? ["canon"] : []), ...miners.sort((a, b) => (rate(b) ?? -1) - (rate(a) ?? -1) || a.localeCompare(b))];
     $("board").innerHTML = miners.length || evaluating ? order.map((s) => {
       const r = by[s] || { n: 0, verified: 0 }, p = rate(s);
       const d = s === "null" || s === "canon" || p == null || nullRate == null ? null : p - nullRate;
@@ -273,6 +275,11 @@
       ? "Window " + (w.reopened + 1) + ": " + clock(w.opens_at) + " → " + clock(w.closes_at) + ". Reopened — " + w.reason + ", so the round was not sealed; same tasks, a fresh window."
       : "Window " + clock(w.opens_at) + " → " + clock(w.closes_at) + " (" + Math.round(w.seconds / 60) + " min). A window that closes with no submission reopens; submissions after a seal are not counted.");
 
+    const srv = typeof live.submit_server === "string" && live.submit_server.startsWith("https://") ? live.submit_server : "";
+    $("submit-line").hidden = !(srv && live.stage === "window");
+    $("submit-line").innerHTML = srv ? "Submissions are private: <code>python -m sh.cli.miner submit</code> uploads the bundle to <code>" +
+      esc(srv) + "</code> and opens a PR that carries only the signed commitment. A king defends without resubmitting, but a round it " +
+      "wins pays only through a defense PR — the crowned bundle, unchanged, submitted again in this window." : "";
     const p = live.progress || {}, done = p.done || 0, total = p.total || 0;
     $("erow").hidden = live.stage === "window" || live.stage === "waiting";
     $("ebar").style.width = (total ? Math.round(100 * done / total) : live.stage === "done" ? 100 : 0) + "%";
@@ -352,6 +359,7 @@
       "<tbody>" + rows + "</tbody></table></div>" +
       '<p class="note" style="margin-top:1rem">Full detail and artefacts: <a href="../rounds/' + esc(h.round_id) + '/">round page</a> · ' +
       '<a href="' + tree + '">rounds/' + esc(h.round_id) + "/</a>" +
+      (Array.isArray(h.revealed) && h.revealed.length ? ' · <a href="' + tree + '/revealed">revealed bundles (' + h.revealed.length + ")</a>" : "") +
       (typeof h.hf === "string" && h.hf.startsWith("https://") ? ' · <a href="' + esc(h.hf) + '">dataset</a>' : "") + "</p>";
   }
   const behind = () => document.querySelectorAll("main, nav, footer");  // what a modal takes out of the tab order
