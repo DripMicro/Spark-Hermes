@@ -1,0 +1,206 @@
+{
+ "swe-fix-r0026-01": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_brain.py::test_http_status_brain"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_pathlib.py::test_inference_parents"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_pathlib.py::test_inference_parents_subscript_index"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_pathlib.py::test_inference_parents_subscript_slice"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test__new__"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test__new__bound_methods"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_builtin_new"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_factory_methods_object_new_call"
+    ]
+   ],
+   "assets_sha256": "59858a32d240924bc50890c9aae384b877af5fff2919a81008c7797dd1682c3c",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "d4b07ae2dccf780f66555efbc6191a726bea0458b2b54c6d32b1dad4092caa30",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__kwv79tdx",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0026-03": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_mysql.py::TestMySQL::test_mysql"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_sqlite.py::TestSQLite::test_sqlite"
+    ]
+   ],
+   "assets_sha256": "7fec28c6d9b880b8c44f65cf500fc6b5d7831be719f825534acd24bb5c33dcd5",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "05a90ba3adc3cfa0519d2f85681ffcc942544f02f20eb641a7f4a4a34a6c6e05",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.lm_rewrite__nm0glguu",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0026-05": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::test_unpacking_starred_and_dicts_in_assignment"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::test_unpacking_starred_empty_list_in_assignment"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_protocols.py::ProtocolTests::test_assigned_stmts_starred_assnames"
+    ]
+   ],
+   "assets_sha256": "b91ea49e51189188ce761b9ddbc46dcbcebe8fc986257772488689ea2673e9d9",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "af2985199929909e7bbff30972404b9bef16dfb8d2b7055eaf493e52137476e9",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_remove_loop__whazbr32",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0026-09": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/parts/test_image.py::DescribeImagePart::it_knows_its_filename[new]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/parts/test_image.py::DescribeImagePart::it_knows_the_sha1_of_its_image"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_package.py::DescribePackage::it_gathers_package_image_parts_after_unmarshalling"
+    ]
+   ],
+   "assets_sha256": "2e0fe8999928415bc661c82f76773d02117035c5244d5ccc9e7b161702e7ee4d",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "20f111d95d6e4b2a88b120f6c906e2cc5ab285d402fe0532ce5986a4f0a37832",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__js08ff9h",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0026-10": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_optimizer.py::TestOptimizer::test_optimize"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_optimizer.py::TestOptimizer::test_qualify_columns"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_optimizer.py::TestOptimizer::test_semistructured"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_optimizer.py::TestOptimizer::test_unnest_annotation"
+    ]
+   ],
+   "assets_sha256": "6f29f05d6fd60cf11ee906610243042cf7d340c39ec36977f7d1ff6ea2696c01",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "6ca35cd3defad0224026a8f76c8295a1ea3df7b7430f36a2a09e9422120d65b6",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_assign__09fvv91e",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0026-12": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_brain.py::TypingBrain::test_namedtuple_inference"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_brain.py::TypingBrain::test_namedtuple_simple"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_named_tuple.py::NamedTupleTest::test_namedtuple_inference"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_pluggable_inference"
+    ]
+   ],
+   "assets_sha256": "33c65b370da548d770865e70ce0535641b027a4b64a57b759dc29787d6d247d0",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "e41335c39e830dbcf6e27bcec40ecd4cb0127cd632e25edc8405254b0de9ab05",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_remove_loop__d29usvji",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ }
+}
