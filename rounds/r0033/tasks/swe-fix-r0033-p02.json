@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0033-p02",
+ "round_id": "r0033",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### Issue: `safe_infer` does not handle `Uninferable` correctly\n\n#### Description\n\nIt seems that the `safe_infer` function is not correctly handling the `Uninferable` case. When passing `Uninferable` to `safe_infer`, it should return the `Uninferable` object itself, but it currently returns `None`.\n\n#### Steps to Reproduce\n\nHere's a simple script to reproduce the issue:\n\n```python\nfrom astroid import util\n\nuninfer = util.Uninferable\nresult = util.safe_infer(util.Uninferable)\n\nprint(\"Result:\", result)\nprint(\"Expected:\", uninfer)\n```\n\n#### Expected Behavior\n\nThe expected output should be:\n\n```\nResult: <Uninferable>\nExpected: <Uninferable>\n```\n\n#### Actual Behavior\n\nThe actual output is:\n\n```\nResult: None\nExpected: <Uninferable>\n```\n\nThis discrepancy indicates that `safe_infer` is not correctly returning the `Uninferable` object when it should. This behavior is crucial for cases where inference is intentionally ambiguous or undefined.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.lm_rewrite__p9cqd5n6",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_helpers.py::test_uninferable_for_safe_infer"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

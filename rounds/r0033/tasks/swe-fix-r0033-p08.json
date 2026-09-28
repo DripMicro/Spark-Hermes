@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0033-p08",
+ "round_id": "r0033",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nInfinite recursion in OPC package relationship traversal\n\n#### Description\n\nWhen iterating through OPC package relationships, the code enters an infinite recursion loop causing stack overflow errors. This affects operations that traverse document structure like `iter_inner_content()` and package image part gathering.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\n\n# This will cause infinite recursion\ndocument = Document('some_document.docx')\nlist(document.iter_inner_content())\n```\n\nThe issue also manifests when accessing image parts:\n\n```python\nfrom docx.opc.package import Package\n\npackage = Package.open('document_with_images.docx')\nimage_parts = package.image_parts  # Infinite recursion occurs here\n```\n\n#### Expected Behavior\n\nThe relationship traversal should complete without infinite loops and return the expected content/parts.\n\n#### Actual Behavior\n\nThe code enters an infinite recursion loop during relationship traversal, eventually causing a stack overflow.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_pm_ctrl_shuffle__hml0mdy5",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_blkcntnr.py::DescribeBlockItemContainer::it_can_iterate_its_inner_content",
+   "tests/test_package.py::DescribePackage::it_gathers_package_image_parts_after_unmarshalling",
+   "tests/test_section.py::DescribeSection::it_can_iterate_its_inner_content"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

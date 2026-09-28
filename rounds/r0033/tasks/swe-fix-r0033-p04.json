@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0033-p04",
+ "round_id": "r0033",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n#### Description\n\nSection gutter property returns NameError when pgMar element exists\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.oxml import parse_xml\n\n# Create a document with gutter margin\ndoc = Document()\nsection = doc.sections[0]\n\n# This should work but raises NameError\ntry:\n    gutter_value = section.gutter\n    print(f\"Gutter: {gutter_value}\")\nexcept NameError as e:\n    print(f\"Error: {e}\")\n```\n\nThe issue occurs when trying to access the `gutter` property on a section that has page margins defined. The error happens because the code tries to use a variable `pgMar` before it's defined.\n\n#### Expected Behavior\n\nShould return the gutter value as a Length object or None if not present, without raising a NameError.\n\n#### Actual Behavior\n\nRaises `NameError: name 'pgMar' is not defined` when accessing the gutter property.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_pm_ctrl_shuffle__oecj08rl",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_section.py::DescribeSection::it_knows_its_page_margins[w:sectPr/w:pgMar{w:gutter=600}-gutter-381000]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

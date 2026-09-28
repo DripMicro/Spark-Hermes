@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0033-p00",
+ "round_id": "r0033",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nfunctools.partial inference too permissive with invalid arguments\n\n#### Description\n\nThe functools.partial brain module is not properly validating arguments, allowing invalid partial calls to be inferred successfully when they should fail.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\nfrom functools import partial\n\n# These should all fail inference but currently don't\nast_nodes = astroid.extract_node('''\nfrom functools import partial\n\ndef test(a, b, c):\n    return a + b + c\n\npartial() #@\npartial(test, unknown=1) #@\n''')\n\nfor node in ast_nodes:\n    try:\n        inferred = next(node.infer())\n        print(f\"Unexpectedly inferred: {inferred}\")\n    except Exception as e:\n        print(f\"Expected failure: {e}\")\n```\n\nThe first call `partial()` should fail because functools.partial requires at least one argument (the function to wrap). The second call `partial(test, unknown=1)` should fail because `unknown` is not a parameter of the `test` function.\n\nCurrently both calls are being inferred successfully when they should raise inference errors.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_remove_cond__uhfy3vxx",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_brain.py::TestFunctoolsPartial::test_invalid_functools_partial_calls"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

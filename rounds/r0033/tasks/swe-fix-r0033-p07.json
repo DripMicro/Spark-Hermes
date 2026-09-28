@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0033-p07",
+ "round_id": "r0033",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\ntoken_matching method returns wrong token when searching from specific index\n\n#### Description\n\nThe `token_matching` method in `TokenList` is returning incorrect tokens when searching from a specific starting index. It appears to be returning the wrong element from the token list.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlparse\nfrom sqlparse import sql, tokens as T\n\n# Create a simple token list\nt1 = sql.Token(T.Keyword, 'foo')\nt2 = sql.Token(T.Punctuation, ',')\nx = sql.TokenList([t1, t2])\n\n# This should return t1 (the keyword token)\nresult = x.token_matching([lambda t: t.ttype is T.Keyword], 0)\nprint(f\"Expected: {t1}, Got: {result}\")\n\n# This should return t2 (the punctuation token) \nresult = x.token_matching([lambda t: t.ttype is T.Punctuation], 0)\nprint(f\"Expected: {t2}, Got: {result}\")\n\n# This should return None (no keyword at index 1)\nresult = x.token_matching([lambda t: t.ttype is T.Keyword], 1)\nprint(f\"Expected: None, Got: {result}\")\n```\n\nThe method is not returning the expected tokens when searching from different starting positions in the token list.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "andialbrecht__sqlparse.e57923b3.func_basic__domjq3ua",
+  "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3",
+  "fail_to_pass": [
+   "tests/test_tokenize.py::test_tokenlist_token_matching"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

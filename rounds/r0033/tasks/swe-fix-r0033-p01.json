@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0033-p01",
+ "round_id": "r0033",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nMonitor stops updating after pause/play cycle\n\n#### Description\n\nThe monitor functionality appears to stop updating messages after using the pause/play feature. When pausing and then resuming message monitoring, the display only shows a limited number of updates instead of continuing to process all incoming messages.\n\n#### Steps/Code to Reproduce\n\n```python\nimport can\nfrom cantools.subparsers.monitor import Monitor\n\n# Create a monitor instance\nargs = Args('tests/files/dbc/motohawk.dbc')\nmonitor = Monitor(stdscr, args)\n\n# Send multiple messages with timestamps\nfor timestamp in range(4):\n    monitor.on_message_received(can.Message(arbitration_id=496, data=b'\\xc0\\x06\\xe0\\x00\\x00\\x00\\x00\\x00', timestamp=timestamp))\n    monitor.tick(1)\n\n# Pause and resume a few times\nmonitor.tick(1)  # pause\nmonitor.tick(1)  # resume\nmonitor.tick(1)  # pause again\n\n# Send more messages\nfor timestamp in range(5, 7):\n    monitor.on_message_received(can.Message(arbitration_id=496, data=b'\\xc0\\x06\\xe0\\x00\\x00\\x00\\x00\\x00', timestamp=timestamp))\n    monitor.tick(1)\n\nmonitor.run(1)\n```\n\nExpected: All 6 messages should be displayed with timestamps 0.000, 1.000, 2.000, 3.000, 5.000, 6.000\n\nActual: Only the first message is displayed, subsequent messages are not shown in the monitor output\n\nThe issue seems to affect the message update loop which should continue processing messages indefinitely but appears to terminate early.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_module__ixkg6zvx",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_list.py::CanToolsListTest::test_arxml4",
+   "tests/test_list.py::CanToolsListTest::test_kcd",
+   "tests/test_monitor.py::CanToolsMonitorTest::test_display_muxed_data_multiple_single_line",
+   "tests/test_monitor.py::CanToolsMonitorTest::test_display_paginated_data",
+   "tests/test_monitor.py::CanToolsMonitorTest::test_play_pause"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
