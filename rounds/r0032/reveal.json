@@ -1,0 +1,196 @@
+{
+ "swe-fix-r0032-00": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_context_call_for_context_managers"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_inferring_with_contextlib_contextmanager"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_inferring_with_statement"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_nested_contextmanager"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::test_infer_context_manager_with_unknown_args"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::test_issue_1090_infer_yield_type_base_class"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::test_prevent_recursion_error_in_igetattr_and_context_manager_inference"
+    ]
+   ],
+   "assets_sha256": "a83e32ceeae6ae34042d0fd88ffdf5d3fc594901314b7cdd81028261bec99835",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "0f79ebee1f279436d936b23f8a067fbebcb3da342a27cbbceb964d6c5eb333fe",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__hx27usa7",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0032-02": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_grouping.py::test_grouping_identifier_list_with_inline_comments"
+    ]
+   ],
+   "assets_sha256": "c4ae9536db0369667a9097a706a6844374b9329e5e088fd0c8b4ac83e7101b4f",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "2c7d028608aae007ae1fa4a87ad306ee6d09172342853d0355e23ed915456557",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "andialbrecht__sqlparse.e57923b3.lm_rewrite__0qd7z9ez",
+   "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3"
+  }
+ },
+ "swe-fix-r0032-03": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dml/test_color.py::DescribeColorFormat::it_can_change_its_theme_color[theme_color_set_fixture2]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dml/test_color.py::DescribeColorFormat::it_can_change_its_theme_color[theme_color_set_fixture3]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dml/test_color.py::DescribeColorFormat::it_can_change_its_theme_color[theme_color_set_fixture4]"
+    ]
+   ],
+   "assets_sha256": "f1726c818f7745ef35b1a7b868f4edb30edd37092244bfdeefefa19568e5ae5f",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "65d22136ddbd7bda5bb7cb8eed788b9de5f1763f70a157c206571bfb9c9522a4",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__70gu88dv",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0032-04": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_hive.py::TestHive::test_time"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_teradata.py::TestTeradata::test_time"
+    ]
+   ],
+   "assets_sha256": "7e9a15c0ea21b9a85eb29d12918f70948f112532b4d99206dec9d3f2aeb43186",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "f5908a685391238c53af59d5ae9f7c81cf300d262eefe54f76f41819f5c03069",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.combine_module__o0tnv74o",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0032-08": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_format.py::TestFormatReindentAligned::test_case_statement"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_format.py::TestFormatReindentAligned::test_case_statement_with_between"
+    ]
+   ],
+   "assets_sha256": "e9ff037213bde3417280763dd3a9727db548b3317a8213446663e66381b4321d",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "7cf6777bf8cbeadc8ac8ef9631f1b5cd7223ebec8a9448164704db10e4787ca7",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "andialbrecht__sqlparse.e57923b3.func_pm_ctrl_shuffle__r8lfv07j",
+   "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3"
+  }
+ },
+ "swe-fix-r0032-10": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_table.py::Describe_Cell::it_knows_what_text_it_contains[w:tc/(w:p/w:r/w:t\"foo\",w:p/w:r/w:t\"bar\")-foo\\nbar]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_table.py::Describe_Cell::it_knows_what_text_it_contains[w:tc/(w:tcPr,w:p/w:r/w:t\"foobar\")-foobar]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_table.py::Describe_Cell::it_knows_what_text_it_contains[w:tc/w:p/w:r/(w:t\"fo\",w:tab,w:t\"ob\",w:br,w:t\"ar\",w:br)-fo\\tob\\nar\\n]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_table.py::Describe_Cell::it_knows_what_text_it_contains[w:tc/w:p/w:r/w:t\"foobar\"-foobar]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_paragraph.py::DescribeParagraph::it_can_replace_the_text_it_contains"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_paragraph.py::DescribeParagraph::it_inserts_a_paragraph_before_to_help[_insert_before_fixture0]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_paragraph.py::DescribeParagraph::it_knows_the_text_it_contains[w:p/w:r/w:t\"foo\"-foo]"
+    ]
+   ],
+   "assets_sha256": "4e34d5c0bbd2eae41e2388d9303e1fe011f5dfac3969562515b56cb9d2fb1ee0",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "c317394dea7cca7d5ca82071ffddf814ce8aa25e04554cb1d3f1af0f8b4a830f",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.combine_file__m25dyofy",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ }
+}
