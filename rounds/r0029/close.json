@@ -1,0 +1,175 @@
+{
+ "schema": "sh-round-close-v3",
+ "scoring": "sh-scoring-v3 (credit)",
+ "round_id": "r0029",
+ "era": "e0",
+ "tasks": [
+  "swe-fix-r0029-05",
+  "swe-fix-r0029-07",
+  "swe-fix-r0029-08",
+  "swe-fix-r0029-09",
+  "swe-fix-r0029-11",
+  "swe-fix-r0029-14"
+ ],
+ "episodes": 282,
+ "family_stats": {
+  "swe_fix": {
+   "schema": "sh-family-stats-v2",
+   "family": "swe_fix",
+   "era": "e0",
+   "window": [
+    "r0022",
+    "r0023",
+    "r0024",
+    "r0025",
+    "r0026",
+    "r0027",
+    "r0028",
+    "r0029"
+   ],
+   "null": {
+    "n": 48,
+    "successes": 7,
+    "p": 0.14583333333333334,
+    "mean_credit": 0.2159,
+    "wilson": [
+     0.0725,
+     0.2717
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 26.0,
+      "p25": 25.0,
+      "n": 7
+     },
+     "tool_calls": {
+      "median": 27.0,
+      "p25": 26.0,
+      "n": 7
+     }
+    }
+   },
+   "canon": {
+    "n": 6,
+    "successes": 0,
+    "p": 0.0,
+    "mean_credit": 0.0,
+    "wilson": [
+     0.0,
+     0.3903
+    ],
+    "efficiency": {},
+    "delta_c": -0.2159,
+    "delta_e": {},
+    "delta_e_paired_instances": 0
+   },
+   "label": "frontier",
+   "partial_rate": 0.0,
+   "in_rotation": true,
+   "retirement": null
+  }
+ },
+ "scores": {
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "hotkey": "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh",
+   "n": 48,
+   "score": -0.042014,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": 0.0882914221906852,
+    "tool_calls": 0.10645206526150608
+   },
+   "gate": true,
+   "se": 0.062296,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "at or below the baseline: \u0394 -0.042 \u00b1 0.062",
+   "paired": 48,
+   "mean_d": -0.042014
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "hotkey": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
+   "n": 48,
+   "score": 0.154167,
+   "delta_c": 0.07490610864554628,
+   "delta_e": {
+    "api_calls": 0.029416647435349108,
+    "tool_calls": 0.03636371223562157
+   },
+   "gate": true,
+   "se": 0.061922,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.154167
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "hotkey": "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
+   "n": 48,
+   "score": 0.153588,
+   "delta_c": 0.08468234864599618,
+   "delta_e": {
+    "api_calls": 0.05805774152111948,
+    "tool_calls": 0.09273050644282993
+   },
+   "gate": true,
+   "se": 0.053832,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.153588
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "hotkey": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
+   "n": 48,
+   "score": 0.086227,
+   "delta_c": 0.008264951368038606,
+   "delta_e": {
+    "api_calls": 0.09587860847954505,
+    "tool_calls": 0.10585385776856532
+   },
+   "gate": true,
+   "se": 0.060908,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.086227
+  },
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+   "hotkey": "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc",
+   "n": 36,
+   "score": 0.068981,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.03159519906044356,
+    "tool_calls": -0.05647505044719503
+   },
+   "gate": true,
+   "se": 0.082944,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 36,
+   "mean_d": 0.068981
+  }
+ },
+ "weights": {
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": 0.0,
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.33300069335994453,
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.3317500534599957,
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.1862503050999756,
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": 0.14899894808008415
+ },
+ "commitments_verified": {
+  "swe-fix-r0029-05": true,
+  "swe-fix-r0029-07": true,
+  "swe-fix-r0029-08": true,
+  "swe-fix-r0029-09": true,
+  "swe-fix-r0029-11": true,
+  "swe-fix-r0029-14": true
+ },
+ "commitments_ok": true
+}
