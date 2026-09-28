@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0028-p03",
+ "round_id": "r0028",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nEnd-to-end payload_length returns incorrect value for AUTOSAR messages\n\n#### Description\n\nWhen accessing the `payload_length` property of AUTOSAR end-to-end properties, the returned value is off by 1. This affects CRC calculations and message validation for AUTOSAR Profile2 and Profile5 messages.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load AUTOSAR database\ndb = cantools.db.load_file('tests/files/arxml/system-4.2.arxml')\nmsg = db.get_message_by_name('Message1')\n\n# Check payload length - should be 9 but returns 8\nprint(f\"Expected payload length: 9\")\nprint(f\"Actual payload length: {msg.autosar.e2e.payload_length}\")\n\n# This also affects Profile5 messages\nmsg3 = db.get_message_by_name('Message3')\nprint(f\"Message3 expected payload length: 4\")\nprint(f\"Message3 actual payload length: {msg3.autosar.e2e.payload_length}\")\n```\n\nExpected output:\n```\nExpected payload length: 9\nActual payload length: 9\nMessage3 expected payload length: 4\nMessage3 actual payload length: 4\n```\n\nActual output:\n```\nExpected payload length: 9\nActual payload length: 8\nMessage3 expected payload length: 4\nMessage3 actual payload length: 3\n```\n\nThis incorrect payload length affects CRC computation functions like `compute_profile2_crc` and `compute_profile5_crc` which rely on the payload length for proper calculation.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__diukhup2",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar3_e2e_profile2",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e_profile5",
+   "tests/test_list.py::CanToolsListTest::test_arxml4"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

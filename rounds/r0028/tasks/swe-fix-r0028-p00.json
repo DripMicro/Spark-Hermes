@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0028-p00",
+ "round_id": "r0028",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTester expect method fails with UnboundLocalError when timeout is None\n\n#### Description\n\nThe `expect` method in the tester module raises an `UnboundLocalError` when called without a timeout parameter (or with `timeout=None`). The error occurs because the `remaining_time` variable is referenced before being assigned in the timeout handling logic.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\nimport can\n\n# Setup a basic tester\ndb = cantools.database.load_string(\"\"\"\nVERSION \"\"\n\nNS_ : \n\tNS_DESC_\n\tCM_\n\tBA_DEF_\n\tBA_\n\tVAL_\n\tCAT_DEF_\n\tCAT_\n\tFILTER\n\tBA_DEF_DEF_\n\tEV_DATA_\n\tENVVAR_DATA_\n\tSGTYPE_\n\tSGTYPE_VAL_\n\tBA_DEF_SGTYPE_\n\tBA_SGTYPE_\n\tSIG_VALTYPE_\n\tSIGTYPE_VALTYPE_\n\tBO_TX_BU_\n\tBA_DEF_REL_\n\tBA_REL_\n\tBA_DEF_DEF_REL_\n\tBU_SG_REL_\n\tBU_EV_REL_\n\tBU_BO_REL_\n\tSG_MUL_VAL_\n\nBS_:\n\nBU_:\n\nBO_ 257 Message1: 2 Vector__XXX\n SG_ Signal1 : 0|8@1+ (1,0) [0|0] \"\" Vector__XXX\n SG_ Signal2 : 8|8@1+ (1,0) [0|0] \"\" Vector__XXX\n\"\"\")\n\ntester = cantools.tester.Tester('Node1', db, can.Bus('test', interface='virtual'))\ntester.start()\n\n# This will raise UnboundLocalError\nmessage = tester.expect('Message1')\n```\n\nThe error occurs in the `_expect_input_queue` method where `remaining_time` is used in a conditional check but may not be initialized when `timeout` is `None`.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_remove_assign__baneanbf",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_tester.py::CanToolsTesterTest::test_expect"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

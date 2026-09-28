@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0028-p04",
+ "round_id": "r0028",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nFunction `__doc__` attribute returns wrong value\n\n#### Description\n\nWhen accessing the `__doc__` attribute of a function, it returns the parent node instead of the actual docstring value.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ncode = '''\ndef func():\n    \"\"\"This is a docstring\"\"\"\n    pass\n'''\n\nmodule = astroid.parse(code)\nfunc = module.body[0]\ndoc_attr = func.getattr('__doc__')[0]\nprint(f\"Expected: 'This is a docstring'\")\nprint(f\"Actual: {doc_attr.value}\")\n```\n\nThe expected output should be the docstring value `\"This is a docstring\"`, but instead it returns something else (likely a parent node reference).\n\nThis affects any code that tries to access function docstrings through astroid's attribute inference system.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__my7zm7uk",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_object_model.py::FunctionModelTest::test_function_model",
+   "tests/test_scoped_nodes.py::FunctionNodeTest::test_special_attributes"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

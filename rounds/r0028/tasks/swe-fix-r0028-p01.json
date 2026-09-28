@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0028-p01",
+ "round_id": "r0028",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nnumpy.core.umath module not properly recognized after recent changes\n\n#### Description\n\nAfter some recent changes, astroid is no longer properly recognizing attributes from the `numpy.core.umath` module. When trying to access functions and constants from this module, they are not being inferred correctly.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# Try to infer numpy.core.umath functions\nmodule = astroid.MANAGER.ast_from_module_name('numpy.core.umath')\nprint(module)  # Should show the transformed module with ufunc functions\n\n# Try accessing specific functions\ntry:\n    func = module['sin']\n    print(f\"Found sin function: {func}\")\nexcept KeyError:\n    print(\"sin function not found in numpy.core.umath\")\n\n# Try accessing constants\ntry:\n    const = module['e']\n    print(f\"Found constant e: {const}\")\nexcept KeyError:\n    print(\"constant e not found in numpy.core.umath\")\n```\n\nThe above code should successfully find the `sin` function and `e` constant in the `numpy.core.umath` module, but currently fails to do so.\n\n#### Expected behavior\n\nThe `numpy.core.umath` module should be properly transformed and contain all the expected ufunc functions (like `sin`, `cos`, `add`, etc.) and mathematical constants (like `e`, `euler_gamma`) with their correct signatures and return types.\n\n#### Actual behavior\n\nThe module transformation is not being applied to `numpy.core.umath`, so the functions and constants are not available for inference.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__y27pyuhr",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/numpy/test_core_umath.py::NumpyBrainCoreUmathTest::test_numpy_core_umath_constants",
+   "tests/brain/numpy/test_core_umath.py::NumpyBrainCoreUmathTest::test_numpy_core_umath_constants_values",
+   "tests/brain/numpy/test_core_umath.py::NumpyBrainCoreUmathTest::test_numpy_core_umath_functions",
+   "tests/brain/numpy/test_core_umath.py::NumpyBrainCoreUmathTest::test_numpy_core_umath_functions_kwargs_default_values",
+   "tests/brain/numpy/test_core_umath.py::NumpyBrainCoreUmathTest::test_numpy_core_umath_functions_one_arg",
+   "tests/brain/numpy/test_core_umath.py::NumpyBrainCoreUmathTest::test_numpy_core_umath_functions_return_type",
+   "tests/brain/numpy/test_core_umath.py::NumpyBrainCoreUmathTest::test_numpy_core_umath_functions_two_args",
+   "tests/test_regrtest.py::NonRegressionTests::test_numpy_crash"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

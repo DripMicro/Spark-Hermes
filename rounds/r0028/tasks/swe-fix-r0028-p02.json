@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0028-p02",
+ "round_id": "r0028",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nARXML ECU extract loader fails with AttributeError when loading database\n\n#### Description\n\nWhen loading an ARXML file using the ECU extract loader, the database loading fails with an AttributeError indicating that a NoneType object has no attribute 'find'. This appears to be related to the initialization of the loader where critical attributes are being set to None instead of their expected values.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\ndb = cantools.database.Database()\ndb.add_arxml_file('tests/files/arxml/ecu-extract-4.2.arxml')\n```\n\nThis should successfully load the ARXML file and populate the database with messages and signals, but instead raises:\n\n```\nAttributeError: 'NoneType' object has no attribute 'find'\n```\n\nThe expected behavior is that the database should contain 3 messages with their respective signals as defined in the ARXML file.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_file__ofzdnawo",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_ecu_extract_arxml"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

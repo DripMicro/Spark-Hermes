@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0028-p06",
+ "round_id": "r0028",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSettings.odd_and_even_pages_header_footer returns inverted boolean value\n\n#### Description\n\nThe `odd_and_even_pages_header_footer` property in the Settings class returns the opposite boolean value of what it should return.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.settings import Settings\n\n# Create a document and access its settings\ndoc = Document()\nsettings = doc.settings\n\n# Check the odd_and_even_pages_header_footer property\nprint(\"Current value:\", settings.odd_and_even_pages_header_footer)\n\n# Set it to True\nsettings.odd_and_even_pages_header_footer = True\nprint(\"After setting to True:\", settings.odd_and_even_pages_header_footer)\n\n# Set it to False  \nsettings.odd_and_even_pages_header_footer = False\nprint(\"After setting to False:\", settings.odd_and_even_pages_header_footer)\n```\n\nExpected output:\n```\nCurrent value: False\nAfter setting to True: True\nAfter setting to False: False\n```\n\nActual output:\n```\nCurrent value: True\nAfter setting to True: False\nAfter setting to False: True\n```\n\nThe property consistently returns the inverted value of what was set or what the underlying XML value represents.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__rwjf0jkd",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_settings.py::DescribeSettings::it_knows_when_the_document_has_distinct_odd_and_even_headers[odd_and_even_get_fixture0]",
+   "tests/test_settings.py::DescribeSettings::it_knows_when_the_document_has_distinct_odd_and_even_headers[odd_and_even_get_fixture1]",
+   "tests/test_settings.py::DescribeSettings::it_knows_when_the_document_has_distinct_odd_and_even_headers[odd_and_even_get_fixture2]",
+   "tests/test_settings.py::DescribeSettings::it_knows_when_the_document_has_distinct_odd_and_even_headers[odd_and_even_get_fixture3]",
+   "tests/test_settings.py::DescribeSettings::it_knows_when_the_document_has_distinct_odd_and_even_headers[odd_and_even_get_fixture4]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
