@@ -1,0 +1,33 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0030-p10",
+ "round_id": "r0030",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nC source generation produces incorrect signal range comments\n\n#### Description\n\nWhen generating C source code from DBC files, the signal range comments in the header file are displaying incorrect values. The minimum and maximum values appear to be swapped, and the formatting is inconsistent.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a DBC file and generate C source\ndb = cantools.database.load_file('tests/files/dbc/motohawk.dbc')\nheader, source = cantools.database.can.c_source.generate_c_source(db)\n\n# Check the generated header content\nprint(header)\n```\n\nLooking at the generated header file, you'll see signal range comments like:\n\n```c\n/**\n * Range:  \n * Scale: 1\n * Offset: 0\n */\nuint8_t enable;\n\n/**\n * Range: 50.0..0.0 (5..0 m)\n * Scale: 0.1\n * Offset: 0\n */\nuint8_t average_radius;\n\n/**\n * Range: 2047.0..-2048.0 (270.47..229.52 degK)\n * Scale: 0.01\n * Offset: 250\n */\nint16_t temperature;\n```\n\nThe expected output should show proper min..max ordering and consistent formatting:\n\n```c\n/**\n * Range: -\n * Scale: 1\n * Offset: 0\n */\nuint8_t enable;\n\n/**\n * Range: 0..50 (0..5 m)\n * Scale: 0.1\n * Offset: 0\n */\nuint8_t average_radius;\n\n/**\n * Range: -2048..2047 (229.52..270.47 degK)\n * Scale: 0.01\n * Offset: 250\n */\nint16_t temperature;\n```\n\nThe ranges are showing maximum values first instead of minimum values, and some signals show empty ranges when they should show a dash.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__czjudtol",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_bit_fields",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_database_name",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_generate_fuzzer",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_no_signal_encode_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node_no_signal_encode_decode",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sym",
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_working_directory"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

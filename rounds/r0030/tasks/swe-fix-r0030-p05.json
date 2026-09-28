@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0030-p05",
+ "round_id": "r0030",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTokenizer incorrectly advances position when scanning keywords\n\n#### Description\n\nThe tokenizer is advancing by an incorrect amount when processing keywords, causing it to skip characters and produce malformed token sequences.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom sqlglot import Tokenizer\nfrom sqlglot.dialects import BigQuery\n\n# Test with jinja-style templates\ntokenizer = BigQuery.Tokenizer()\ntokens = tokenizer.tokenize(\"{{ x }}\")\nprint([(token.token_type, token.text) for token in tokens])\n# Expected: proper token sequence with correct braces\n# Actual: malformed tokens due to position advancement issue\n\n# Test with space-separated keywords  \ntokens = Tokenizer().tokenize(\"group by\")\nprint([(token.token_type, token.text) for token in tokens])\n# Expected: 2 tokens\n# Actual: incorrect number of tokens due to position skipping\n```\n\nThe tokenizer appears to be skipping characters when processing certain keyword patterns, leading to incorrect tokenization of SQL statements containing jinja templates and space-separated keywords.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_change__ppopmi0t",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_tokens.py::TestTokens::test_jinja",
+   "tests/test_tokens.py::TestTokens::test_space_keywords"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

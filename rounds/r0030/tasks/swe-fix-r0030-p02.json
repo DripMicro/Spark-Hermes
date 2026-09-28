@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0030-p02",
+ "round_id": "r0030",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTable cell extent calculation returns wrong row for bottom boundary\n\n#### Description\n\nWhen working with table cells in Word documents, the `bottom` extent calculation is returning incorrect values. The cell's bottom boundary is being calculated as the previous row instead of the next row.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.oxml.table import CT_Tbl\n\n# Create a simple table structure\ndoc = Document()\ntable = doc.add_table(rows=3, cols=2)\n\n# Access the underlying XML structure\ntbl = table._tbl\ntc = tbl.tr_lst[0].tc_lst[0]  # First cell in first row\n\n# The bottom extent should point to the next row (row 1)\n# but it's returning the previous row instead\nprint(f\"Expected bottom extent: 1, Actual: {tc.bottom}\")\n```\n\nThe issue affects table cell boundary calculations where cells need to determine their position relative to other rows in the table. This impacts operations that rely on proper cell extent calculations for table manipulation and validation.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__kkqsc5uq",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_knows_its_extents_to_help[2-0-1-bottom-2]",
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_knows_its_extents_to_help[4-1-1-bottom-3]",
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_raises_on_invalid_span[2-0-2-0-1]",
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_raises_on_invalid_span[6-0-1-1-2]",
+   "tests/oxml/test_table.py::DescribeCT_Tc::it_raises_on_invalid_span[6-1-0-0-1]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

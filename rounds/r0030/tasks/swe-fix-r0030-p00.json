@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0030-p00",
+ "round_id": "r0030",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCT_Relationship.target_ref returns wrong attribute value\n\n#### Description\n\nThe `target_ref` property of `CT_Relationship` is returning the value from the wrong XML attribute. It should return the value of the \"Target\" attribute but is currently returning the \"Source\" attribute instead.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx.opc.oxml import CT_Relationship\n\n# Create a relationship element with Target attribute\nrel_xml = '''<Relationship xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\" \n             Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" \n             Target=\"word/document.xml\"/>'''\n\nrel = CT_Relationship.parse_xml(rel_xml)\nprint(f\"Expected: word/document.xml\")\nprint(f\"Actual: {rel.target_ref}\")\n```\n\nThis will print `None` instead of the expected `word/document.xml` because it's looking for a \"Source\" attribute that doesn't exist.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__6v08u73p",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/opc/test_oxml.py::DescribeCT_Relationship::it_provides_read_access_to_xml_values",
+   "tests/test_blkcntnr.py::DescribeBlockItemContainer::it_can_iterate_its_inner_content",
+   "tests/test_package.py::DescribePackage::it_gathers_package_image_parts_after_unmarshalling",
+   "tests/test_section.py::DescribeSection::it_can_iterate_its_inner_content"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

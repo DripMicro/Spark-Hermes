@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0030-p03",
+ "round_id": "r0030",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nVersion property returns None instead of expected string value\n\n#### Description\n\nWhen accessing the `version` property on core properties, it returns `None` instead of the expected version string value.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\n\n# Create or open a document with version property set\ndoc = Document()\ncore_props = doc.core_properties\n\n# This should return the version string but returns None\nversion = core_props.version\nprint(f\"Version: {version}\")  # Expected: \"1.2.88\", Actual: None\n```\n\nThe issue appears when trying to read version information from document core properties. The version property should return the string value but instead returns `None`.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__gdy0wbki",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/opc/test_coreprops.py::DescribeCoreProperties::it_knows_the_string_property_values[version-1.2.88]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
