@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0032-p03",
+ "round_id": "r0032",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Issues with XML template for inline pictures and style hidden property\n\n## Description\n\nI've encountered two separate issues in the codebase:\n\n### 1. Inline picture XML template issue\n\nWhen creating a new inline picture, the XML template seems to have been modified in a way that breaks functionality. The changes include:\n\n- Swapped order of cx/cy attributes in wp:extent element\n- Changed docPr id from 666 to 667\n- Changed noChangeAspect from \"1\" to \"0\"\n- Changed graphicData uri from \"URI not set\" to \"Invalid URI\"\n\nThese changes cause issues when trying to create a new picture inline.\n\n### 2. Style semiHidden property logic error\n\nThere appears to be a logic issue in the `semiHidden_val` property getter in the `CT_Style` class. The current implementation:\n\n```python\ndef semiHidden_val(self):\n    \"\"\"Value of ``<w:semiHidden>`` child or |False| if not present.\"\"\"\n    semiHidden = self.semiHidden\n    if semiHidden is not None and isinstance(semiHidden, SomeOtherType):\n        return False\n    return True if semiHidden is None else semiHidden.value\n```\n\nThis logic is incorrect and causes issues with determining whether a style is hidden or not.\n\n## Reproduction\n\nFor the inline picture issue, you can reproduce by trying to create a new picture inline:\n\n```python\nfrom docx import Document\ndocument = Document()\nparagraph = document.add_paragraph()\nrun = paragraph.add_run()\nrun.add_picture('some_image.png')\n```\n\nFor the style hidden property issue:\n\n```python\nfrom docx import Document\ndocument = Document()\nstyle = document.styles['Normal']\nprint(style.hidden)  # This will return incorrect value\n```\n\nI found this surprising as it worked in previous versions. The changes to the XML template and the logic for the semiHidden property are causing these issues.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.combine_module__o79i8dpn",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/parts/test_story.py::DescribeStoryPart::it_can_create_a_new_pic_inline",
+   "tests/styles/test_style.py::DescribeBaseStyle::it_knows_whether_its_hidden[hidden_get_fixture0]",
+   "tests/styles/test_style.py::DescribeBaseStyle::it_knows_whether_its_hidden[hidden_get_fixture1]",
+   "tests/styles/test_style.py::DescribeBaseStyle::it_knows_whether_its_hidden[hidden_get_fixture2]",
+   "tests/styles/test_style.py::DescribeBaseStyle::it_knows_whether_its_hidden[hidden_get_fixture3]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

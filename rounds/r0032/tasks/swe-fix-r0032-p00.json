@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0032-p00",
+ "round_id": "r0032",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nName constraint matching broken for variable comparisons\n\n#### Description\n\nVariable name constraints are not being properly matched in conditional statements, causing incorrect inference results when checking if variables are None or not None.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ncode = '''\ndef f():\n    x = None\n    if x is not None:\n        x  # This should be Uninferable since x is None\n'''\n\nmodule = astroid.parse(code)\nnode = list(module.nodes_of_class(astroid.Name))[-1]  # Get the 'x' in the if body\ninferred = node.inferred()\nprint(f\"Inferred: {inferred}\")\nprint(f\"Expected: [Uninferable]\")\n```\n\nThe issue occurs when trying to infer the value of a variable inside conditional blocks that check if the variable is None or not None. The constraint matching logic is not properly identifying when variable names match between the condition and the variable being inferred.\n\nThis affects code analysis where variables are checked against None values in if statements, leading to incorrect type inference results.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_remove_cond__sc9f8bx3",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_constraint.py::test_if_uninferable"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

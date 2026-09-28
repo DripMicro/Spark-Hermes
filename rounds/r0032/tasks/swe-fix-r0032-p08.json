@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0032-p08",
+ "round_id": "r0032",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Pretty-print tree output format changed and breaks expected output\n\nI was working with the `_pprint_tree` method in `TokenList` class and noticed that the output format has completely changed. This breaks compatibility with existing code that relies on the tree structure format.\n\n## Description\n\nThe `_pprint_tree` method in `TokenList` class now produces a completely different output format than before. The previous format used a tree-like structure with `|-` and `` `- `` prefixes to indicate hierarchy and included index numbers for each token.\n\nFor example, with a simple SQL statement like:\n```sql\nselect a0, b0, c0, d0, e0 from (select * from dual) q0 where 1=1 and 2=2\n```\n\nThe previous output would look like:\n```\n|- 0 DML 'select'\n|- 1 Whitespace ' '\n|- 2 IdentifierList 'a0, b0...'\n|  |- 0 Identifier 'a0'\n...\n```\n\nBut now it produces something like:\n```\nStatement 'select a0...'\n  DML 'select'\n  Whitespace ' '\n  IdentifierList 'a0, b0...'\n...\n```\n\nThe new format:\n1. Uses indentation instead of tree connectors (`|-`, `` `- ``)\n2. Doesn't include token indices\n3. Has a completely different structure for representing the hierarchy\n\nThis change breaks any code that parses or relies on the specific format of the tree output.\n\n## How to reproduce\n\n```python\nimport sqlparse\nfrom io import StringIO\n\nsql = 'select a0, b0, c0, d0, e0 from (select * from dual) q0 where 1=1 and 2=2'\nparsed = sqlparse.parse(sql)[0]\noutput = StringIO()\nparsed._pprint_tree(f=output)\nprint(output.getvalue())\n```\n\nExpected: Tree-like structure with `|-` and `` `- `` prefixes and token indices\nActual: Completely different format with indentation and no indices\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "andialbrecht__sqlparse.e57923b3.lm_rewrite__6nm9x6su",
+  "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3",
+  "fail_to_pass": [
+   "tests/test_parse.py::test_pprint"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0032-p02",
+ "round_id": "r0032",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nAlignedIndentFilter returns wrong tuple order causing AttributeError\n\n#### Description\n\nThe AlignedIndentFilter's `_next_token` method returns tuple elements in wrong order, causing AttributeError when trying to access token attributes.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlparse\n\nsql = \"\"\"\nselect a, b as bb,c from table\njoin (select a * 2 as a from new_table) other\non table.a = other.a\nwhere c is true\nand b between 3 and 4\nor d is 'blue'\nlimit 10\n\"\"\"\n\nformatted = sqlparse.format(sql, reindent_aligned=True)\nprint(formatted)\n```\n\nThis raises:\n```\nAttributeError: 'int' object has no attribute 'normalized'\n```\n\nThe same error occurs with any SQL containing BETWEEN clauses when using the aligned indentation formatter.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "andialbrecht__sqlparse.e57923b3.func_basic__vrutx4jb",
+  "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3",
+  "fail_to_pass": [
+   "tests/test_format.py::TestFormatReindentAligned::test_basic",
+   "tests/test_format.py::TestFormatReindentAligned::test_case_statement",
+   "tests/test_format.py::TestFormatReindentAligned::test_case_statement_with_between",
+   "tests/test_format.py::TestFormatReindentAligned::test_group_by",
+   "tests/test_format.py::TestFormatReindentAligned::test_group_by_subquery",
+   "tests/test_format.py::TestFormatReindentAligned::test_joins",
+   "tests/test_format.py::TestFormatReindentAligned::test_window_functions"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

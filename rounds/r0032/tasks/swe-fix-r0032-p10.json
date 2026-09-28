@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0032-p10",
+ "round_id": "r0032",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCaseInsensitiveDict stores values incorrectly\n\n#### Description\n\nWhen setting values in CaseInsensitiveDict, the values are being modified unexpectedly. The dictionary appears to be adding 1 to numeric values and converting keys to uppercase instead of lowercase.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx.opc.shared import CaseInsensitiveDict\n\n# Create a case insensitive dictionary\nd = CaseInsensitiveDict()\n\n# Set some values\nd['test'] = 'value'\nd['number'] = 42\n\n# Check what was actually stored\nprint(\"Expected: 'value', Got:\", d['test'])\nprint(\"Expected: 42, Got:\", d['number'])\n\n# Check the internal storage\nprint(\"Internal dict:\", dict(d))\n```\n\nExpected output:\n```\nExpected: 'value', Got: value\nExpected: 42, Got: 42\nInternal dict: {'test': 'value', 'number': 42}\n```\n\nBut instead you get unexpected behavior where values are modified and keys are stored in uppercase rather than lowercase.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__c1f2io70",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/opc/test_pkgreader.py::Describe_ContentTypeMap::it_can_construct_from_ct_item_xml",
+   "tests/test_blkcntnr.py::DescribeBlockItemContainer::it_can_iterate_its_inner_content",
+   "tests/test_package.py::DescribePackage::it_gathers_package_image_parts_after_unmarshalling",
+   "tests/test_section.py::DescribeSection::it_can_iterate_its_inner_content"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

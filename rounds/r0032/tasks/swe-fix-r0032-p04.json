@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0032-p04",
+ "round_id": "r0032",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPostgreSQL cast parsing fails with double colon syntax\n\n#### Description\n\nWhen parsing PostgreSQL-style cast expressions using the double colon (`::`) syntax, the parser incorrectly calculates token positions, causing parsing failures for certain cast expressions.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should parse correctly but fails\nsql = \"SELECT foo::int FROM table\"\ntry:\n    parsed = sqlglot.parse_one(sql, dialect=\"postgres\")\n    print(\"Parsed successfully:\", parsed)\nexcept Exception as e:\n    print(\"Parse error:\", e)\n\n# Another example that demonstrates the issue\nsql2 = \"SELECT column_name::varchar(50) FROM my_table\"\ntry:\n    parsed2 = sqlglot.parse_one(sql2, dialect=\"postgres\")\n    print(\"Parsed successfully:\", parsed2)\nexcept Exception as e:\n    print(\"Parse error:\", e)\n```\n\nThe parser should handle PostgreSQL's double colon cast syntax properly, but currently fails due to incorrect token offset calculation when processing the `::` operator.\n\n<END WRITING>\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_change_const__fya867ml",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_ddl",
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_snowflake"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
