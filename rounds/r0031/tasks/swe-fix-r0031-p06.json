@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0031-p06",
+ "round_id": "r0031",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nOptimizer breaks alias expansion in GROUP BY clauses\n\n#### Description\n\nThe optimizer is not properly handling alias expansion when aliases are used in GROUP BY clauses. This causes queries with aliases referenced in GROUP BY to produce incorrect SQL output.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# This should expand the alias 'd' in GROUP BY to the original expression\nsql = 'SELECT a + 1 AS d, d + 1 AS e FROM x WHERE e > 1 GROUP BY e'\nresult = optimizer.optimize(sql)\nprint(\"Actual:\", result.sql())\nprint(\"Expected: SELECT \\\"x\\\".\\\"a\\\" + 1 AS \\\"d\\\", \\\"x\\\".\\\"a\\\" + 1 + 1 AS \\\"e\\\" FROM \\\"x\\\" AS \\\"x\\\" WHERE (\\\"x\\\".\\\"a\\\" + 2) > 1 GROUP BY \\\"x\\\".\\\"a\\\" + 1 + 1\")\n\n# More complex case with CTE\nsql = \"WITH data AS (SELECT 1 AS id, 2 AS my_id, 'a' AS name, 'b' AS full_name) SELECT id AS my_id, CONCAT(id, name) AS full_name FROM data WHERE my_id = 1 GROUP BY my_id, full_name HAVING my_id = 1\"\nresult = optimizer.qualify_columns.qualify_columns(sqlglot.parse_one(sql, dialect='bigquery'), schema=sqlglot.MappingSchema(schema={'l': {'c': 'int'}}, dialect='bigquery'))\nprint(\"Actual:\", result.sql())\nprint(\"Expected: WITH data AS (SELECT 1 AS id, 2 AS my_id, 'a' AS name, 'b' AS full_name) SELECT data.id AS my_id, CONCAT(data.id, data.name) AS full_name FROM data WHERE data.my_id = 1 GROUP BY data.id, CONCAT(data.id, data.name) HAVING data.id = 1\")\n```\n\nThe optimizer should expand aliases in GROUP BY clauses to their underlying expressions, but it's currently not doing this correctly.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_loop__95z3iq1d",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_expand_alias_refs",
+   "tests/test_optimizer.py::TestOptimizer::test_optimize"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

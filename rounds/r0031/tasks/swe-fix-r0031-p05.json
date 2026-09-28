@@ -1,0 +1,34 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0031-p05",
+ "round_id": "r0031",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPKCE code challenge validation always raises NotImplementedError\n\n#### Description\n\nWhen using PKCE (Proof Key for Code Exchange) with valid challenge methods, the code challenge validation always fails with a `NotImplementedError` instead of properly validating the challenge.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth2.rfc6749.grant_types.authorization_code import AuthorizationCodeGrant\n\n# Create an authorization code grant instance\ngrant = AuthorizationCodeGrant()\n\n# Try to validate a code challenge with a supported method\ntry:\n    result = grant.validate_code_challenge('challenge', 'plain', 'verifier')\n    print(\"Validation result:\", result)\nexcept NotImplementedError as e:\n    print(\"Error:\", e)\n```\n\nExpected: The validation should succeed or fail based on the challenge/verifier match, not raise NotImplementedError for supported methods.\n\nActual: Always raises `NotImplementedError: Unknown challenge_method plain` even for supported challenge methods like 'plain' and 'S256'.\n\nThis affects PKCE flows where the code challenge validation is required but cannot complete successfully.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_pm_ctrl_shuffle__xzq5r72h",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth2/rfc6749/grant_types/test_authorization_code.py::AuthorizationCodeGrantTest::test_pkce_required_verifier_invalid_challenge_valid_method_valid",
+   "tests/oauth2/rfc6749/grant_types/test_authorization_code.py::AuthorizationCodeGrantTest::test_pkce_required_verifier_valid_challenge_valid_method_valid",
+   "tests/openid/connect/core/grant_types/test_authorization_code.py::AuthorizationCodeGrantTest::test_pkce_required_verifier_invalid_challenge_valid_method_valid",
+   "tests/openid/connect/core/grant_types/test_authorization_code.py::AuthorizationCodeGrantTest::test_pkce_required_verifier_valid_challenge_valid_method_valid",
+   "tests/openid/connect/core/grant_types/test_authorization_code.py::OpenIDAuthCodeInterferenceTest::test_pkce_required_verifier_invalid_challenge_valid_method_valid",
+   "tests/openid/connect/core/grant_types/test_authorization_code.py::OpenIDAuthCodeInterferenceTest::test_pkce_required_verifier_valid_challenge_valid_method_valid",
+   "tests/openid/connect/core/grant_types/test_hybrid.py::AuthorizationCodeGrantTest::test_pkce_required_verifier_invalid_challenge_valid_method_valid",
+   "tests/openid/connect/core/grant_types/test_hybrid.py::AuthorizationCodeGrantTest::test_pkce_required_verifier_valid_challenge_valid_method_valid",
+   "tests/openid/connect/core/grant_types/test_hybrid.py::OpenIDHybridInterferenceTest::test_pkce_required_verifier_invalid_challenge_valid_method_valid",
+   "tests/openid/connect/core/grant_types/test_hybrid.py::OpenIDHybridInterferenceTest::test_pkce_required_verifier_valid_challenge_valid_method_valid"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0031-p02",
+ "round_id": "r0031",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nJSON_EXTRACT_SCALAR and JSON_VALUE functions return early without processing arguments\n\n#### Description\n\nWhen using BigQuery's `JSON_EXTRACT_SCALAR` or `JSON_VALUE` functions with a single argument, the function returns immediately without adding the default JSONPath `'$'` parameter that should be appended when only one argument is provided.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should add the default '$' path but doesn't\nsql = \"SELECT JSON_EXTRACT_SCALAR('5')\"\nparsed = sqlglot.parse_one(sql)\nresult = parsed.sql('bigquery')\nprint(f\"Result: {result}\")\nprint(f\"Expected: SELECT JSON_EXTRACT_SCALAR('5', '$')\")\n\n# Same issue with JSON_VALUE\nsql2 = \"SELECT JSON_VALUE('5')\"  \nparsed2 = sqlglot.parse_one(sql2)\nresult2 = parsed2.sql('bigquery')\nprint(f\"Result: {result2}\")\nprint(f\"Expected: SELECT JSON_VALUE('5', '$')\")\n```\n\nThe functions should automatically append the default JSONPath `'$'` when only one argument is provided, but they return the original single-argument form instead.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__kawwnx7a",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_bigquery.py::TestBigQuery::test_json_extract"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

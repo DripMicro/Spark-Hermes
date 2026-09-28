@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0031-p03",
+ "round_id": "r0031",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nInlineShapes indexing and type detection broken\n\n#### Description\n\nThe InlineShapes collection has several issues with indexing and shape type detection that break basic functionality.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\n\n# Create a document with inline shapes\ndoc = Document()\nparagraph = doc.add_paragraph()\n\n# Add some inline shapes (pictures, charts, etc.)\n# ... add shapes to paragraph ...\n\ninline_shapes = paragraph.runs[0].inline_shapes\n\n# This should work but doesn't\nprint(len(inline_shapes))  # Returns wrong count\nshape = inline_shapes[0]   # Raises KeyError instead of IndexError\nprint(shape.type)          # Returns wrong shape type\n```\n\nThe indexing is completely off - accessing `inline_shapes[0]` tries to access index -1 internally, and `len()` returns one less than the actual count. Also getting wrong exception types and the shape type detection is backwards for pictures vs charts.\n\n#### Expected Behavior\n\n- `len(inline_shapes)` should return the correct count\n- `inline_shapes[0]` should return the first shape, not raise KeyError\n- Shape type detection should correctly identify pictures vs charts\n- Out of range access should raise IndexError, not KeyError\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.combine_file__hpmutdfq",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_shape.py::DescribeInlineShape::it_knows_what_type_of_shape_it_is[chart]",
+   "tests/test_shape.py::DescribeInlineShapes::it_knows_how_many_inline_shapes_it_contains",
+   "tests/test_shape.py::DescribeInlineShapes::it_provides_indexed_access_to_inline_shapes",
+   "tests/test_shape.py::DescribeInlineShapes::it_raises_on_indexed_access_out_of_range"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
