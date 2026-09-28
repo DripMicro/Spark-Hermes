@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0029-p11",
+ "round_id": "r0029",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDictionary Unpacking Issue in AsStringVisitor\n\nIt seems there's a problem with dictionary unpacking in the `AsStringVisitor` class. When attempting to unpack dictionaries using the `**` syntax, the output is not as expected. This issue arises when handling dictionary items where the unpacking should occur.\n\nTo reproduce the issue, consider the following scenario:\n\n```python\nfrom astroid.nodes import Dict\nfrom astroid.nodes.as_string import AsStringVisitor\n\nvisitor = AsStringVisitor()\nnode = Dict(items=[(None, 'value')])  # Simulating a dictionary unpacking scenario\nresult = list(visitor._visit_dict(node))\nprint(result)\n```\n\nExpected output:\n```\n['**value']\n```\n\nActual output:\n```\n['value']\n```\n\nThis discrepancy indicates that the dictionary unpacking is not being handled correctly, leading to potential issues in scenarios where dictionary unpacking is required. This behavior was not present in previous versions, suggesting a regression in the current implementation.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.lm_rewrite__b91kf313",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::InferenceTest::test_dict_inference_unpack_repeated_key",
+   "tests/test_inference.py::TestInferencePropagation::test_call_kwargs_propagation",
+   "tests/test_inference.py::test_infer_args_unpacking_of_self",
+   "tests/test_python3.py::Python3TC::test_nested_unpacking_in_dicts",
+   "tests/test_python3.py::Python3TC::test_unpacking_in_dicts",
+   "tests/test_scoped_nodes.py::test_enums_type_annotations_non_const_member[TypedDict-value2]",
+   "tests/test_scoped_nodes.py::test_enums_type_annotations_non_const_member[dict-value0]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

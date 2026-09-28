@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0029-p14",
+ "round_id": "r0029",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Line spacing not working correctly for AT_LEAST rule in paragraph formatting\n\n## Description\n\nI'm having an issue with setting line spacing in paragraphs when using the AT_LEAST line spacing rule. When I try to set a fixed line height with the AT_LEAST rule, it's always being set to EXACTLY instead.\n\nFor example, when I do something like this:\n\n```python\nfrom docx import Document\nfrom docx.shared import Pt\nfrom docx.enum.text import WD_LINE_SPACING\n\ndocument = Document()\nparagraph = document.add_paragraph(\"This is a test paragraph with line spacing issues.\")\nparagraph_format = paragraph.paragraph_format\n\n# Try to set line spacing with AT_LEAST rule\nparagraph_format.line_spacing = Pt(14)\nparagraph_format.line_spacing_rule = WD_LINE_SPACING.AT_LEAST\n\n# But when I check the value:\nprint(paragraph_format.line_spacing_rule)  # Shows EXACTLY instead of AT_LEAST\n```\n\nThe line spacing rule is being changed to EXACTLY regardless of what I set it to when using a Length object for the line_spacing value.\n\nThis is problematic because AT_LEAST and EXACTLY have different behaviors in Word - AT_LEAST allows text to expand beyond the specified height if needed (for larger fonts, etc.), while EXACTLY will clip text that exceeds the height.\n\nHas anyone else encountered this issue? Is there a workaround?\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.lm_rewrite__jcs5e8kr",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/text/test_parfmt.py::DescribeParagraphFormat::it_can_change_its_line_spacing[line_spacing_set_fixture2]",
+   "tests/text/test_parfmt.py::DescribeParagraphFormat::it_can_change_its_line_spacing[line_spacing_set_fixture6]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

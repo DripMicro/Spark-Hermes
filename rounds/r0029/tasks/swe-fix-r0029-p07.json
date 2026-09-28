@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0029-p07",
+ "round_id": "r0029",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSnowflake colon extraction with single quotes not properly escaped\n\n#### Description\n\nWhen parsing Snowflake's colon extraction syntax with single quotes in the path (e.g., `col:\"a'b\"`), the single quotes are not being properly escaped when converting to `GET_PATH` function calls. This causes incorrect SQL generation during roundtrip operations.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should properly escape the single quote\nsql = \"SELECT col:\\\"customer's department\\\"\"\nparsed = sqlglot.parse(sql, dialect=\"snowflake\")[0]\nresult = parsed.sql(dialect=\"snowflake\")\nprint(\"Result:\", result)\nprint(\"Expected: SELECT GET_PATH(col, '[\\\"customer\\\\'s department\\\"]')\")\n\n# Another example with single quotes\nsql2 = \"SELECT col:`fr'uit`\"  \nparsed2 = sqlglot.parse(sql2, dialect=\"databricks\")[0]\nresult2 = parsed2.sql(dialect=\"databricks\")\nprint(\"Result:\", result2)\nprint(\"Expected: SELECT col:[\\\"fr'uit\\\"]\")\n```\n\nThe issue occurs when the colon extraction contains quoted identifiers with single quotes - the escaping logic that was previously handling this case appears to have been removed, causing incorrect SQL generation.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_cond__p5hxqx2n",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_databricks.py::TestDatabricks::test_json",
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_querying_semi_structured_data"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

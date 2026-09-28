@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0029-p08",
+ "round_id": "r0029",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nsafe_infer shim in astroid.helpers broken after recent changes\n\n#### Description\n\nThe `safe_infer` function in `astroid.helpers` is not working correctly. When calling it, I get a TypeError about the function arguments.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom astroid import helpers, nodes\n\n# This should work but raises TypeError\nhelpers.safe_infer(nodes.Unknown())\n```\n\n#### Error\n\n```\nTypeError: safe_infer() got multiple values for argument 'node'\n```\n\nThe function seems to have issues with how it's passing arguments to the underlying implementation. The deprecation warning message also appears to be incorrect - it mentions importing from `another_module` instead of the proper module name.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__f2kmdp0k",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_helpers.py::test_safe_infer_shim"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

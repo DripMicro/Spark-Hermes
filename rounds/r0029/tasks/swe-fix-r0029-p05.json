@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0029-p05",
+ "round_id": "r0029",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nInconsistent Initialization Order for Inherited Dataclass Attributes\n\nDescription\n\nIt seems there's an issue with the initialization order of attributes in dataclasses that inherit from other classes. When a dataclass inherits attributes and overrides them, the overridden attributes are not being placed correctly in the `__init__` method. This behavior is causing unexpected results when initializing instances of these dataclasses.\n\nSteps to Reproduce\n\n1. Define a base dataclass with some attributes.\n2. Create a subclass dataclass that inherits from the base and overrides one or more attributes.\n3. Attempt to initialize the subclass and observe the order of parameters in the `__init__` method.\n\nExample:\n\n```python\nfrom dataclasses import dataclass\n\n@dataclass\nclass Parent:\n    a: str\n    b: str\n\n@dataclass\nclass Child(Parent):\n    c: str\n    a: str\n\nchild_instance = Child(a=\"value_a\", b=\"value_b\", c=\"value_c\")\n```\n\nExpected Behavior\n\nThe `__init__` method should have the parameters in the order: `a`, `b`, `c`.\n\nActual Behavior\n\nThe overridden attribute `a` is not placed correctly, leading to confusion and potential errors during initialization.\n\nAdditional Information\n\nThis issue seems to affect dataclasses with both positional and keyword-only arguments, especially when using the `kw_only` decorator. The problem is more pronounced in Python 3.10 and later versions where `kw_only` is supported.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.lm_rewrite__nqr026y1",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_dataclasses.py::test_dataclass_order_of_inherited_attributes",
+   "tests/brain/test_dataclasses.py::test_dataclass_with_multiple_inheritance",
+   "tests/brain/test_dataclasses.py::test_init_attributes_from_superclasses[dataclasses]",
+   "tests/brain/test_dataclasses.py::test_init_attributes_from_superclasses[marshmallow_dataclass]",
+   "tests/brain/test_dataclasses.py::test_init_attributes_from_superclasses[pydantic.dataclasses]",
+   "tests/brain/test_dataclasses.py::test_kw_only_decorator",
+   "tests/brain/test_dataclasses.py::test_kw_only_in_field_call"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
