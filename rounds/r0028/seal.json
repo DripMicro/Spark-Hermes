@@ -1,0 +1,50 @@
+{
+ "schema": "sh-seal-v3",
+ "round_id": "r0028",
+ "sealed_at": 1790564890.2602253,
+ "active": {
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+   "pr": null,
+   "head": "origin/main",
+   "bundle_sha256": "1dce6a1e0c2bb8976db4e005055371aee528180fc21a09782e18ce6e8e37d9b3",
+   "incumbent": true
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "pr": 322,
+   "head": "d59f2b5c085d2f65820223c8eac4ef82d7ee6b76",
+   "bundle_sha256": "770ca51ce95b2376549b586203a9d9eb0ec0a93d878e4253c81f1ab5ac64b9d5",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "harrythomasben"
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "pr": 323,
+   "head": "f934ff6d65564d2243407639850cf783f9c713f9",
+   "bundle_sha256": "05895823a1e259fcb316894e389716b3099be45faf5d6433803c0e9dd6e7acfc",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "kaivaryn"
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": 325,
+   "head": "32e764df4131e28bed88d9f27b8c73923856f78b",
+   "bundle_sha256": "d5d12fe9508a3672a96b3d252326bde960d85d642196ff2a169830fa632ffd0d",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "dato-bitar"
+  },
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "pr": 324,
+   "head": "02282d05de0ecd9e38debb0bf90b2ead66b59096",
+   "bundle_sha256": "78577eddbda6f84dc967fd1461195089a3b1fe2de72ce708747240175f6a5f46",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "kaivexa"
+  }
+ },
+ "rejected": {}
+}
