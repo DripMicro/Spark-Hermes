@@ -1,0 +1,311 @@
+{
+ "swe-fix-r0028-00": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_bit_fields"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_database_name"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_generate_fuzzer"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_no_signal_encode_decode"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sender_node_no_signal_encode_decode"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_sym"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_working_directory"
+    ]
+   ],
+   "assets_sha256": "14c2980155d6021148177437fe288d26700ff6a98a2e4d59bb4c4a868093c10c",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "037248c11e396aa2418c11712ca52d6abceb28e6ab11ee0650d239c3a9c5fbd8",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__dfvm2n5z",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0028-01": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_enum.py::EnumBrainTest::test_enum_members_uppercase_only"
+    ]
+   ],
+   "assets_sha256": "e71ffca187c5bf4741f75bdb1008b1f2f08bdf6e5b9d789c97af000abcecd194",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "a59c2b411b6163d07d04d6b0f0e6e4ded2bbf01343b7817f916bec4394fb86fa",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.pr_2263",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0028-02": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_system_3_arxml"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_cdd_add"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd_repr"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_datarefs"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_cdd_add"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd_repr"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_unknown_byteorder"
+    ]
+   ],
+   "assets_sha256": "0bbacdbd49991be2a982d91801386573644862a5240b2221157ddb1348d4149e",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "76194689f8de2b9ee6af13a82c35148172b94c6ec1ae39f8c3f426db7e1f31d4",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.combine_module__cjsnnrd5",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0028-03": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_autosar.py::CanToolsAutosarTest::test_autosar3_e2e_profile2"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e_profile5"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_system_3_arxml"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_system_4_arxml"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_list.py::CanToolsListTest::test_arxml3"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_list.py::CanToolsListTest::test_arxml4"
+    ]
+   ],
+   "assets_sha256": "535fa83348437eea8b8dedd0c319f61204fd3e4448ac73b8f98d46408f1e933e",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "a5236ed705e7095175bc8372b5d11bfe10547464dfc005c6e9026370f52654c0",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.combine_file__wax5fvgt",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0028-04": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_named_tuple.py::NamedTupleTest::test_namedtuple_uninferable_fields"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_binary_op_list_mul"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_binary_op_list_mul_int"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_binop_list_with_elts"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference.py::InferenceTest::test_mul_list_supports__index__"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_nodes.py::AsStringTest::test_as_string_for_list_containing_uninferable"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_protocols.py::ProtocolTests::test_uninferable_list_multiplication"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_protocols.py::ProtocolTests::test_uninferable_list_multiplication_with_multiple_operands"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_utils.py::InferenceUtil::test_unpack_infer_uninferable_nodes"
+    ]
+   ],
+   "assets_sha256": "10f58b5a011a02e593416eb3f9dfe8985f890520edd526c3a01c0bf39cc42a66",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "e76c2b17dc854013c73fe09d191d839f179986bc29c972c6c5866fe42edafed5",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__l29ig3k1",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0028-06": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_font.py::DescribeFont::it_knows_its_underline_type[w:r-None]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_font.py::DescribeFont::it_knows_its_underline_type[w:r/w:rPr/w:u-None]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_font.py::DescribeFont::it_knows_its_underline_type[w:r/w:rPr/w:u{w:val=none}-False]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_font.py::DescribeFont::it_knows_its_underline_type[w:r/w:rPr/w:u{w:val=single}-True]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_run.py::DescribeRun::it_knows_its_underline_type[underline_get_fixture0]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_run.py::DescribeRun::it_knows_its_underline_type[underline_get_fixture1]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_run.py::DescribeRun::it_knows_its_underline_type[underline_get_fixture2]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_run.py::DescribeRun::it_knows_its_underline_type[underline_get_fixture3]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_run.py::DescribeRun::it_knows_its_underline_type[underline_get_fixture4]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_run.py::DescribeRun::it_knows_its_underline_type[underline_get_fixture5]"
+    ]
+   ],
+   "assets_sha256": "d5770221df01ff9a25b7bd5bf57a9891e8483a34cf42dd6f6e2292558707f643",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "b949eee166db87c0930df9ec70a50839f8d65c23886672bb3088d58968855ed8",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__oydbgg2e",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ }
+}
