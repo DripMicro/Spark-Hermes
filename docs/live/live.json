@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790664210.576019,
+ "updated": 1790664336.607134,
  "round_id": "r0035",
  "stage": "window",
  "stages": [
@@ -33,17 +33,24 @@
  },
  "submissions": [
   {
+   "pr": 358,
+   "hotkey": "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh",
+   "created_at": "2026-09-29T06:44:32Z",
+   "updated_at": "2026-09-29T06:44:32Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/358"
+  },
+  {
    "pr": 357,
    "hotkey": "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
    "created_at": "2026-09-29T06:42:37Z",
-   "updated_at": "2026-09-29T06:42:37Z",
+   "updated_at": "2026-09-29T06:43:27Z",
    "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/357"
   },
   {
    "pr": 356,
    "hotkey": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
    "created_at": "2026-09-29T06:42:18Z",
-   "updated_at": "2026-09-29T06:42:18Z",
+   "updated_at": "2026-09-29T06:43:29Z",
    "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/356"
   }
  ],
