@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0036-p04",
+ "round_id": "r0036",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Authorization header with empty token not properly handled\n\nHello,\n\nI've discovered an issue with the OAuth2 token handling in the `get_token_from_header` function. When an Authorization header is present but contains an empty token value (like `Authorization: Bearer `), the function incorrectly processes this as a valid token.\n\n## Steps to reproduce\n\n1. Create a request with an Authorization header that has a bearer token type but an empty token value\n2. Try to validate the token\n\n```python\nfrom oauthlib.common import Request\n\n# Create a request with an empty bearer token\nheaders = {'Authorization': 'Bearer '}\nrequest = Request('https://example.com', headers=headers)\n\n# This should return None but instead returns an empty string\nfrom oauthlib.oauth2.rfc6749.tokens import get_token_from_header\ntoken = get_token_from_header(request)\nprint(f\"Token: '{token}'\")  # Prints: Token: ''\n```\n\n## Expected behavior\nThe function should return `None` when the token part is empty, as this is not a valid bearer token.\n\n## Actual behavior\nThe function returns an empty string (`''`) instead of `None`, which can cause validation issues downstream when empty tokens are treated as valid tokens.\n\nThis issue might affect applications that rely on proper token validation, especially when malformed Authorization headers are sent.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.lm_rewrite__dgs720r4",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth2/rfc6749/test_tokens.py::TokenTest::test_fake_bearer_is_not_validated",
+   "tests/openid/connect/core/test_tokens.py::JWTTokenTestCase::test_validate_token_from_request"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

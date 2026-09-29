@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0036-p01",
+ "round_id": "r0036",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nRSA signature verification fails with bytes keys\n\n#### Description\n\nWhen using RSA keys as bytes objects for OAuth1 signature verification, the signature process produces incorrect results. The key handling appears to be corrupted during processing.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth1.rfc5849.signature import sign_rsa_sha1_with_client, verify_rsa_sha1\nfrom oauthlib.oauth1.rfc5849.endpoints.base import MockClient, MockRequest\n\n# RSA private key as bytes\nrsa_private_key_bytes = b\"\"\"-----BEGIN RSA PRIVATE KEY-----\nMIICXgIBAAKBgQDk1/bxyS8Q8jiheHeYYp/4rEKJopeQRRKKpZI4s5i+UPwVpupG\nAlwXWfzXwSMaKPAoKJNdu7tqKRniqst5uoHXw98gj0M9SztOTCe/4Cz1GGQZ7Qr\n...\n-----END RSA PRIVATE KEY-----\"\"\"\n\n# RSA public key as bytes  \nrsa_public_key_bytes = b\"\"\"-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDk1/bxyS8Q8jiheHeYYp/4rEKJ\n...\n-----END PUBLIC KEY-----\"\"\"\n\nsignature_base_string = \"POST&http%3A//example.com/request&oauth_consumer_key%3Dkey%26oauth_nonce%3D37026175%26oauth_signature_method%3DRSA-SHA1%26oauth_timestamp%3D1318467427%26oauth_version%3D1.0\"\n\n# Create clients with bytes keys\nprivate_client = MockClient(rsa_key=rsa_private_key_bytes)\npublic_client = MockClient(rsa_key=rsa_public_key_bytes)\n\n# This should work but produces wrong signature\nsignature = sign_rsa_sha1_with_client(signature_base_string, private_client)\nprint(f\"Generated signature: {signature}\")\n\n# Verification fails\nparams = [('oauth_consumer_key', 'key'), ('oauth_nonce', '37026175'), ('oauth_signature_method', 'RSA-SHA1'), ('oauth_timestamp', '1318467427'), ('oauth_version', '1.0')]\nrequest = MockRequest('POST', 'http://example.com/request', params, signature)\nresult = verify_rsa_sha1(request, public_client.rsa_key)\nprint(f\"Verification result: {result}\")  # Should be True but returns False\n```\n\nThe same code works correctly when the RSA keys are provided as strings instead of bytes.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__lx04p6tz",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth1/rfc5849/endpoints/test_base.py::SignatureVerificationTest::test_rsa_signature",
+   "tests/oauth1/rfc5849/test_client.py::SignatureMethodTest::test_rsa_method",
+   "tests/oauth1/rfc5849/test_signatures.py::SignatureTests::test_rsa_bad_keys",
+   "tests/oauth1/rfc5849/test_signatures.py::SignatureTests::test_rsa_false_positives",
+   "tests/oauth1/rfc5849/test_signatures.py::SignatureTests::test_rsa_jwt_algorithm_cache",
+   "tests/oauth1/rfc5849/test_signatures.py::SignatureTests::test_sign_rsa_sha1_with_client",
+   "tests/oauth1/rfc5849/test_signatures.py::SignatureTests::test_sign_rsa_sha256_with_client",
+   "tests/oauth1/rfc5849/test_signatures.py::SignatureTests::test_sign_rsa_sha512_with_client"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

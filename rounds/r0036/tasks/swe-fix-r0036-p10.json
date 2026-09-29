@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0036-p10",
+ "round_id": "r0036",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSlice with Zero Step Raises Unexpected Error\n\nDescription\n\nIt seems that when attempting to use a slice with a step of zero, an unexpected error is raised. This behavior is not consistent with typical Python slicing, where a zero step should raise a ValueError. Instead, the current implementation appears to handle this scenario differently, leading to confusion and potential issues in code that relies on standard slicing behavior.\n\nTo reproduce:\n\n```python\n# Example code to demonstrate the issue\nsequence = [1, 2, 3, 4, 5]\ntry:\n    result = sequence[::0]  # This should raise a ValueError\nexcept ValueError as e:\n    print(\"Caught expected ValueError:\", e)\nelse:\n    print(\"Unexpected behavior, no error raised:\", result)\n```\n\nThe above code should raise a ValueError, but it seems that the current implementation does not handle this as expected. This could lead to subtle bugs in applications that depend on standard slicing behavior.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.lm_rewrite__yl1w79yz",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::test_slice_zero_step_does_not_raise_ValueError"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

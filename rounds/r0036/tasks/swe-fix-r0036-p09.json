@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0036-p09",
+ "round_id": "r0036",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nModule `__cached__` attribute returns incorrect node type\n\n#### Description\n\nWhen accessing the `__cached__` attribute on a module, the inference returns a `Known` node instead of the expected `Unknown` node. This causes issues with static analysis tools that expect uninferable attributes to be properly marked as unknown.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# Create a simple module access\ncode = \"\"\"\nimport xml\nxml.__cached__\n\"\"\"\n\nmodule = astroid.parse(code)\ncached_attr = list(module.nodes_of_class(astroid.Attribute))[-1]\ninferred = next(cached_attr.infer())\n\nprint(f\"Expected: astroid.Uninferable\")\nprint(f\"Actual: {inferred}\")\n```\n\nThe above code should show that `xml.__cached__` infers to `astroid.Uninferable`, but instead returns a different node type.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__4gst7mih",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_object_model.py::ModuleModelTest::test_module_model"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0036-p07",
+ "round_id": "r0036",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSlice node returns wrong type information\n\n#### Description\n\nWhen working with slice objects in astroid, the type information returned is incorrect. The `_proxied` property of the `Slice` class returns `str` instead of `slice`, causing type-related operations to fail.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# Test slice type inference\ncode = 'type(slice(None, None, None))'\nast_node = astroid.extract_node(code)\ninferred = next(ast_node.infer())\nprint(f\"Expected: slice, Got: {inferred.name}\")\n\n# Test unary operations on slice\ncode2 = '~slice(1, 2, 3)'\nnode = astroid.extract_node(code2)\nerrors = node.type_errors()\nprint(f\"Type error: {errors[0] if errors else 'None'}\")\n```\n\nExpected output:\n```\nExpected: slice, Got: slice\nType error: bad operand type for unary ~: slice\n```\n\nActual output:\n```\nExpected: slice, Got: str\nType error: bad operand type for unary ~: str\n```\n\nThe slice object is incorrectly identified as a string type, which affects type checking and error reporting throughout the codebase.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__bl65xhcw",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::InferenceTest::test_unary_type_errors_for_non_instance_objects",
+   "tests/test_inference.py::SliceTest::test_slice_type"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

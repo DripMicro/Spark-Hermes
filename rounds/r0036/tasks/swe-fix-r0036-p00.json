@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0036-p00",
+ "round_id": "r0036",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nModule `__dict__` attribute returns incorrect type after recent changes\n\n#### Description\n\nWhen accessing the `__dict__` attribute on module objects, the returned type is incorrect. The attribute should return a Dict node but seems to be returning something else, causing attribute inference to fail.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# Create a simple module\ncode = \"\"\"\nx = 1\ny = 2\n\"\"\"\n\nmodule = astroid.parse(code, modname='test_module')\n\n# Try to get the __dict__ attribute\ndict_attr = module.getattr('__dict__')[0]\nprint(f\"Type: {type(dict_attr)}\")\nprint(f\"Expected: {astroid.nodes.Dict}\")\n```\n\nThis should return a Dict node but currently returns an unexpected type, breaking code that relies on module `__dict__` attribute inference.\n\nThe issue affects both regular modules and imported modules when trying to access their `__dict__` attribute through astroid's inference system.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__zdb4zicw",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_object_model.py::ModuleModelTest::test_module_model",
+   "tests/test_scoped_nodes.py::FunctionNodeTest::test_special_attributes",
+   "tests/test_scoped_nodes.py::ModuleNodeTest::test_special_attributes"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
