@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0034-p01",
+ "round_id": "r0034",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nComparison simplification broken for expressions with matching columns\n\n#### Description\n\nThe comparison simplification logic in the optimizer is producing incorrect results when dealing with expressions that have matching columns. The simplification appears to be using the wrong set operations when extracting non-matching arguments.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# Example that demonstrates the issue\nsql = \"SELECT * FROM table WHERE a + 1 = a + 2\"\nparsed = sqlglot.parse_one(sql)\noptimized = optimizer.optimize(parsed)\nprint(optimized.sql())\n```\n\nThe optimizer should be able to simplify comparisons like `a + 1 = a + 2` to `FALSE` since they can never be equal, but the current logic is producing unexpected results due to incorrect set operations when identifying the non-matching parts of the comparison.\n\n#### Expected Behavior\n\nComparisons with matching columns should be properly simplified when the non-matching parts can be evaluated. For instance, `a + 1 = a + 2` should simplify to `FALSE` since 1 \u2260 2.\n\n#### Actual Behavior\n\nThe comparison simplification is not working correctly due to logic errors in how matching and non-matching arguments are identified and processed.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_swap__ozzi6wcv",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_simplify",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0034-p14",
+ "round_id": "r0034",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nOracle hint generation produces empty hint comments\n\n#### Description\n\nWhen generating SQL for Oracle hints, the hint comments are being generated as empty `/*+  */` instead of containing the actual hint expressions.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import exp\n\n# Create a simple query with a hint\nsql = \"SELECT /*+ USE_NL(A B) */ A.COL_TEST FROM TABLE_A A, TABLE_B B\"\n\n# Parse and transpile back to Oracle\nparsed = sqlglot.parse_one(sql, dialect=\"oracle\")\nresult = parsed.sql(dialect=\"oracle\")\n\nprint(\"Original:\", sql)\nprint(\"Generated:\", result)\n```\n\nExpected output:\n```\nOriginal: SELECT /*+ USE_NL(A B) */ A.COL_TEST FROM TABLE_A A, TABLE_B B\nGenerated: SELECT /*+ USE_NL(A B) */ A.COL_TEST FROM TABLE_A A, TABLE_B B\n```\n\nActual output:\n```\nOriginal: SELECT /*+ USE_NL(A B) */ A.COL_TEST FROM TABLE_A A, TABLE_B B\nGenerated: SELECT /*+  */ A.COL_TEST FROM TABLE_A A, TABLE_B B\n```\n\nThe hint content is being lost during SQL generation, resulting in empty hint comments that don't provide any optimization guidance to the Oracle query planner.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__d8j5krs9",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_oracle.py::TestOracle::test_hints",
+   "tests/dialects/test_oracle.py::TestOracle::test_oracle"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0034-p06",
+ "round_id": "r0034",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDot notation parsing broken for table-valued functions in CROSS/OUTER APPLY\n\nWhen parsing SQL with CROSS APPLY or OUTER APPLY that includes table-valued functions with dot notation (like `a.b.tvfTest`), the parser fails to handle the dotted function names correctly.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should parse correctly but doesn't\nsql = \"SELECT t.x, y.z FROM x OUTER APPLY a.b.tvfTest(t.x)y(z)\"\nparsed = sqlglot.parse_one(sql, dialect=\"tsql\")\nprint(parsed)\n```\n\nThe parser seems to have issues with dotted identifiers in the context of table-valued functions used with APPLY operations. This affects SQL Server T-SQL queries that use schema-qualified or database-qualified table-valued functions.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_loop__76d4bvfh",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_tsql.py::TestTSQL::test_lateral_table_valued_function",
+   "tests/dialects/test_tsql.py::TestTSQL::test_tsql"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

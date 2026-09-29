@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0034-p02",
+ "round_id": "r0034",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nEnvironment variable env_id property returns incorrect value\n\n#### Description\n\nWhen accessing the `env_id` property of an environment variable, it returns a value that is off by one from what was originally set.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\ndb = cantools.db.Database()\nwith open('tests/files/dbc/emc32.dbc') as fin:\n    db.add_dbc(fin)\n\nenv_var = db.dbc.environment_variables['EMC_Azimuth']\nprint(f\"Expected env_id: 12\")\nprint(f\"Actual env_id: {env_var.env_id}\")\n\n# Also affects setting the property\nenv_var_2 = db.dbc.environment_variables['EMC_TrdPower']\nenv_var_2.env_id = 12\nprint(f\"Set env_id to: 12\")\nprint(f\"Retrieved env_id: {env_var_2.env_id}\")\n```\n\nExpected output:\n```\nExpected env_id: 12\nActual env_id: 12\nSet env_id to: 12\nRetrieved env_id: 12\n```\n\nActual output:\n```\nExpected env_id: 12\nActual env_id: 13\nSet env_id to: 12\nRetrieved env_id: 13\n```\n\nThe `env_id` property getter appears to be returning the stored value plus one, which breaks compatibility with existing DBC files and causes assertion failures when the expected ID doesn't match the returned value.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__b417djr4",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_emc32"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,33 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0034-p11",
+ "round_id": "r0034",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nNameError in qualify_columns optimizer when processing USING clauses\n\n#### Description\n\nThe qualify_columns optimizer is throwing NameError exceptions when processing SQL queries with USING clauses in JOINs. Multiple variables are referenced before assignment, causing the optimizer to fail.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# This will raise NameError: name 'source_table' is not defined\nsql = \"\"\"\nSELECT A.b_id FROM A \nJOIN B ON A.b_id=B.b_id \nJOIN C USING(c_id)\n\"\"\"\n\nschema = {\n    'A': {'b_id': 'int'}, \n    'B': {'b_id': 'int', 'c_id': 'int'}, \n    'C': {'c_id': 'int'}\n}\n\n# This will fail\nresult = optimizer.qualify.qualify(\n    sqlglot.parse_one(sql, dialect='postgres'), \n    schema=schema, \n    quote_identifiers=False\n)\n```\n\nThe error occurs when the optimizer tries to process USING clauses and references variables like `source_table`, `join_table`, `identifier`, `tables`, and `lhs` that are not properly defined in the current scope.\n\n#### Expected Behavior\n\nThe optimizer should successfully process queries with USING clauses and return properly qualified column references, converting USING clauses to explicit ON conditions where appropriate.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_assign__rdpyp6ft",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_merge_subqueries",
+   "tests/test_optimizer.py::TestOptimizer::test_optimize",
+   "tests/test_optimizer.py::TestOptimizer::test_pushdown_projection",
+   "tests/test_optimizer.py::TestOptimizer::test_qualify_columns",
+   "tests/test_optimizer.py::TestOptimizer::test_qualify_columns__invalid",
+   "tests/test_optimizer.py::TestOptimizer::test_qualify_columns__with_invisible",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds",
+   "tests/test_optimizer.py::TestOptimizer::test_tpch",
+   "tests/test_optimizer.py::TestOptimizer::test_unnest_annotation"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
