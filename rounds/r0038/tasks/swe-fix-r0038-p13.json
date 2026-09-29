@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0038-p13",
+ "round_id": "r0038",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDocument created datetime returns wrong value\n\n#### Description\n\nWhen accessing the `created` property on a document's core properties, it returns the modified/updated datetime instead of the actual creation datetime.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\n\n# Create or open a document with core properties\ndoc = Document()\ncore_props = doc.core_properties\n\n# Set different values for created and modified times\nimport datetime as dt\ncreated_time = dt.datetime(2023, 1, 1, 10, 0, 0)\nmodified_time = dt.datetime(2023, 6, 15, 14, 30, 0)\n\ncore_props.created = created_time\ncore_props.modified = modified_time\n\n# This should return the created time but returns modified time instead\nprint(f\"Expected created: {created_time}\")\nprint(f\"Actual created: {core_props.created}\")\nprint(f\"Modified: {core_props.modified}\")\n```\n\nExpected output:\n```\nExpected created: 2023-01-01 10:00:00\nActual created: 2023-01-01 10:00:00\nModified: 2023-06-15 14:30:00\n```\n\nActual output:\n```\nExpected created: 2023-01-01 10:00:00\nActual created: 2023-06-15 14:30:00\nModified: 2023-06-15 14:30:00\n```\n\nThe `created` property is returning the same value as the `modified` property instead of the actual creation datetime.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__rma7x5g0",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/opc/test_coreprops.py::DescribeCoreProperties::it_knows_the_date_property_values[created-expected_datetime0]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

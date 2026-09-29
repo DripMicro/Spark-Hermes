@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0038-p09",
+ "round_id": "r0038",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nNameError in dataclass field default value handling\n\n#### Description\n\nWhen working with dataclasses that have field defaults from parent classes, a NameError occurs during inference. The issue appears when a dataclass inherits from another dataclass that has a field with `init=False` and a default value.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom dataclasses import dataclass, field\n\n@dataclass\nclass First:\n    a: int\n\n@dataclass\nclass Second(First):\n    a: int = field(init=False, default=1)\n\n@dataclass\nclass SecondChild(Second):\n    a: float\n\n# This should work but causes issues during inference\nSecondChild.__init__\n```\n\nThe problem occurs when trying to infer the `__init__` method of classes that inherit from dataclasses with field defaults. The inference process fails with a NameError because a variable `default` is referenced before assignment.\n\n#### Expected Behavior\n\nThe dataclass inheritance should work correctly and the `__init__` method should be properly inferred with the correct default values propagated from parent classes.\n\n#### Actual Behavior\n\nA NameError is raised during the inference process, preventing proper analysis of dataclass inheritance patterns.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_remove_assign__xy900kux",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_dataclasses.py::test_dataclass_with_field_init_is_false"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

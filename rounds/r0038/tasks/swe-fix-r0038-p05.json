@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0038-p05",
+ "round_id": "r0038",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nString and bytes method inference returns wrong types\n\n#### Description\n\nWhen calling methods on string and bytes objects, astroid is returning the wrong types. String methods are returning bytes objects and bytes methods are returning string objects.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# This should return a bytes object but returns a string\nnode = astroid.extract_node(\"'hello'.encode()\")\ninferred = next(node.infer())\nprint(f\"Type: {type(inferred.value)}, Value: {inferred.value}\")\n# Expected: Type: <class 'bytes'>, Value: b'hello'\n# Actual: Type: <class 'str'>, Value: hello\n\n# This should return a string object but returns bytes  \nnode = astroid.extract_node(\"b'hello'.decode()\")\ninferred = next(node.infer())\nprint(f\"Type: {type(inferred.value)}, Value: {inferred.value}\")\n# Expected: Type: <class 'str'>, Value: hello\n# Actual: Type: <class 'bytes'>, Value: b'hello'\n\n# Chained operations also affected\nnode = astroid.extract_node(\"'hello'.encode().decode()\")\ninferred = next(node.infer())\nprint(f\"Type: {type(inferred.value)}, Value: {inferred.value}\")\n# Expected: Type: <class 'str'>, Value: hello\n# Actual: Type: <class 'bytes'>, Value: b'hello'\n```\n\nThe issue affects both regular string/bytes method calls and also impacts unicode string methods like `u' '.decode()`.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__syklfqh6",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_brain.py::test_str_and_bytes['hey'.encode()-Const-]",
+   "tests/brain/test_brain.py::test_str_and_bytes['hey'.encode().decode()-Const-]",
+   "tests/test_inference.py::InferenceTest::test_str_methods",
+   "tests/test_inference.py::InferenceTest::test_unicode_methods"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0038-p02",
+ "round_id": "r0038",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCoreProperties.created returns modified datetime instead of created datetime\n\n#### Description\n\nThe `created` property of `CoreProperties` is returning the modified datetime value instead of the actual created datetime.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx.opc.coreprops import CoreProperties\n\n# Load a document with core properties\n# Assuming you have a document with both created and modified dates set\ncore_props = CoreProperties(element)\n\n# This should return the created datetime but returns modified datetime instead\ncreated_date = core_props.created\nmodified_date = core_props.modified\n\nprint(f\"Created: {created_date}\")\nprint(f\"Modified: {modified_date}\")\n# Both values will be the same (the modified datetime)\n```\n\nWhen accessing the `created` property, it incorrectly returns the same value as the `modified` property instead of the actual creation date stored in the document properties.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__jzfvvgcc",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/opc/test_coreprops.py::DescribeCoreProperties::it_knows_the_date_property_values[created-expected_datetime0]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
