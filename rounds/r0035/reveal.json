@@ -1,0 +1,196 @@
+{
+ "swe-fix-r0035-00": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_decorators.py::TestDeprecationDecorators::test_deprecated_default_argument_values_ok"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_decorators.py::TestDeprecationDecorators::test_deprecated_default_argument_values_one_arg"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_decorators.py::TestDeprecationDecorators::test_deprecated_default_argument_values_two_args"
+    ]
+   ],
+   "assets_sha256": "e206479d3d0edf21294c38390e80dd5ba41dd847d4d50ea990778c095e1452b1",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "24a1c33ef502027c6ccc70c8844a54ad0433daccba77561614f51b0bc353d0de",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__lgg6861n",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0035-04": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/oxml/parts/test_document.py::DescribeCT_Body::it_can_add_a_section_break"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_document.py::DescribeDocument::it_can_add_a_section[add_section_fixture0]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_document.py::DescribeDocument::it_can_add_a_section[add_section_fixture1]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_document.py::DescribeDocument::it_can_add_a_section[add_section_fixture2]"
+    ]
+   ],
+   "assets_sha256": "f415741c084541919f16109035a56800313ca9ab08981cc50ffecce8bd506015",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "209d869433a776ee0186b0da31889bfa18bdee083365dc224479237ec11227db",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__yeh4h6e0",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0035-09": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_format.py::TestOutputFormat::test_php"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_format.py::TestOutputFormat::test_python"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_format.py::TestOutputFormat::test_python_multiple_statements"
+    ]
+   ],
+   "assets_sha256": "118fceb22eedf90a09b9bd32cda09bec772fdff3de32d8e423e219773909a016",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "6888a15813457f0bb0ec00543609322b9e854670f590704c1fcf3d5f18d39b83",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "andialbrecht__sqlparse.e57923b3.combine_file__kep88kh8",
+   "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3"
+  }
+ },
+ "swe-fix-r0035-10": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_section.py::DescribeSection::it_can_iterate_its_inner_content"
+    ]
+   ],
+   "assets_sha256": "9cf1eb2ff6d665f03e5ea27663c516f1114461151fe4789d0d15fc0aab6c8f1f",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "554c772869f93f273af750a441f783cc5752862bbaba95fb2213e76fb3341bc0",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__5tfxh6cc",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0035-13": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/styles/test_style.py::DescribeBaseStyle::it_can_change_its_quick_style_setting[quick_set_fixture2]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/styles/test_style.py::DescribeBaseStyle::it_can_change_its_quick_style_setting[quick_set_fixture4]"
+    ]
+   ],
+   "assets_sha256": "0bae9ea27d151d930162e9d3c4158a39f744486c09ca59f53db80621cbfa8e38",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "26de78ae3843a97b2e97c19574d0f5d47850f01d6fb56e3510272f5074e478e5",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__w3eq8cta",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0035-16": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_client_authentication.py::ClientAuthenticationTest::test_basicauth_revoke"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_bad_post_request"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_invalid_request_method"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token_client_authentication_failed"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token_public_client_authentication"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token_public_client_authentication_failed"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_unsupported_token"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_with_callback"
+    ]
+   ],
+   "assets_sha256": "9c50bdf9c7ccc4861fb10a53c669b84e8b7de110a518a666dd01adf7faa0e935",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "756891a03989e493baa6684a7c0aca4026ab5f9424e7e6f4477073c7e893a7dd",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "oauthlib__oauthlib.1fd52536.combine_file__8tij9kub",
+   "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536"
+  }
+ }
+}
