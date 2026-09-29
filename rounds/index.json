@@ -3525,6 +3525,89 @@
     "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben"
    },
    "pr": 364
+  },
+  {
+   "round_id": "r0037",
+   "closed_at": 1790716737.8963387,
+   "window": {
+    "opens_at": 1790701266.4727178,
+    "closes_at": 1790708466.4727178,
+    "seconds": 7200
+   },
+   "episodes": 288,
+   "king": "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
+   "weights": {
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": 0.0,
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.23963913635421907,
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.32527858347885286,
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.22465186314262883,
+    "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": 0.2104304170242993
+   },
+   "scores": {
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+     "score": -0.008681,
+     "weight": 0.0,
+     "mean_d": -0.008681,
+     "delta_c": 0.0,
+     "n": 48
+    },
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+     "score": 0.129547,
+     "weight": 0.23963913635421907,
+     "mean_d": 0.129547,
+     "delta_c": 0.04542192990573353,
+     "n": 48
+    },
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+     "score": 0.175843,
+     "weight": 0.32527858347885286,
+     "mean_d": 0.175843,
+     "delta_c": 0.09879540273707553,
+     "n": 48
+    },
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+     "score": 0.121445,
+     "weight": 0.22465186314262883,
+     "mean_d": 0.121445,
+     "delta_c": 0.05162361093133237,
+     "n": 48
+    },
+    "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+     "score": 0.113757,
+     "weight": 0.2104304170242993,
+     "mean_d": 0.113757,
+     "delta_c": 0.03969413674009499,
+     "n": 42
+    }
+   },
+   "crown": {
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+     "n": 6,
+     "verified": 0,
+     "dq": 0,
+     "credit": 0.241667,
+     "delta": 0.083333,
+     "rank": 1
+    }
+   },
+   "commitments_ok": true,
+   "sft_rows": 0,
+   "dpo_pairs": 0,
+   "hf": null,
+   "revealed": [
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh",
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
+    "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc"
+   ],
+   "github": {
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": "kaivexa",
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": "dato-bitar",
+    "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": "K-3-LT",
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": "kaivaryn",
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben"
+   },
+   "pr": 370
   }
  ]
 }
