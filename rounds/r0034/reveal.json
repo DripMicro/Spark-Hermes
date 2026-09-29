@@ -1,0 +1,166 @@
+{
+ "swe-fix-r0034-01": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_expressions.py::TestExpressions::test_iter"
+    ]
+   ],
+   "assets_sha256": "6be5d4cfc69103df258776ad9754c2ef8f0ed994c977d4b1482ddf1c3e1516e3",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "bee1b2050c177f51061bbd4e4676ede32d97c837094a27863a26b43c3feb6895",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.lm_rewrite__mr2bycj7",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0034-02": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_encode_signal_strict"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_encode_signal_strict_negative_scaling_05"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_encode_signal_strict_negative_scaling_09"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_encode_signal_strict_negative_scaling_11"
+    ]
+   ],
+   "assets_sha256": "526845e88f5492c2e7220122dbba410281b71a24428ccb05f8104a8552d4e176",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "73b22488cb35c622946201778008ed49cda35ffd1abc3d1ad28867e8e9a97f39",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__zjpnfas0",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0034-06": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_bigquery.py::TestBigQuery::test_bigquery"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_bigquery.py::TestBigQuery::test_inline_constructor"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_serde.py::TestSerDe::test_serde"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_transpile.py::TestTranspile::test_identity"
+    ]
+   ],
+   "assets_sha256": "d1500e6c40e2969d14d18d2bffb13b8edc774b3e344726c74b7c53dcb5bbb79d",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "07632435a0cb40647414525d6290e38f80f2e10bb44a3eae86877015320e3af0",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_assign__ads3ucxx",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0034-11": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_postgres.py::TestPostgres::test_ddl"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_sqlite.py::TestSQLite::test_ddl"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_serde.py::TestSerDe::test_serde"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_transpile.py::TestTranspile::test_identity"
+    ]
+   ],
+   "assets_sha256": "6a51dba2eda73c3fe6a6c4fdd362081041e7b6b45e1984627a5d91243594185f",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "7e6aade10eab465ba552fafe29b9501ef191626a38fd19dc54074c9da621c98f",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_cond__8ipu2ysq",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0034-14": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_mysql.py::TestMySQL::test_mysql"
+    ]
+   ],
+   "assets_sha256": "10c2aba166db3c9b8889c4a4b19a3e165a0aeae882fb0ec414d59025b5b251c9",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "b83026cea506a95f5cce4a36fc597fa4b3bbec10ef4da82dbba28b386ba9abab",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.lm_rewrite__mchmm6b4",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0034-16": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_object_model.py::InstanceModelTest::test_instance_special_model"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_scoped_nodes.py::ClassNodeTest::test_instance_special_attributes"
+    ]
+   ],
+   "assets_sha256": "ce920573be745871f7af7fa62e01f7f1e3aaad6cc1bae651891483de1673e4eb",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "483b7f1cfab571dea58cf7a448782e90807a03350b43c47a5bd1523cf23b7951",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__q49heztm",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ }
+}

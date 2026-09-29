@@ -1,0 +1,189 @@
+{
+ "schema": "sh-round-close-v3",
+ "scoring": "sh-scoring-v3 (credit)",
+ "round_id": "r0034",
+ "era": "e0",
+ "tasks": [
+  "swe-fix-r0034-01",
+  "swe-fix-r0034-02",
+  "swe-fix-r0034-06",
+  "swe-fix-r0034-11",
+  "swe-fix-r0034-14",
+  "swe-fix-r0034-16"
+ ],
+ "episodes": 288,
+ "family_stats": {
+  "swe_fix": {
+   "schema": "sh-family-stats-v2",
+   "family": "swe_fix",
+   "era": "e0",
+   "window": [
+    "r0027",
+    "r0028",
+    "r0029",
+    "r0030",
+    "r0031",
+    "r0032",
+    "r0033",
+    "r0034"
+   ],
+   "null": {
+    "n": 48,
+    "successes": 6,
+    "p": 0.125,
+    "mean_credit": 0.2118,
+    "wilson": [
+     0.0586,
+     0.247
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 22.0,
+      "p25": 9.0,
+      "n": 6
+     },
+     "tool_calls": {
+      "median": 22.5,
+      "p25": 10.0,
+      "n": 6
+     }
+    }
+   },
+   "canon": {
+    "n": 6,
+    "successes": 1,
+    "p": 0.16666666666666666,
+    "mean_credit": 0.3929,
+    "wilson": [
+     0.0301,
+     0.5635
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 11.0,
+      "p25": 11.0,
+      "n": 1
+     },
+     "tool_calls": {
+      "median": 11.0,
+      "p25": 11.0,
+      "n": 1
+     }
+    },
+    "delta_c": 0.181,
+    "delta_e": {
+     "api_calls": -0.8333,
+     "tool_calls": -0.8333
+    },
+    "delta_e_paired_instances": 1
+   },
+   "label": "frontier",
+   "partial_rate": 0.0,
+   "in_rotation": true,
+   "retirement": null
+  }
+ },
+ "scores": {
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "hotkey": "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh",
+   "n": 48,
+   "score": -0.064815,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.39787779716584193,
+    "tool_calls": -0.5131530933133536
+   },
+   "gate": true,
+   "se": 0.055539,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "at or below the baseline: \u0394 -0.065 \u00b1 0.056",
+   "paired": 48,
+   "mean_d": -0.064815
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "hotkey": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
+   "n": 48,
+   "score": 0.087963,
+   "delta_c": 0.0,
+   "delta_e": {
+    "api_calls": -0.1975387978628211,
+    "tool_calls": -0.2842688057838948
+   },
+   "gate": true,
+   "se": 0.069377,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.087963
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "hotkey": "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
+   "n": 48,
+   "score": 0.125,
+   "delta_c": 0.048351872637897725,
+   "delta_e": {
+    "api_calls": -0.0833937728009852,
+    "tool_calls": -0.06603310772190463
+   },
+   "gate": true,
+   "se": 0.059881,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.125
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "hotkey": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
+   "n": 48,
+   "score": 0.105903,
+   "delta_c": 0.029038155749687725,
+   "delta_e": {
+    "api_calls": -0.13850819585669177,
+    "tool_calls": -0.20527765698419975
+   },
+   "gate": true,
+   "se": 0.06005,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.105903
+  },
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+   "hotkey": "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc",
+   "n": 42,
+   "score": 0.104497,
+   "delta_c": 0.0039835401169758256,
+   "delta_e": {
+    "api_calls": -0.0863737177663122,
+    "tool_calls": -0.19228113749422873
+   },
+   "gate": true,
+   "se": 0.078526,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 42,
+   "mean_d": 0.104497
+  }
+ },
+ "weights": {
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": 0.0,
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.20777205376946026,
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.29525489945980166,
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.25014703693993096,
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": 0.24682600983080716
+ },
+ "commitments_verified": {
+  "swe-fix-r0034-01": true,
+  "swe-fix-r0034-02": true,
+  "swe-fix-r0034-06": true,
+  "swe-fix-r0034-11": true,
+  "swe-fix-r0034-14": true,
+  "swe-fix-r0034-16": true
+ },
+ "commitments_ok": true
+}
