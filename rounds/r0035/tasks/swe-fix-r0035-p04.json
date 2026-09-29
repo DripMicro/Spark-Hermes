@@ -1,0 +1,34 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0035-p04",
+ "round_id": "r0035",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nBMP images return wrong content type\n\n#### Description\n\nWhen working with BMP images, the content type is incorrectly returned as `image/png` instead of `image/bmp`. This affects any code that relies on the correct MIME type for BMP files.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx.image.bmp import Bmp\nfrom docx.shared import MIME_TYPE\n\n# Create a BMP image instance\nbmp = Bmp(None, None, None, None)\n\n# Check content type - should be image/bmp but returns image/png\nprint(f\"Expected: {MIME_TYPE.BMP}\")\nprint(f\"Actual: {bmp.content_type}\")\n```\n\nAlso affects image processing when loading BMP files:\n\n```python\nfrom docx.image.image import Image\n\n# Load a BMP file\nwith open('test.bmp', 'rb') as stream:\n    image = Image.from_file(stream)\n    print(f\"Content type: {image.content_type}\")  # Returns image/png instead of image/bmp\n```\n\nThe issue also causes problems with string parsing in image headers where text gets corrupted and reversed.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.combine_module__3284y8e7",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/image/test_bmp.py::DescribeBmp::it_knows_its_content_type",
+   "tests/image/test_helpers.py::DescribeStreamReader::it_can_read_a_string_of_specified_len_at_offset",
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[0]",
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[4]",
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[5]",
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[6]",
+   "tests/image/test_image.py::Describe_ImageHeaderFactory::it_constructs_the_right_class_for_a_given_image_stream[call_fixture0]",
+   "tests/image/test_image.py::Describe_ImageHeaderFactory::it_constructs_the_right_class_for_a_given_image_stream[call_fixture5]",
+   "tests/image/test_png.py::Describe_ChunkParser::it_iterates_over_the_chunk_offsets_to_help_parse",
+   "tests/image/test_tiff.py::Describe_AsciiIfdEntry::it_can_parse_an_ascii_string_IFD_entry"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

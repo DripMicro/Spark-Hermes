@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0035-p16",
+ "round_id": "r0035",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nMAC authentication age parameter calculation incorrect for microseconds\n\n#### Description\n\nThe `generate_age` function in `oauthlib.oauth2.rfc6749.utils` produces incorrect age values when microseconds are involved in the time delta calculation. The function appears to be miscalculating the microsecond component, leading to age values that are significantly smaller than expected.\n\n#### Steps/Code to Reproduce\n\n```python\nimport datetime\nfrom oauthlib.oauth2.rfc6749.utils import generate_age\n\n# Create an issue time that's a few days old\nissue_time = datetime.datetime.now() - datetime.timedelta(days=3, minutes=1, seconds=4)\nage = generate_age(issue_time)\nprint(f\"Generated age: {age}\")\nprint(f\"Expected age should be greater than: 259263.0\")\nprint(f\"Actual age as float: {float(age)}\")\n```\n\nThe generated age value is much smaller than it should be. For a time delta of 3 days, 1 minute, and 4 seconds, the age should be greater than 259263.0 seconds, but the function returns a much smaller value.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__y0kr8jsj",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth2/rfc6749/test_utils.py::UtilsTests::test_generate_age"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

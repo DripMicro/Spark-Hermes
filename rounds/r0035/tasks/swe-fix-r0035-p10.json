@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0035-p10",
+ "round_id": "r0035",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nRun.text property returns reversed text\n\n#### Description\n\nThe `Run.text` property is returning text in reverse order instead of the expected text content.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.text.run import Run\n\n# Create a simple document with text\ndoc = Document()\nparagraph = doc.add_paragraph()\nrun = paragraph.add_run(\"Hello World\")\n\n# Get the text - should return \"Hello World\" but returns \"dlroW olleH\"\nprint(f\"Expected: Hello World\")\nprint(f\"Actual: {run.text}\")\n```\n\nThis also affects more complex text structures with tabs and line breaks:\n\n```python\nfrom docx import Document\n\ndoc = Document()\nparagraph = doc.add_paragraph()\nrun = paragraph.add_run(\"abc\\tdef\\n\")\n\nprint(f\"Expected: abc\\tdef\\n\")  \nprint(f\"Actual: {run.text}\")  # Returns reversed version\n```\n\nThe text content is being returned in reverse character order, which breaks any text processing or display functionality that relies on the `Run.text` property.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__06e730l5",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/text/test_run.py::DescribeRun::it_knows_the_text_it_contains[w:r/w:t\"foobar\"-foobar]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

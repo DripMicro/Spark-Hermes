@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0035-p13",
+ "round_id": "r0035",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDocument settings part returns None instead of SettingsPart instance\n\n#### Description\n\nWhen accessing the `_settings_part` property on a DocumentPart instance, it returns `None` instead of the expected SettingsPart object. This breaks functionality that depends on document settings.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx.parts.document import DocumentPart\n\n# Create a document part instance\ndocument_part = DocumentPart(None, None, None, None)\n\n# Try to access the settings part\nsettings_part = document_part._settings_part\n\nprint(f\"Expected: SettingsPart instance\")\nprint(f\"Actual: {settings_part}\")\nprint(f\"Type: {type(settings_part)}\")\n```\n\nThe above code should return a SettingsPart instance but instead returns `None`, which causes issues when trying to work with document settings.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__83wmtrfy",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/parts/test_document.py::DescribeDocumentPart::and_it_creates_a_default_settings_part_if_not_present",
+   "tests/parts/test_document.py::DescribeDocumentPart::it_provides_access_to_its_settings_part_to_help"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

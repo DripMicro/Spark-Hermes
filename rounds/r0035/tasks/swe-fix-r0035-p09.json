@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0035-p09",
+ "round_id": "r0035",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCase statement parsing returns None instead of condition/value pairs\n\n#### Description\n\nWhen parsing SQL CASE statements, the `get_cases()` method returns `None` instead of the expected list of condition/value pairs. This breaks formatting functionality for CASE statements.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlparse\n\n# Simple case statement\nsql = 'case when foo = 1 then 2 when foo = 3 then 4 else 5 end'\nparsed = sqlparse.parse(sql)[0]\n\n# Find the case statement\ncase_stmt = None\nfor token in parsed.flatten():\n    if hasattr(token, 'get_cases'):\n        case_stmt = token\n        break\n\nif case_stmt:\n    cases = case_stmt.get_cases()\n    print(f\"Cases: {cases}\")  # Expected: list of tuples, Actual: None\nelse:\n    print(\"No case statement found\")\n\n# This also breaks formatting\nformatted = sqlparse.format(sql, reindent=True)\nprint(f\"Formatted: {formatted}\")\n```\n\nExpected output should show a list of condition/value pairs, but instead `get_cases()` returns `None`, which causes formatting to fail.\n\n#### Environment\n\n- sqlparse version: latest\n- Python version: 3.x\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "andialbrecht__sqlparse.e57923b3.func_basic__p7hsxn1j",
+  "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3",
+  "fail_to_pass": [
+   "tests/test_format.py::TestFormatReindent::test_case",
+   "tests/test_format.py::TestFormatReindent::test_case2",
+   "tests/test_format.py::TestFormatReindentAligned::test_case_statement",
+   "tests/test_format.py::TestFormatReindentAligned::test_case_statement_with_between"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
