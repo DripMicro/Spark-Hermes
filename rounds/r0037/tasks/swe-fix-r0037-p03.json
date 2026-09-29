@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0037-p03",
+ "round_id": "r0037",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nClient authentication required returns False when 'no_auth' header present\n\n#### Description\n\nThe `client_authentication_required` method in `RequestValidator` now incorrectly returns `False` when a request contains a `'no_auth'` header, breaking existing OAuth2 flows that expect client authentication to be required by default.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth2.rfc6749.request_validator import RequestValidator\nfrom oauthlib.common import Request\n\n# Create a request validator\nvalidator = RequestValidator()\n\n# Test with normal request - should return True\nnormal_request = Request('http://example.com')\nprint(\"Normal request:\", validator.client_authentication_required(normal_request))\n\n# Test with 'no_auth' header - unexpectedly returns False\nrequest_with_no_auth = Request('http://example.com', headers={'no_auth': 'true'})\nprint(\"Request with no_auth header:\", validator.client_authentication_required(request_with_no_auth))\n```\n\nExpected output:\n```\nNormal request: True\nRequest with no_auth header: True\n```\n\nActual output:\n```\nNormal request: True\nRequest with no_auth header: False\n```\n\nThe method should consistently return `True` by default as per the OAuth2 specification, regardless of arbitrary headers in the request.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__rp8lzx3m",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth2/rfc6749/test_request_validator.py::RequestValidatorTest::test_method_contracts"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

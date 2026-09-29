@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0037-p07",
+ "round_id": "r0037",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nAUTOSAR e2e property returns None when attribute exists\n\n#### Description\n\nWhen accessing the `e2e` property on AUTOSAR message specifics, it returns `None` even when the end-to-end protection properties should be available. This affects messages that have valid e2e configurations in ARXML files.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load ARXML file with e2e properties\ndb = cantools.db.load_file('tests/files/arxml/system-4.2.arxml')\n\n# Get a message that should have e2e properties\nmsg = db.get_message_by_name('Message3')\n\n# This should return the e2e properties but returns None instead\nprint(msg.autosar.e2e)  # Expected: AutosarEnd2EndProperties object, Actual: None\n\n# Same issue with other messages\nmsg1 = db.get_message_by_name('Message1') \nprint(msg1.autosar.e2e)  # Expected: AutosarEnd2EndProperties object, Actual: None\n```\n\nThe issue also affects the output of the list command, where e2e properties are not displayed in message details even when they should be present in the ARXML file.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__eus4uuui",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar3_e2e_profile2",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e",
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e_profile5",
+   "tests/test_list.py::CanToolsListTest::test_arxml4"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

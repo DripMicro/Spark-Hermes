@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0037-p00",
+ "round_id": "r0037",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\ndate_ceil function returns incorrect results due to unreachable code\n\n#### Description\n\nThe `date_ceil` function in the optimizer's simplify module has unreachable code that causes it to always return an incorrect result. The function attempts to use variables before they are defined, leading to runtime errors.\n\n#### Steps/Code to Reproduce\n\n```python\nimport datetime\nfrom sqlglot.optimizer.simplify import date_ceil\nfrom sqlglot import Dialect\n\n# Try to use date_ceil function\nd = datetime.date(2023, 1, 15)\nunit = \"month\"\ndialect = Dialect()\n\nresult = date_ceil(d, unit, dialect)\n```\n\nThis will raise an `UnboundLocalError` because the function tries to use `floor` before it's defined.\n\nThe function should return the ceiling date (next boundary) for the given date and unit, but currently has logic errors that make parts of the code unreachable.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__bf31qn2p",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_simplify"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

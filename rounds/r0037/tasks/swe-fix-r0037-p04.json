@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0037-p04",
+ "round_id": "r0037",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nUnboundLocalError in Hive dialect date functions\n\n#### Description\n\nWhen using date functions in the Hive dialect, an `UnboundLocalError` is raised for variables `func` and `increment` that are referenced before assignment.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This will raise UnboundLocalError\nsql = \"SELECT DATE_ADD('2020-01-01', 1)\"\nresult = sqlglot.transpile(sql, read=\"hive\", write=\"hive\")\nprint(result)\n```\n\nThe error occurs when trying to transpile date addition/subtraction expressions in Hive dialect. The variables `func` and `increment` are being used before they are properly defined in the function scope.\n\n#### Expected Behavior\n\nThe code should successfully transpile date functions without raising UnboundLocalError.\n\n#### Actual Behavior\n\n```\nUnboundLocalError: cannot access local variable 'func' where it is not defined\n```\n\nThis affects various date operations including `DATE_ADD`, `DATE_SUB`, and related timestamp functions in the Hive dialect.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__64dgmblz",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_hive.py::TestHive::test_hive",
+   "tests/dialects/test_hive.py::TestHive::test_time"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

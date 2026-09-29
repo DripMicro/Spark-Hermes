@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0037-p01",
+ "round_id": "r0037",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDECODE function returns None when first argument is None\n\n#### Description\n\nWhen using the DECODE function with a None/NULL first argument, the function incorrectly returns None instead of processing the comparison logic.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import parse_one\n\n# This should work but returns None\nsql = \"SELECT DECODE(NULL, NULL, 'matched')\"\nparsed = parse_one(sql)\nprint(parsed.sql())  # Expected: \"SELECT CASE WHEN NULL IS NULL THEN 'matched' END\"\n                     # Actual: None or empty result\n\n# Another example that fails\nsql2 = \"SELECT DECODE(a, NULL, 'null_match', 'default')\"\nparsed2 = parse_one(sql2)\nprint(parsed2.sql())  # Should handle NULL comparison properly\n```\n\nThe issue occurs when the first expression argument to DECODE is None/NULL - the function exits early instead of continuing with the comparison logic.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_cond__l1pjb6xh",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_dialect.py::TestDialect::test_decode",
+   "tests/dialects/test_redshift.py::TestRedshift::test_redshift",
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_snowflake"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

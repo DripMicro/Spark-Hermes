@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0037-p06",
+ "round_id": "r0037",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTTL parsing broken after recent changes\n\n#### Description\n\nThe TTL parsing in CREATE TABLE statements is not working correctly. When parsing CREATE TABLE statements with TTL clauses, the parser seems to be processing the TTL expressions in the wrong order, causing syntax errors or incorrect parsing.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should parse correctly but doesn't\nsql = \"\"\"\nCREATE TABLE example_table\n(\n    d DateTime,\n    a Int\n)\nENGINE = MergeTree\nPARTITION BY toYYYYMM(d)\nORDER BY d\nTTL d + INTERVAL 1 MONTH DELETE,\n    d + INTERVAL 1 WEEK TO VOLUME 'aaa',\n    d + INTERVAL 2 WEEK TO DISK 'bbb'\n\"\"\"\n\nparsed = sqlglot.parse_one(sql, dialect=\"clickhouse\")\nprint(parsed)\n```\n\nThe parser appears to be processing TTL expressions before other clauses like WHERE and GROUP BY, which breaks the expected parsing order for ClickHouse CREATE TABLE statements with TTL clauses.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__o6k5w480",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_clickhouse.py::TestClickhouse::test_ddl"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
