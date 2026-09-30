@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0040-p01",
+ "round_id": "r0040",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nget_debug() returns inverted value\n\n#### Description\n\nThe `get_debug()` function is returning the opposite of what it should. When debug mode is enabled, it returns `False`, and when debug mode is disabled, it returns `True`.\n\n#### Steps/Code to Reproduce\n\n```python\nimport oauthlib\n\n# Set debug mode to True\noauthlib.set_debug(True)\nprint(\"Debug mode set to True, get_debug() returns:\", oauthlib.get_debug())\n\n# Set debug mode to False  \noauthlib.set_debug(False)\nprint(\"Debug mode set to False, get_debug() returns:\", oauthlib.get_debug())\n```\n\nExpected output:\n```\nDebug mode set to True, get_debug() returns: True\nDebug mode set to False, get_debug() returns: False\n```\n\nActual output:\n```\nDebug mode set to True, get_debug() returns: False\nDebug mode set to False, get_debug() returns: True\n```\n\nThis affects request sanitization behavior where sensitive information like tokens and passwords should be hidden when debug mode is disabled, but currently they're being hidden when debug mode is enabled instead.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__r5zihvvz",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/test_common.py::RequestTest::test_password_body",
+   "tests/test_common.py::RequestTest::test_sanitized_request_non_debug_mode",
+   "tests/test_common.py::RequestTest::test_sanitizing_authorization_header",
+   "tests/test_common.py::RequestTest::test_token_body"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

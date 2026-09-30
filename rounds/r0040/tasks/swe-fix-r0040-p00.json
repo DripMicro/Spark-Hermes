@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0040-p00",
+ "round_id": "r0040",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nobject_type helper returns None for functions and modules\n\n#### Description\n\nThe `object_type` helper function in `astroid.helpers` is returning `None` instead of the expected type objects for functions and modules. This breaks type inference and causes various parts of the codebase that depend on proper type information to fail.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\nfrom astroid import helpers, builder\n\n# Test with a function\nfunc_node = builder.extract_node('lambda: None')\nfunc_type = helpers.object_type(func_node)\nprint(f\"Function type: {func_type}\")  # Expected: function type, Got: None\n\n# Test with a module\nmodule_node = builder.extract_node('import sys\\nsys#@')\nmodule_type = helpers.object_type(module_node)\nprint(f\"Module type: {module_type}\")  # Expected: module type, Got: None\n```\n\nThe above code should return proper type objects but instead returns `None` for both cases. This affects various functionality including six.moves attribute access and other type-dependent operations.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__leubeder",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_six.py::SixBrainTest::test_attribute_access",
+   "tests/brain/test_six.py::SixBrainTest::test_attribute_access_with_six_moves_imported",
+   "tests/test_helpers.py::TestHelpers::test_object_type",
+   "tests/test_helpers.py::TestHelpers::test_object_type_classes_and_functions",
+   "tests/test_inference.py::InferenceTest::test_binary_op_type_errors",
+   "tests/test_object_model.py::UnboundMethodModelTest::test_unbound_method_model",
+   "tests/test_scoped_nodes.py::ClassNodeTest::test_metaclass_generator_hack"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

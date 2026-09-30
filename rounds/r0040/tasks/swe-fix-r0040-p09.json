@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0040-p09",
+ "round_id": "r0040",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nKCD XML indentation broken after recent changes\n\n#### Description\n\nThe XML indentation in KCD format output is incorrect. When dumping a database to KCD format, the indentation levels are not properly calculated, resulting in malformed XML structure.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a KCD file and dump it back to string\ndb = cantools.database.load_file('tests/files/kcd/dump.kcd')\nkcd_output = db.as_kcd_string()\nprint(kcd_output)\n```\n\nThe output shows incorrect indentation where nested XML elements are not properly indented relative to their parent elements. For example:\n\nExpected:\n```xml\n<NetworkDefinition>\n  <Document version=\"1.0\" />\n  <Node id=\"1\" name=\"Node1\" />\n    <Bus name=\"Bus\">\n      <Message id=\"0x001\" name=\"Message1\" length=\"5\">\n        <Producer>\n          <NodeRef id=\"1\" />\n        </Producer>\n      </Message>\n    </Bus>\n</NetworkDefinition>\n```\n\nActual:\n```xml\n<NetworkDefinition>\n<Document version=\"1.0\" />\n<Node id=\"1\" name=\"Node1\" />\n<Bus name=\"Bus\">\n<Message id=\"0x001\" name=\"Message1\" length=\"5\">\n<Producer>\n<NodeRef id=\"1\" />\n</Producer>\n</Message>\n</Bus>\n</NetworkDefinition>\n```\n\nThe indentation appears to be using a fixed value instead of properly scaling with the nesting level.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_op_break_chains__sgkjd7il",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_as_kcd_string"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

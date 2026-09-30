@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0040-p12",
+ "round_id": "r0040",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPlotting with Timestamps and Line Numbers\n\nI've encountered an issue when trying to plot data using the `cantools` command-line tool with the `plot` subcommand. The problem arises when attempting to plot data with timestamps and line numbers, which seems to cause a mismatch in the expected behavior.\n\nHere's a minimal example to reproduce the issue:\n\n```python\nimport cantools\n\n# Sample input data with timestamps\ninput_data = '''\n(000.000000)  vcan0  00000343   [8]  C2 04 C9 04 D0 04 C2 04\n(001.001586)  vcan0  00000343   [8]  8C 04 8C 04 94 04 9B 04\n(001.001788)  vcan0  00000343   [8]  29 04 05 04 30 04 14 04\n'''\n\n# Command-line arguments for plotting\nargv = ['cantools', 'plot', '--line-numbers', 'sample.dbc']\n\n# Mocking the input and arguments\nwith mock.patch('sys.stdin', StringIO(input_data)):\n    with mock.patch('sys.argv', argv):\n        cantools._main()\n```\n\nExpected behavior: The plot should correctly display the data with line numbers as the x-axis labels.\n\nActual behavior: The plot seems to incorrectly handle the timestamps, resulting in a mismatch between the expected and actual plot calls. The x-axis labels are not as expected, and there are errors related to unsupported operations between different data types.\n\nThis issue seems to be related to how timestamps and line numbers are parsed and used in the plotting function. It would be great to have a consistent way to handle both timestamps and line numbers in the plots.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__jcytdyxj",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_plot.py::CanToolsPlotTest::test_plot_td",
+   "tests/test_plot.py::CanToolsPlotTest::test_show_all_errors",
+   "tests/test_plot.py::CanToolsPlotTest::test_show_invalid_syntax",
+   "tests/test_plot.py::CanToolsPlotTest::test_start_absolute_seconds",
+   "tests/test_plot.py::CanToolsPlotTest::test_start_stop_relative",
+   "tests/test_plot.py::CanToolsPlotTest::test_stop_is_based_on_start_and_xlabel_shows_start",
+   "tests/test_plot.py::CanToolsPlotTest::test_stop_line_numbers"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

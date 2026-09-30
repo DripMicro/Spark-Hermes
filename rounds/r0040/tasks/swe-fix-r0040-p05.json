@@ -1,0 +1,30 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0040-p05",
+ "round_id": "r0040",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSYM format dump fails with UnboundLocalError for message_str\n\nWhen trying to dump a database to SYM format, the operation fails with `UnboundLocalError: local variable 'message_str' referenced before assignment`. This happens when calling `as_sym_string()` or similar dump operations on databases containing various message types.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load any database and try to dump it as SYM format\ndb = cantools.database.load_file('some_database.dbc')\nsym_string = db.as_sym_string()  # This will fail\n```\n\nThe error occurs for databases with extended frame messages, multiplexed messages, and regular messages when attempting to convert them to SYM format.\n\n#### Error Output\n\n```\nUnboundLocalError: local variable 'message_str' referenced before assignment\n```\n\nThis affects the ability to export databases to SYM format, which is a critical functionality for interoperability with other CAN tools.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_remove_assign__dy7qoqnj",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_extended_id_sym_dump",
+   "tests/test_database.py::CanToolsDatabaseTest::test_jopp_6_0_sym_re_read",
+   "tests/test_database.py::CanToolsDatabaseTest::test_multiline_enum_sym_parsing",
+   "tests/test_database.py::CanToolsDatabaseTest::test_multiplex_sym_dump",
+   "tests/test_database.py::CanToolsDatabaseTest::test_multiplex_sym_with_empty_signal_name_dump",
+   "tests/test_database.py::CanToolsDatabaseTest::test_vehicle"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
