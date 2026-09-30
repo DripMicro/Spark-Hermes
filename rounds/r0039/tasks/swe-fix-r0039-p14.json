@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0039-p14",
+ "round_id": "r0039",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# ENUM values in DBC attribute definitions are not properly converted to integers\n\n## Description\n\nI've discovered an issue with the DBC parser when handling ENUM values in attribute definitions. When loading a DBC file with ENUM attribute definitions, the parser fails with a `decimal.ConversionSyntax` error.\n\nThe problem occurs when trying to load DBC files that contain node-message relation attributes (BU_BO_REL) with ENUM values. The parser is not properly converting ENUM values to integers, which causes the error.\n\n## Steps to reproduce\n\n1. Create a DBC file with ENUM attribute definitions in node-message relations\n2. Try to load the file using `cantools.database.load_file()`\n\nExample DBC file content:\n```\nBA_DEF_REL_ BU_BO_REL \"MsgProject\" ENUM \"None\",\"Project1\",\"Project2\";\nBA_DEF_DEF_REL_ \"MsgProject\" \"None\";\nBA_REL_ \"MsgProject\" BU_BO_REL ECU1 2048 2;\n```\n\n## Expected behavior\nThe DBC file should load successfully, and the ENUM values should be properly converted to integers.\n\n## Actual behavior\nThe parser fails with a `decimal.ConversionSyntax` error when trying to convert the ENUM value.\n\nThis seems to be related to the `convert_value` function in `dbc.py` which doesn't properly handle ENUM values in the same way as INT and HEX values.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__jb9z9i9m",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_dbc_BU_BO_REL",
+   "tests/test_database.py::CanToolsDatabaseTest::test_relation_message_attributes"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

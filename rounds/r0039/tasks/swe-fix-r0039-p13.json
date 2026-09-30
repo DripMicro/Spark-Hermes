@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0039-p13",
+ "round_id": "r0039",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nget_contained_message_by_name returns wrong message when no contained messages exist\n\n#### Description\n\nWhen calling `get_contained_message_by_name()` on a message that has no contained messages, the method incorrectly returns the parent message itself instead of `None`.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a database with container messages\ndb = cantools.db.load_file('tests/files/arxml/system-4.2.arxml')\n\n# Get a regular message (not a container)\nmsg = db.get_message_by_name('Message1')\n\n# Try to get a contained message - should return None but returns the message itself\nresult = msg.get_contained_message_by_name('some_name')\nprint(f\"Expected: None, Got: {result}\")\nprint(f\"Is same object: {result is msg}\")\n```\n\nExpected output:\n```\nExpected: None, Got: None\nIs same object: False\n```\n\nActual output:\n```\nExpected: None, Got: <Message(Message1, 0x123, 8, None)>\nIs same object: True\n```\n\nThis causes issues when working with container messages where you expect `None` to indicate that a contained message doesn't exist, but instead get the parent message back.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__enqncpr3",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_autosar.py::CanToolsAutosarTest::test_autosar4_e2e",
+   "tests/test_database.py::CanToolsDatabaseTest::test_encode_decode_containers",
+   "tests/test_database.py::CanToolsDatabaseTest::test_gather_signals"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

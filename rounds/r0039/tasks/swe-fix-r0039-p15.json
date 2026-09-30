@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0039-p15",
+ "round_id": "r0039",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTokenEndpoint default_grant_type returns None for authorization_code\n\n#### Description\n\nWhen using TokenEndpoint with authorization_code as the default grant type, the `default_grant_type` property unexpectedly returns `None` instead of the expected `\"authorization_code\"` string.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth2.rfc6749.endpoints.token import TokenEndpoint\n\n# Create a token endpoint with authorization_code as default\nendpoint = TokenEndpoint()\nendpoint._default_grant_type = \"authorization_code\"\n\n# This should return \"authorization_code\" but returns None\nprint(f\"Expected: authorization_code, Got: {endpoint.default_grant_type}\")\n\n# Other grant types work as expected\nendpoint._default_grant_type = \"client_credentials\"\nprint(f\"Expected: client_credentials, Got: {endpoint.default_grant_type}\")\n```\n\nThis causes issues when the token endpoint tries to handle requests without an explicit grant_type parameter, as it can't fall back to the configured default grant type when it's set to authorization_code.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__xybavrjw",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth2/rfc6749/endpoints/test_error_responses.py::ErrorResponseTest::test_unsupported_grant_type",
+   "tests/oauth2/rfc6749/test_server.py::SignedTokenEndpointTest::test_invalid_type",
+   "tests/oauth2/rfc6749/test_server.py::SignedTokenEndpointTest::test_missing_type",
+   "tests/oauth2/rfc6749/test_server.py::TokenEndpointTest::test_invalid_type",
+   "tests/oauth2/rfc6749/test_server.py::TokenEndpointTest::test_missing_type",
+   "tests/openid/connect/core/test_server.py::TokenEndpointTest::test_invalid_type",
+   "tests/openid/connect/core/test_server.py::TokenEndpointTest::test_missing_type"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

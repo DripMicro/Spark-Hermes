@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0039-p04",
+ "round_id": "r0039",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nNameError in merge_subqueries optimizer after removing inner_from_table variable\n\n#### Description\n\nThe merge_subqueries optimizer is throwing a NameError because the `inner_from_table` variable was removed but is still being referenced in the code.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# This will trigger the NameError\nsql = \"SELECT * FROM (SELECT a FROM table1) AS subq\"\noptimized = optimizer.optimize(sql)\n```\n\nThe error occurs when the merge_subqueries optimization rule tries to process subqueries that reference the `inner_from_table` variable which no longer exists.\n\n#### Error\n\n```\nNameError: name 'inner_from_table' is not defined\n```\n\nThis happens in the `_mergeable` function where `inner_from_table` is used in a comparison but the variable definition was accidentally removed.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_assign__2qifh9pp",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_merge_subqueries",
+   "tests/test_optimizer.py::TestOptimizer::test_optimize",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds",
+   "tests/test_optimizer.py::TestOptimizer::test_tpch"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
