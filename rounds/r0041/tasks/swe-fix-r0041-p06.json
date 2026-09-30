@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0041-p06",
+ "round_id": "r0041",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nArguments.get_arguments_info returns incorrect type annotations\n\n#### Description\n\nThe `get_arguments_info` method in the `Arguments` class is returning incorrect type annotations due to syntax errors in the type hints. The method uses invalid operators like `^` and `&` instead of the union operator `|` in type annotations, causing issues when processing function arguments.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ncode = \"\"\"\nfrom dataclasses import dataclass\n\n@dataclass\nclass TestClass:\n    attr: int\n\n    @property\n    def attr(self) -> int:\n        return 1\n\n    @attr.setter\n    def attr(self, value: int) -> None:\n        pass\n\"\"\"\n\nmodule = astroid.parse(code)\ncls = module.body[1]\ninit_method = cls['__init__']\nargs_info = init_method.args.get_arguments_info()\n```\n\nThis will fail due to invalid type annotations in the `get_arguments_info` method implementation.\n\n#### Expected Behavior\n\nThe method should return proper type annotations using valid Python type hint syntax with union operators (`|` or `Union`).\n\n#### Actual Behavior\n\nThe method contains syntax errors in type annotations using invalid operators (`^` for XOR and `&` for AND) instead of union operators, and incorrect arithmetic operations when calculating default value offsets.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_op_change__6pvj4s37",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_dataclasses.py::test_dataclass_with_multiple_inheritance",
+   "tests/brain/test_dataclasses.py::test_dataclass_with_properties"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

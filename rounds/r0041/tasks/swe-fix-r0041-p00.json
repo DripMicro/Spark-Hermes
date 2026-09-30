@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0041-p00",
+ "round_id": "r0041",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nchild_sequence method raises AstroidError immediately instead of searching for child\n\n#### Description\n\nThe `child_sequence` method in `NodeNG` class raises an `AstroidError` at the beginning of the method instead of performing the actual search for the child node in the parent's sequences.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ncode = \"\"\"\ndef global_access():\n    pass\n\nclass YO:\n    pass\n\"\"\"\n\nmodule = astroid.parse(code)\nfunction = module['global_access']\nchild = function.args.args[0] if function.args.args else function.args\n\n# This should work but raises AstroidError immediately\ntry:\n    result = child.previous_sibling()\n    print(\"Success:\", result)\nexcept Exception as e:\n    print(\"Error:\", e)\n```\n\nThe method should search through the parent node's fields to find which sequence contains the child, but instead it immediately raises an error before doing any search.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_ctrl_shuffle__s860qixq",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_scoped_nodes.py::ClassNodeTest::test_navigation",
+   "tests/test_scoped_nodes.py::FunctionNodeTest::test_navigation"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

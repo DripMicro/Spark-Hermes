@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0041-p07",
+ "round_id": "r0041",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nStyle uiPriority returns 0 instead of None when element is missing\n\n#### Description\n\nWhen a style doesn't have a `<w:uiPriority>` element, the `uiPriority_val` property incorrectly returns `0` instead of `None`.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.styles.style import BaseStyle\n\n# Create a document and get a style without uiPriority element\ndoc = Document()\nstyle = doc.styles['Normal']\n\n# This should return None when uiPriority element is missing\n# but currently returns 0\nprint(f\"uiPriority value: {style.priority}\")\nprint(f\"Expected: None, Got: {style.priority}\")\n```\n\nThe issue occurs because the property now returns `0` for both cases:\n1. When the `<w:uiPriority>` element is missing (should return `None`)  \n2. When the `<w:uiPriority>` element exists but has `val=\"0\"` (should return `0`)\n\nThis breaks the ability to distinguish between a style that explicitly has priority 0 versus a style that has no priority set at all.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__6gxr5mf4",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/styles/test_style.py::DescribeBaseStyle::it_knows_its_sort_order[priority_get_fixture0]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

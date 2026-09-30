@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0041-p04",
+ "round_id": "r0041",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### Issue with `are_exclusive` Function in Handling Walrus Operator and Try-Except Blocks\n\n#### Description\n\nIt seems there's an issue with the `are_exclusive` function when dealing with certain Python constructs, specifically the walrus operator and try-except blocks. The function is expected to determine if two statements are mutually exclusive, but it appears to be failing in some scenarios involving these constructs.\n\n#### Steps to Reproduce\n\n1. Create a Python script with two statements using the walrus operator within an `if` condition.\n2. Use the `are_exclusive` function to check if these statements are exclusive.\n3. Observe the behavior when the statements are within a try-except block.\n\nExample:\n\n```python\n# Example with walrus operator\na = 0\nif (b := a + 1) > 0:\n    print(\"Positive\")\nelse:\n    print(\"Non-positive\")\n\n# Example with try-except\ntry:\n    x = 1 / 0\nexcept ZeroDivisionError:\n    print(\"Caught division by zero\")\n```\n\n#### Expected Results\n\nThe `are_exclusive` function should correctly identify whether the statements are exclusive in both scenarios.\n\n#### Actual Results\n\nThe function does not correctly handle the exclusivity check for statements involving the walrus operator and try-except blocks, leading to unexpected results.\n\n#### Additional Information\n\nThis issue might affect codebases relying on the `are_exclusive` function for control flow analysis, especially in complex conditional and exception handling scenarios.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.lm_rewrite__2y9zrs62",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_utils.py::InferenceUtil::test_not_exclusive_walrus_multiple",
+   "tests/test_utils.py::InferenceUtil::test_not_exclusive_walrus_operator",
+   "tests/test_utils.py::InferenceUtil::test_not_exclusive_walrus_operator_nested",
+   "tests/test_utils.py::InferenceUtil::test_try_except"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

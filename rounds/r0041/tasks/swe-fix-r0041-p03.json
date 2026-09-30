@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0041-p03",
+ "round_id": "r0041",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nBus listing shows no output when specific bus names are provided\n\n#### Description\n\nWhen using the `cantools list` command with the `--buses` option and specifying particular bus names, no output is produced even when those buses exist in the database.\n\n#### Steps/Code to Reproduce\n\n```python\n# Using cantools list with specific bus names\n# Expected: Should show details for the specified buses\n# Actual: No output is produced\n\n# Example with ARXML file containing buses\ncantools list --buses tests/files/arxml/system-3.2.3.arxml Network\ncantools list --buses tests/files/arxml/system-4.2.arxml Cluster0\n```\n\nThe issue occurs when trying to list specific buses by name. The command should display information about the requested buses, but instead produces empty output.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__iivlb2p2",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_list.py::CanToolsListTest::test_arxml3",
+   "tests/test_list.py::CanToolsListTest::test_arxml4"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

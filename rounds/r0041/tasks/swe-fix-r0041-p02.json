@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0041-p02",
+ "round_id": "r0041",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nGIF image handling returns wrong content type and dimensions\n\n#### Description\n\nWhen working with GIF images, the library incorrectly reports the content type as PNG instead of GIF, and the dimensions are swapped (width/height reversed).\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx.image.gif import Gif\nfrom docx import MIME_TYPE\nimport io\n\n# Test content type\ngif = Gif(None, None, None, None)\nprint(f\"Expected: {MIME_TYPE.GIF}\")\nprint(f\"Actual: {gif.content_type}\")\n\n# Test dimensions parsing\ncx, cy = (42, 24)  # expected width=42, height=24\nbytes_ = b'filler*\\x00\\x18\\x00'  # sample GIF header bytes\nstream = io.BytesIO(bytes_)\ngif = Gif.from_stream(stream)\nprint(f\"Expected dimensions: width={cx}, height={cy}\")\nprint(f\"Actual dimensions: width={gif.px_width}, height={gif.px_height}\")\n```\n\nThe content type should be `image/gif` but returns `image/png`. Additionally, when parsing GIF dimensions from the stream, width and height values get swapped.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.combine_file__saqbej7k",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/image/test_gif.py::DescribeGif::it_can_construct_from_a_gif_stream",
+   "tests/image/test_gif.py::DescribeGif::it_knows_its_content_type",
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[1]",
+   "tests/image/test_image.py::Describe_ImageHeaderFactory::it_constructs_the_right_class_for_a_given_image_stream[call_fixture3]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
