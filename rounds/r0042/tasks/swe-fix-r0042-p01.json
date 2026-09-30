@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0042-p01",
+ "round_id": "r0042",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# typing.cast() function doesn't work correctly with multiple inference calls\n\n## Description\n\nI've discovered an issue with the `typing.cast()` function in astroid. When using `typing.cast()` inside a function that's called multiple times with different types, only the first type is correctly inferred.\n\nFor example, take this code with a generic function using `typing.cast()`:\n\n```python\nfrom typing import TypeVar, cast\nT = TypeVar(\"T\")\ndef ident(var: T) -> T:\n    return cast(T, var)\n\nident(2)\nident(\"Hello\")\n```\n\nWhen inferring the result of the first call `ident(2)`, it correctly returns `2` as an integer. However, when inferring the second call `ident(\"Hello\")`, it incorrectly returns `2` again instead of the string `\"Hello\"`.\n\nIt seems like the inference result for `cast()` is being cached or stored somewhere, and subsequent calls to the same function are reusing the first inference result instead of evaluating each call independently.\n\n## Steps to reproduce\n\n1. Create a function that uses `typing.cast()` with a type variable\n2. Call the function multiple times with different types\n3. Try to infer the result of each call\n\nExpected behavior: Each call should infer to the correct type that was passed in.\nActual behavior: All calls infer to the type of the first call.\n\nThis is problematic for static analysis tools that rely on astroid for type inference, as it will lead to incorrect type information being reported for functions using `typing.cast()`.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.pr_2002",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_brain.py::TypingBrain::test_typing_cast_multiple_inference_calls"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

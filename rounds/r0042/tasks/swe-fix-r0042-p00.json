@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0042-p00",
+ "round_id": "r0042",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTable.autofit property returns inverted boolean value\n\n#### Description\n\nThe `Table.autofit` property is returning the opposite boolean value of what it should. When a table should have autofit enabled, it returns `False`, and when autofit should be disabled, it returns `True`.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.table import Table\n\n# Create a document with a table\ndoc = Document()\ntable = doc.add_table(rows=2, cols=2)\n\n# Check autofit property - this should return True for default autofit behavior\nprint(f\"Autofit value: {table.autofit}\")\nprint(f\"Expected: True\")\n\n# Set autofit to False explicitly\ntable.autofit = False\nprint(f\"After setting to False: {table.autofit}\")\nprint(f\"Expected: False\")\n\n# Set autofit to True explicitly  \ntable.autofit = True\nprint(f\"After setting to True: {table.autofit}\")\nprint(f\"Expected: True\")\n```\n\nThe output shows inverted values where `True` is returned when `False` is expected and vice versa.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__koe48vt5",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_table.py::DescribeTable::it_knows_whether_it_should_autofit[w:tbl/w:tblPr-True]",
+   "tests/test_table.py::DescribeTable::it_knows_whether_it_should_autofit[w:tbl/w:tblPr/w:tblLayout-True]",
+   "tests/test_table.py::DescribeTable::it_knows_whether_it_should_autofit[w:tbl/w:tblPr/w:tblLayout{w:type=autofit}-True]",
+   "tests/test_table.py::DescribeTable::it_knows_whether_it_should_autofit[w:tbl/w:tblPr/w:tblLayout{w:type=fixed}-False]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

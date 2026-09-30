@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0042-p04",
+ "round_id": "r0042",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nGPXTrack.get_duration() raises UnboundLocalError when track has segments\n\n#### Description\n\nWhen calling `get_duration()` on a GPXTrack object that contains segments, an `UnboundLocalError` is raised because the `result` variable is referenced before assignment.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\nimport datetime\n\n# Create a GPX track with segments\ngpx = gpxpy.GPX()\ngpx.tracks.append(gpxpy.GPXTrack())\ngpx.tracks[0].segments.append(gpxpy.GPXTrackSegment())\ngpx.tracks[0].segments[0].points.append(\n    gpxpy.GPXTrackPoint(\n        latitude=12, \n        longitude=13, \n        time=datetime.datetime(2013, 1, 1, 12, 30)\n    )\n)\n\n# This should return 0 but raises UnboundLocalError instead\nduration = gpx.get_duration()\n```\n\nThe error occurs because the code tries to use `result` before it's defined when the track has segments.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_pm_ctrl_shuffle__xju8zsn6",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_get_duration"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,33 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0042-p03",
+ "round_id": "r0042",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nKCD signal value attributes incorrectly parsed\n\nWhen loading KCD files, signal value attributes are being parsed incorrectly. The min/max values are swapped, slope has wrong sign, and signed/float type detection is broken.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a KCD file with signal value attributes\ndb = cantools.db.load_file('tests/files/kcd/the_homer.kcd')\n\n# Check a signal with value attributes\noutside_temp = db.get_message_by_name('ABS').get_signal_by_name('OutsideTemp')\nprint(f\"Min: {outside_temp.minimum}, Max: {outside_temp.maximum}\")\nprint(f\"Scale: {outside_temp.scale}\")\nprint(f\"Signed: {outside_temp.is_signed}\")\n\n# Expected: Min: 0, Max: 100, Scale: 0.05, Signed: False\n# Actual: Min: 100, Max: 0, Scale: -0.05, Signed: True\n```\n\nThe issue affects signal encoding/decoding and causes overflow errors when trying to encode values that should be valid according to the original KCD specification.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__r790xhqe",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_convert.py::CanToolsConvertFullTest::test_kcd_dump_default_sort_signals",
+   "tests/test_convert.py::CanToolsConvertFullTest::test_kcd_dump_sort_signals_by_name",
+   "tests/test_database.py::CanToolsDatabaseTest::test_as_kcd_string",
+   "tests/test_database.py::CanToolsDatabaseTest::test_encode_signal_strict",
+   "tests/test_database.py::CanToolsDatabaseTest::test_the_homer",
+   "tests/test_database.py::CanToolsDatabaseTest::test_the_homer_encode_decode_choice_scaling",
+   "tests/test_database.py::CanToolsDatabaseTest::test_the_homer_encode_decode_signed",
+   "tests/test_database.py::CanToolsDatabaseTest::test_the_homer_float",
+   "tests/test_list.py::CanToolsListTest::test_kcd"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790781308.4221654,
- "round_id": "r0041",
- "stage": "done",
+ "updated": 1790781315.026117,
+ "round_id": "r0042",
+ "stage": "window",
  "stages": [
   "open",
   "window",
@@ -15,100 +15,19 @@
   "publish_close",
   "done"
  ],
- "started": 1790765730.2766194,
+ "started": 1790781314.964327,
  "phases": [
   {
    "stage": "start",
-   "t": 1790765730.2766194
-  },
-  {
-   "stage": "open",
-   "t": 1790765732.95192
-  },
-  {
-   "stage": "window",
-   "t": 1790772932.8147233
-  },
-  {
-   "stage": "seal",
-   "t": 1790772947.7262342
-  },
-  {
-   "stage": "images",
-   "t": 1790772958.255659
-  },
-  {
-   "stage": "evaluate_relaunch",
-   "t": 1790777449.9825008
-  },
-  {
-   "stage": "evaluate_relaunch",
-   "t": 1790779054.9220245
-  },
-  {
-   "stage": "evaluate",
-   "t": 1790781259.2060113
-  },
-  {
-   "stage": "close",
-   "t": 1790781264.091021
-  },
-  {
-   "stage": "crown",
-   "t": 1790781264.109854
-  },
-  {
-   "stage": "merge",
-   "t": 1790781287.515434
-  },
-  {
-   "stage": "dethroned",
-   "t": 1790781292.4017165
-  },
-  {
-   "stage": "announce",
-   "t": 1790781301.6034448
-  },
-  {
-   "stage": "export",
-   "t": 1790781307.7271254
+   "t": 1790781314.964327
   }
  ],
  "window": {
-  "opens_at": 1790765730.27485,
-  "closes_at": 1790772930.27485,
+  "opens_at": 1790781314.9579096,
+  "closes_at": 1790788514.9579096,
   "seconds": 7200
  },
- "submissions": [
-  {
-   "pr": 390,
-   "hotkey": "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh",
-   "created_at": "2026-09-30T11:04:32Z",
-   "updated_at": "2026-09-30T11:05:56Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/390"
-  },
-  {
-   "pr": 389,
-   "hotkey": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
-   "created_at": "2026-09-30T10:56:54Z",
-   "updated_at": "2026-09-30T10:57:39Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/389"
-  },
-  {
-   "pr": 388,
-   "hotkey": "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
-   "created_at": "2026-09-30T10:56:32Z",
-   "updated_at": "2026-09-30T10:57:41Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/388"
-  },
-  {
-   "pr": 387,
-   "hotkey": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
-   "created_at": "2026-09-30T10:56:18Z",
-   "updated_at": "2026-09-30T10:57:43Z",
-   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/387"
-  }
- ],
+ "submissions": [],
  "github": {
   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": "dato-bitar",
   "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": "Tet-9",
@@ -158,301 +77,23 @@
  },
  "last_round": "r0041",
  "tasks": 6,
- "active": {
-  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
-   "pr": 388,
-   "head": "3b628fbab75d102272b2b0ee9413429a6a965e9c",
-   "bundle_sha256": "8615b4a7139bacc0d5e3a99ebc7aa3abbca6e1f0721cc022039c40e62a6721b2",
-   "incumbent": true,
-   "was_incumbent": false,
-   "defense": true,
-   "github": "kaivaryn"
-  },
-  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
-   "pr": 387,
-   "head": "c98b742c4bea18c7001f67b3795d45f9dbbee3de",
-   "bundle_sha256": "03d9486439b1ba590f50c902ba334a0342eaae3e41a7eb4ab7919498346db8b7",
-   "incumbent": false,
-   "was_incumbent": false,
-   "defense": false,
-   "github": "harrythomasben"
-  },
-  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
-   "pr": 389,
-   "head": "df4dd07ba99b069aa7a57d5c11b707bbd01cfcd6",
-   "bundle_sha256": "5bff188327c49aa671952d7b4729ac129aa2216a577e0ca71573377c864ed993",
-   "incumbent": false,
-   "was_incumbent": false,
-   "defense": false,
-   "github": "dato-bitar"
-  },
-  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
-   "pr": 390,
-   "head": "334483500ab98b3b2d3301e9c2bf17de56891262",
-   "bundle_sha256": "faed7ae58515e9d7bf3e46deb79f2721cfdd1aee4889637de2499e1a803e773d",
-   "incumbent": false,
-   "was_incumbent": false,
-   "defense": false,
-   "github": "kaivexa"
-  }
- },
+ "active": {},
  "rejected": {},
- "progress": {
-  "done": 17,
-  "total": 30,
-  "by_surface": {
-   "null": {
-    "n": 6,
-    "verified": 0,
-    "credit": 0.1833,
-    "tasks": {
-     "swe-fix-r0041-07": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-06": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-04": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-03": {
-      "credit": 0.6,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-00": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-02": {
-      "credit": 0.5,
-      "verified": false,
-      "void": false,
-      "dq": false
-     }
-    }
-   },
-   "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
-    "n": 5,
-    "verified": 2,
-    "credit": 0.7629,
-    "tasks": {
-     "swe-fix-r0041-02": {
-      "credit": 0.5,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-00": {
-      "credit": 1.0,
-      "verified": true,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-03": {
-      "credit": 0.6,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-07": {
-      "credit": 0.7143,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-06": {
-      "credit": 1.0,
-      "verified": true,
-      "void": false,
-      "dq": false
-     }
-    }
-   },
-   "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
-    "n": 6,
-    "verified": 2,
-    "credit": 0.5524,
-    "tasks": {
-     "swe-fix-r0041-02": {
-      "credit": 1.0,
-      "verified": true,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-03": {
-      "credit": 0.6,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-00": {
-      "credit": 1.0,
-      "verified": true,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-07": {
-      "credit": 0.7143,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-04": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     },
-     "swe-fix-r0041-06": {
-      "credit": 0.0,
-      "verified": false,
-      "void": false,
-      "dq": false
-     }
-    }
-   }
-  }
- },
- "crown": {
-  "schema": "sh-crown-v1",
-  "round_id": "r0041",
-  "king": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
-  "standings": {
-   "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
-    "n": 0,
-    "verified": 0,
-    "dq": 0,
-    "credit": null,
-    "delta": null
-   },
-   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
-    "n": 0,
-    "verified": 0,
-    "dq": 0,
-    "credit": null,
-    "delta": null
-   },
-   "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
-    "n": 6,
-    "verified": 2,
-    "dq": 0,
-    "credit": 0.552381,
-    "delta": 0.369048,
-    "rank": 2
-   },
-   "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
-    "n": 5,
-    "verified": 2,
-    "dq": 0,
-    "credit": 0.762857,
-    "delta": 0.542857,
-    "rank": 1
-   }
-  },
-  "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired, not disqualified; a tie does not dethrone the incumbent; other ties by pooled \u0394c then a round-keyed hash"
- },
- "scores": {
-  "weights": {
-   "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": 0.008123035602424354,
-   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.31307942478208234,
-   "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.3716520796854507,
-   "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.26502358983037433,
-   "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": 0.042121870099668224
-  },
-  "king": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
-  "per_hotkey": {
-   "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
-    "n": 42,
-    "score": 0.005952,
-    "mean_d": 0.005952,
-    "se": 0.028878,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": null
-   },
-   "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
-    "n": 42,
-    "score": 0.229403,
-    "mean_d": 0.229403,
-    "se": 0.060976,
-    "delta_c": 0.15135373942227995,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": null
-   },
-   "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
-    "n": 48,
-    "score": 0.272321,
-    "mean_d": 0.272321,
-    "se": 0.065943,
-    "delta_c": 0.1879139712096756,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 1,
-    "reason": null
-   },
-   "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
-    "n": 47,
-    "score": 0.194191,
-    "mean_d": 0.194191,
-    "se": 0.062441,
-    "delta_c": 0.11426700319415416,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": null
-   },
-   "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
-    "n": 36,
-    "score": 0.030864,
-    "mean_d": 0.030864,
-    "se": 0.031802,
-    "delta_c": 0.0,
-    "gate": true,
-    "overfit_rate": 0.0,
-    "dq": 0,
-    "reason": null
-   }
-  },
-  "family_stats": {
-   "swe_fix": {
-    "null_p": 0.020833333333333332,
-    "canon_p": 0.0,
-    "null_credit": 0.0884,
-    "canon_credit": 0.2083,
-    "label": "frontier"
-   }
-  },
-  "commitments_ok": true
- },
+ "progress": {},
+ "crown": null,
+ "scores": null,
  "queue": [
-  {
-   "round_id": "r0042",
-   "tasks_sha256": "8774044399020b689e33ed02ac9a17f3ababbaccd032b74ea9c19625f36d16a3",
-   "tasks": 6,
-   "minted_at": 1790737041.5337372
-  },
   {
    "round_id": "r0043",
    "tasks_sha256": "a8f4a6190146111cadc9985aa88b32328ded182d24ea7ba086198d787b6fb7c9",
    "tasks": 6,
    "minted_at": 1790753016.9171033
+  },
+  {
+   "round_id": "r0044",
+   "tasks_sha256": "49efb7788f3f849c3a8331c65398395366383bed0b757c0ad25bd88b060dca7a",
+   "tasks": 6,
+   "minted_at": 1790771037.51715
   }
  ],
  "history": [
