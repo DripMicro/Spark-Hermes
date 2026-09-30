@@ -1,0 +1,201 @@
+{
+ "swe-fix-r0040-00": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_brain.py::TypingBrain::test_namedtuple_few_args"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_brain.py::TypingBrain::test_namedtuple_few_fields"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_brain.py::TypingBrain::test_namedtuple_inference_nonliteral"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/brain/test_brain.py::TypingBrain::test_namedtuple_inferred_as_class"
+    ]
+   ],
+   "assets_sha256": "e951bf70951a1e96788658c52a1c170780450cd8e5862d473a0b3ec1558dfb6c",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "96fc775268e56642ab309453a8f27589c558e3622536764c4a13648a77e99ed4",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.lm_rewrite__08v06c41",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0040-01": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/clients/test_base.py::ClientTest::test_add_mac_token"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/test_tokens.py::TokenTest::test_prepare_mac_header"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/test_utils.py::UtilsTests::test_host_from_uri"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/test_utils.py::UtilsTests::test_params_from_uri"
+    ]
+   ],
+   "assets_sha256": "066cbaa24f4f227d84657a580b36b54387f329444ac9a7eac7dcf3e2af368df6",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "4af2f03142c5d715310ac6bb71c09b0a392edfa9d792f1dfc64c2b2f6ff797d7",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "oauthlib__oauthlib.1fd52536.combine_file__6za0pzef",
+   "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536"
+  }
+ },
+ "swe-fix-r0040-02": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_bad_message_name"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_enable_disable"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_expect"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_flush_input"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_on_message"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_periodic_message_modify_signal_before_start"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_send"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_send_with_scaling"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_set_and_get_signals"
+    ]
+   ],
+   "assets_sha256": "1c2012b39ac68fda6696eff67d811940f79455008c98686b00ee621b04517407",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "85780b1aaecdc283cb91262213769caf76d4d2a3071a8551499e178af4c02805",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.combine_file__x23bjyg5",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0040-05": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_generate_c_source_generate_fuzzer"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_encode_decode_containers"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_gather_signals"
+    ]
+   ],
+   "assets_sha256": "63702cf26f2d0b8ccbed25fc8afd7f16a1530b2fae62ee878f6c4062eb1b4b8b",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "694a9765fb78570a5fbabfb80337834e07b46bd7c7c2155b60d7b4fa011bd51d",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.combine_module__94v6dlji",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0040-09": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_ecu_extract_arxml"
+    ]
+   ],
+   "assets_sha256": "fb753394415a46f5e9567b18ccfaf5e86a16dc911a7a79e6b6e788ef11a80f25",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "9a6e245c476d998b6e67024a82afaf64375f3c91c4249739f202ac628d27783e",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.combine_file__j2y9q08y",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0040-12": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_list.py::CanToolsListTest::test_arxml4"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_list.py::CanToolsListTest::test_kcd"
+    ]
+   ],
+   "assets_sha256": "73d630df12e48fdce3acef9aca3a589514572b894b6240f7ef5950f85b4cb259",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "2f85b02233427ecf7b6a08813e83f9bfe70ae29445cc62c7edcb47438c2feaf3",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.func_basic__ln0ffhyx",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ }
+}
