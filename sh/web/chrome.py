@@ -49,6 +49,6 @@ def footer(root: str, blurb: str) -> str:
   </div>
   <div><h3>Competition</h3><ul><li><a href="{root}live/">Live round</a></li><li><a href="{root}live/#season">Season standings</a></li><li><a href="{root}live/#rounds">Closed rounds</a></li></ul></div>
   <div><h3>Compete</h3><ul><li><a href="{root}guide/">Miner guide</a></li><li><a href="{root}pins/">Pins</a></li><li><a href="{root}#how">How a round runs</a></li></ul></div>
-  <div><h3>Open data</h3><ul><li><a href="{DATASET_URL}">Training dataset</a></li><li><a href="{REPO_URL}/tree/main/rounds">Round artefacts</a></li><li><a href="{REPO_URL}">Source code</a></li></ul></div>
+  <div><h3>Open</h3><ul><li><a href="{DATASET_URL}">Training dataset</a></li><li><a href="{REPO_URL}">Source code</a></li></ul></div>
   <div class="legal">Gittensor SN74 · MIT licence</div>
 </footer>"""

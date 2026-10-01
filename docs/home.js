@@ -16,6 +16,7 @@
   const hms = (s) => { s = Math.max(0, Math.round(s)); return pad(Math.floor(s / 3600)) + ":" + pad(Math.floor(s % 3600 / 60)) + ":" + pad(s % 60); };
   const ago = (t) => { const s = Math.max(0, Date.now() / 1000 - t);
     return s < 60 ? "just now" : s < 3600 ? Math.round(s / 60) + " min ago" : s < 86400 ? Math.round(s / 3600) + " h ago" : Math.round(s / 86400) + " d ago"; };
+  const pts = (d) => d == null ? "—" : (d > 0 ? "+" : d < 0 ? "−" : "±") + Math.abs(Math.round(100 * d));
   const rounds = () => (Array.isArray(ALL) && ALL.length ? ALL : (LIVE && LIVE.history) || []);
 
   // the same colours as the live board: one palette, in order of first appearance
@@ -155,24 +156,42 @@
   }
 
   let lastTimeline = "";
+  const TL_RECENT = 30;
+  let tlRange = "recent";
+  try { tlRange = localStorage.getItem("sh-tl-range") === "all" ? "all" : "recent"; } catch (e) { /* the default */ }
+  $("tl-range").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-range]"); if (!b) return;
+    tlRange = b.dataset.range;
+    try { localStorage.setItem("sh-tl-range", tlRange); } catch (err) { /* only this visit */ }
+    renderTimeline();
+  });
+  let tlResize = 0;
+  window.addEventListener("resize", () => { clearTimeout(tlResize); tlResize = setTimeout(renderTimeline, 200); });
   function renderTimeline() {
     const rs = rounds(), crowns = {};
     rs.forEach((r) => { if (r.king) crowns[r.king] = (crowns[r.king] || 0) + 1; });
-    const key = rs.map((r) => r.round_id + r.king).join();
+    const key = rs.map((r) => r.round_id + r.king).join() + tlRange + (window.innerWidth >> 6);
     if (key === lastTimeline) return;
     lastTimeline = key;
+    const every = rs, shown = tlRange === "all" ? every : every.slice(-TL_RECENT);
+    const tlBox = $("timeline");
+    const dense = tlBox.clientWidth > 0 && tlBox.clientWidth / Math.max(1, shown.length) < 20;   // too narrow for a face on each change of hands
+    $("tl-range").hidden = every.length <= TL_RECENT;
+    $("tl-all").textContent = "All " + every.length;
+    [...$("tl-range").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.range === tlRange)));
+    tlBox.classList.toggle("dense", dense);
     const dOf = (r) => r.king && r.crown && r.crown[r.king] ? r.crown[r.king].delta : null;
-    const maxD = Math.max(0.05, ...rs.map((r) => dOf(r) || 0));
+    const maxD = Math.max(0.05, ...shown.map((r) => dOf(r) || 0));
     let last = null;
-    $("timeline").innerHTML = rs.map((r) => {
+    tlBox.innerHTML = shown.map((r) => {
       const d = dOf(r), h = r.king ? Math.max(5, Math.round(100 * (d || 0) / maxD)) : 4;
-      const cap = r.king && r.king !== last ? avatar(r.king, "cap") : "";
+      const cap = !dense && r.king && r.king !== last ? avatar(r.king, "cap") : "";
       if (r.king) last = r.king;
-      const t = r.round_id + ": " + (r.king ? nameOf(r.king) + (d != null ? ", +" + Math.round(100 * d) + " pts over the baseline" : "") : "nobody beat the baseline");
-      return '<a class="tl' + (r.king ? "" : " none") + '" href="rounds/' + esc(r.round_id) + '/" style="height:' + h + "%;--c:" + (r.king ? color(r.king) : "#2a2545") + '" title="' + esc(t) + '" aria-label="' + esc(t) + '">' + cap + "</a>";
+      const tip = r.king ? nameOf(r.king) + (d != null ? ", " + pts(d) + " pts over the baseline" : "") : "nobody beat the baseline";
+      return '<a class="tl' + (r.king ? "" : " none") + '" href="rounds/' + esc(r.round_id) + '/"' + ' style="height:' + h + "%;--c:" + (r.king ? color(r.king) : "#2a2545") + '" data-tip-title="' + esc(r.round_id) + '" data-tip="' + esc(tip) + '" aria-label="' + esc(r.round_id + ": " + tip) + '">' + cap + "</a>";
     }).join("");
-    $("tl-first").textContent = rs.length ? rs[0].round_id : "";
-    $("tl-last").textContent = rs.length ? rs[rs.length - 1].round_id : "";
+    $("tl-first").textContent = shown.length ? shown[0].round_id : "";
+    $("tl-last").textContent = shown.length ? shown[shown.length - 1].round_id : "";
     $("legend").innerHTML = Object.keys(crowns).sort((a, b) => crowns[b] - crowns[a]).map((h) =>
       '<span style="--c:' + color(h) + '"><i></i><b>' + esc(nameOf(h)) + "</b> " + crowns[h] + "</span>").join("");
   }
