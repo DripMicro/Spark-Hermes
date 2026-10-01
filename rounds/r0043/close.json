@@ -1,0 +1,173 @@
+{
+ "schema": "sh-round-close-v3",
+ "scoring": "sh-scoring-v3 (credit)",
+ "round_id": "r0043",
+ "era": "e0",
+ "tasks": [
+  "swe-fix-r0043-02",
+  "swe-fix-r0043-04",
+  "swe-fix-r0043-05",
+  "swe-fix-r0043-06",
+  "swe-fix-r0043-07",
+  "swe-fix-r0043-08"
+ ],
+ "episodes": 263,
+ "family_stats": {
+  "swe_fix": {
+   "schema": "sh-family-stats-v2",
+   "family": "swe_fix",
+   "era": "e0",
+   "window": [
+    "r0036",
+    "r0037",
+    "r0038",
+    "r0039",
+    "r0040",
+    "r0041",
+    "r0042",
+    "r0043"
+   ],
+   "null": {
+    "n": 48,
+    "successes": 1,
+    "p": 0.020833333333333332,
+    "mean_credit": 0.0965,
+    "wilson": [
+     0.0037,
+     0.109
+    ],
+    "efficiency": {
+     "api_calls": {
+      "median": 15.0,
+      "p25": 15.0,
+      "n": 1
+     },
+     "tool_calls": {
+      "median": 17.0,
+      "p25": 17.0,
+      "n": 1
+     }
+    }
+   },
+   "canon": {
+    "n": 6,
+    "successes": 0,
+    "p": 0.0,
+    "mean_credit": 0.2083,
+    "wilson": [
+     0.0,
+     0.3903
+    ],
+    "efficiency": {},
+    "delta_c": 0.1118,
+    "delta_e": {},
+    "delta_e_paired_instances": 0
+   },
+   "label": "frontier",
+   "partial_rate": 0.0185,
+   "in_rotation": true,
+   "retirement": null
+  }
+ },
+ "scores": {
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "hotkey": "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh",
+   "n": 42,
+   "score": 0.10119,
+   "delta_c": 0.03216629017117238,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.053925,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 42,
+   "mean_d": 0.10119
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "hotkey": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
+   "n": 42,
+   "score": 0.236678,
+   "delta_c": 0.155067869657206,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.063758,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 42,
+   "mean_d": 0.236678
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "hotkey": "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
+   "n": 48,
+   "score": 0.282738,
+   "delta_c": 0.19844915403948338,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.065851,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 48,
+   "mean_d": 0.282738
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "hotkey": "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb",
+   "n": 47,
+   "score": 0.196555,
+   "delta_c": 0.1168958643261449,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.062234,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": null,
+   "paired": 47,
+   "mean_d": 0.196555
+  },
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+   "hotkey": "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc",
+   "n": 24,
+   "score": -0.013889,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": true,
+   "se": 0.013889,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "at or below the baseline: \u0394 -0.014 \u00b1 0.014",
+   "paired": 24,
+   "mean_d": -0.013889
+  },
+  "5CovGSVyGsbo4QfcWVBCM2DJj6RZq623B3NLRXr4E6XcPyXf": {
+   "hotkey": "5CovGSVyGsbo4QfcWVBCM2DJj6RZq623B3NLRXr4E6XcPyXf",
+   "n": 6,
+   "score": 0.0,
+   "delta_c": 0.0,
+   "delta_e": {},
+   "gate": false,
+   "se": null,
+   "overfit_rate": 0.0,
+   "dq": 0,
+   "reason": "6 window episodes < 8"
+  }
+ },
+ "weights": {
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": 0.12383116668563478,
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.28963447839532236,
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.3460003597822216,
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.24053399513682128,
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": 0.0,
+  "5CovGSVyGsbo4QfcWVBCM2DJj6RZq623B3NLRXr4E6XcPyXf": 0.0
+ },
+ "commitments_verified": {
+  "swe-fix-r0043-02": true,
+  "swe-fix-r0043-04": true,
+  "swe-fix-r0043-05": true,
+  "swe-fix-r0043-06": true,
+  "swe-fix-r0043-07": true,
+  "swe-fix-r0043-08": true
+ },
+ "commitments_ok": true
+}
