@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0046-p06",
+ "round_id": "r0046",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# OpenID Connect Authorization Code Grant doesn't return ID token correctly\n\n### Description\n\nI've found an issue with the OpenID Connect Authorization Code Grant implementation. When using the authorization code flow with the 'openid' scope, the ID token is not being returned correctly in the token response.\n\nHere's a simple reproduction:\n\n```python\nfrom oauthlib.oauth2 import RequestValidator\nfrom oauthlib.openid.connect.core.grant_types import AuthorizationCodeGrant\nfrom oauthlib.oauth2 import BearerToken\n\n# Create a custom validator that implements the required methods\nclass MyValidator(RequestValidator):\n    def get_authorization_code_nonce(self, code, request):\n        return \"test_nonce\"\n    \n    # Other required methods...\n\n# Set up the grant\nvalidator = MyValidator()\nauth_grant = AuthorizationCodeGrant(validator)\n\n# Create a request with openid scope\nrequest = type('Request', (), {})()\nrequest.scopes = ['openid']\nrequest.client_id = 'client123'\nrequest.code = 'auth_code_123'\nrequest.redirect_uri = 'https://example.com/callback'\n\n# Create token\nbearer = BearerToken(validator)\nheaders, body, status = auth_grant.create_token_response(request, bearer)\n\n# The response doesn't contain the expected id_token\nprint(body)  # Missing id_token\n```\n\n### Expected behavior\n\nWhen requesting a token with the 'openid' scope, the response should include an 'id_token' field.\n\n### Actual behavior\n\nThe token response doesn't include the 'id_token' field when it should.\n\n### Versions\n\n- oauthlib: 3.2.2\n- Python: 3.10.8\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.lm_rewrite__ewoo7vbw",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/openid/connect/core/grant_types/test_authorization_code.py::OpenIDAuthCodeTest::test_create_token_response",
+   "tests/openid/connect/core/grant_types/test_hybrid.py::OpenIDAuthCodeTest::test_create_token_response"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

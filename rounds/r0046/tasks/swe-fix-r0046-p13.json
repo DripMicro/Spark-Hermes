@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0046-p13",
+ "round_id": "r0046",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### Description\n\nThe `__repr__` method in the `Database` class seems to have an issue with its output format. When calling `repr()` on a `Database` instance, the output does not match the expected string representation. This discrepancy can lead to confusion when debugging or logging the state of a `Database` object.\n\n### Steps to Reproduce\n\n1. Create a `Database` instance with a few messages, nodes, and buses.\n2. Call the `repr()` function on the `Database` instance.\n3. Compare the output with the expected string format.\n\n#### Example Code\n\n```python\nfrom cantools.database import Database\n\n# Create a sample database\ndb = Database()\n# Add messages, nodes, and buses to the database\n# ...\n\n# Get the string representation\noutput = repr(db)\nprint(output)\n```\n\n### Expected Results\n\nThe output should be a multi-line string detailing the version, nodes, messages, and signals in a structured format.\n\n### Actual Results\n\nThe output is a single-line string that summarizes the database content, which does not match the expected detailed format.\n\n### Additional Information\n\nThis issue affects the readability and usability of the `__repr__` output, especially when dealing with complex databases. It would be beneficial to have a more detailed and structured representation to aid in debugging and development.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__s4da8j63",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_foobar"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

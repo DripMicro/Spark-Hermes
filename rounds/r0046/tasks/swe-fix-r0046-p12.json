@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0046-p12",
+ "round_id": "r0046",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nStarred unpacking in for loops produces incorrect slice bounds\n\n#### Description\n\nWhen using starred unpacking in for loops, the slice bounds calculation is incorrect, causing the starred variable to capture the wrong elements.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# This should infer that b = [3, 4] but gets wrong result\ncode = '''\nfor a, (c, *b) in [(1, (2, 3, 4)), (4, (5, 6))]:\n    b\n'''\nnode = astroid.extract_node(code + ' #@')\ninferred = next(node.infer())\nprint(f\"Expected: [3, 4], Got: {inferred.as_string()}\")\n\n# This should infer that b = [2, 3, 4] but gets wrong result  \ncode2 = '''\nfor a, *b in [(1, 2, 3, 4)]:\n    b\n'''\nnode2 = astroid.extract_node(code2 + ' #@')\ninferred2 = next(node2.infer())\nprint(f\"Expected: [2, 3, 4], Got: {inferred2.as_string()}\")\n\n# This should infer that b = [] but gets wrong result\ncode3 = '''\nfor a, *b in [(1,)]:\n    b\n'''\nnode3 = astroid.extract_node(code3 + ' #@')\ninferred3 = next(node3.infer())\nprint(f\"Expected: [], Got: {inferred3.as_string()}\")\n```\n\nThe starred unpacking logic appears to be calculating slice bounds incorrectly when determining what elements should be captured by the starred variable in unpacking assignments within for loops.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_op_change_const__7vjupsrd",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::test_slice_inference_in_for_loops"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

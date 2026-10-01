@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0046-p11",
+ "round_id": "r0046",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSpeed calculation incorrect in add_missing_speeds method\n\n#### Description\n\nWhen using `add_missing_speeds()` on GPX tracks, the calculated speeds are incorrect. The method appears to be computing speeds using the wrong formula, resulting in values that don't match the expected distance/time calculations.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\nimport datetime\n\n# Create a GPX track with points at known positions and times\ngpx = gpxpy.GPX()\ngpx.tracks.append(gpxpy.GPXTrack())\ngpx.tracks[0].segments.append(gpxpy.GPXTrackSegment())\n\n# Add points with specific coordinates and times\ngpx.tracks[0].segments[0].points.append(gpxpy.GPXTrackPoint(\n    latitude=0, longitude=0, \n    time=datetime.datetime(2013, 1, 2, 12, 0), \n    speed=0\n))\ngpx.tracks[0].segments[0].points.append(gpxpy.GPXTrackPoint(\n    latitude=0, longitude=0.00899, \n    time=datetime.datetime(2013, 1, 2, 13, 0)\n))\ngpx.tracks[0].segments[0].points.append(gpxpy.GPXTrackPoint(\n    latitude=0, longitude=0.02697, \n    time=datetime.datetime(2013, 1, 2, 14, 0)\n))\n\n# Calculate missing speeds\ngpx.add_missing_speeds()\n\n# Check the calculated speed for the second point\ncalculated_speed = gpx.tracks[0].segments[0].points[1].speed\nexpected_speed = 3000.0 / (2 * 3600)  # distance / time in m/s\n\nprint(f\"Calculated speed: {calculated_speed}\")\nprint(f\"Expected speed: {expected_speed}\")\nprint(f\"Difference: {abs(expected_speed - calculated_speed)}\")\n```\n\nThe calculated speeds don't match the expected values based on the distance traveled and time elapsed between points.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_pm_op_swap__ac4uwo8s",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_add_missing_speeds"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

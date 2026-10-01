@@ -1,0 +1,33 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0046-p07",
+ "round_id": "r0046",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nRevocationEndpoint returns response parameters in wrong order\n\n#### Description\n\nThe `create_revocation_response` method in `RevocationEndpoint` is returning response parameters in the wrong order. The method should return `(headers, body, status_code)` but it's currently returning `(body, headers, status_code)`.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth2.rfc6749.endpoints.revocation import RevocationEndpoint\nfrom oauthlib.oauth2.rfc6749 import RequestValidator\n\nclass MockValidator(RequestValidator):\n    def authenticate_client(self, request):\n        return True\n    \n    def revoke_token(self, token, token_type_hint, request):\n        pass\n\nvalidator = MockValidator()\nendpoint = RevocationEndpoint(validator)\n\n# This should return (headers, body, status_code)\nheaders, body, status = endpoint.create_revocation_response(\n    'http://example.com/revoke',\n    headers={'Content-Type': 'application/x-www-form-urlencoded'},\n    body='token=foo'\n)\n\nprint(\"Headers:\", headers)\nprint(\"Body:\", body) \nprint(\"Status:\", status)\n```\n\nExpected output:\n```\nHeaders: {}\nBody: \nStatus: 200\n```\n\nActual output:\n```\nHeaders: \nBody: {}\nStatus: 201\n```\n\nThe method is also returning status code 201 instead of the expected 200 for successful revocations.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__vyst8hk4",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth2/rfc6749/endpoints/test_client_authentication.py::ClientAuthenticationTest::test_basicauth_revoke",
+   "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_bad_post_request",
+   "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_invalid_request_method",
+   "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token",
+   "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token_client_authentication_failed",
+   "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token_public_client_authentication",
+   "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_token_public_client_authentication_failed",
+   "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_unsupported_token",
+   "tests/oauth2/rfc6749/endpoints/test_revocation_endpoint.py::RevocationEndpointTest::test_revoke_with_callback"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
