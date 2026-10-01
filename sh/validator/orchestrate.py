@@ -64,7 +64,7 @@ DIGEST = re.compile(r"\A[0-9a-f]{64}\Z")
 _UNRESOLVED: set[tuple[str, str]] = set()  # incumbents already reported unresolved, so it is said once
 HF_REPO = "gittensor-model-hub/spark-hermes-rounds"
 LIVE = "docs/live/live.json"  # what the dashboard polls; committed on every stage change
-# The board calls the loop stale once `updated` is 900 s old (docs/live/index.html). A board whose content has not
+# The board calls the loop stale once `updated` is 900 s old (docs/live/arena.js). A board whose content has not
 # changed is still republished this often, so a quiet window never reads as a dead loop.
 BOARD_HEARTBEAT_S = 600
 CLAIM_GRACE_S = 30  # after claiming the engine, how long a screen the daemon had just started is given to show up

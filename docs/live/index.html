@@ -4,14 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spark-Hermes Live</title>
-<meta name="description" content="The current round of the Spark-Hermes strategy competition: its submission window, the submissions, evaluation, crown and scores, and every round that has closed.">
+<meta name="description" content="The Spark-Hermes arena, live: the round on now, the king and the challengers, the race against the baseline as episodes land, the crown's history and the season standings.">
 <link rel="icon" href="../assets/favicon.png">
 <link rel="stylesheet" href="../site.css">
+<link rel="stylesheet" href="arena.css">
 </head>
-<body>
+<body class="arena-page">
 <nav class="nav">
   <a class="brand" href="../"><img src="../assets/logo.png" alt="">Spark-Hermes</a>
   <a href="./" aria-current="page"><span class="live-dot"></span>Live</a>
+  <a href="#season">Season</a>
   <a href="#rounds">Rounds</a>
   <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/submissions/README.md">Submit</a>
   <a id="nav-hf" href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Dataset</a>
@@ -19,50 +21,84 @@
 </nav>
 
 <main>
-  <section class="round rise">
-    <div class="head">
-      <h1>Round <span id="round" class="grad">—</span></h1>
-      <span id="phase" class="phase closed">—</span>
-      <span id="status" class="muted small when"><span class="pulse"></span>connecting…</span>
+  <!-- the round on now -->
+  <section class="arena" id="arena" aria-labelledby="round-title">
+    <div class="arena-top">
+      <h1 class="round-id" id="round-title"><span class="r">Round</span> <span id="round">—</span></h1>
+      <span class="badge closed" id="phase"><span class="dot"></span><span id="phase-txt">connecting</span></span>
+      <span class="live-status" id="status"><span class="pulse"></span>connecting…</span>
     </div>
-    <div class="bars">
-      <div class="barrow"><span class="label">submission window</span><div class="bar window" id="wbarbox"><i id="wbar"></i></div><span class="value" id="wleft">—</span></div>
-      <div class="barrow" id="erow"><span class="label">evaluation</span><div class="bar"><i id="ebar"></i></div><span class="value" id="episodes">—</span></div>
+
+    <div class="clock">
+      <div>
+        <div class="clock-label" id="clock-label">&nbsp;</div>
+        <div class="flaps" id="flaps" aria-live="off"></div>
+      </div>
+      <div class="clock-side">
+        <div class="meter-row"><span id="meter-label">submission window</span><b id="meter-value">—</b></div>
+        <div class="meter"><i id="meter"></i></div>
+        <div class="meter-row"><span id="meter-note"></span><span id="meter-note-2"></span></div>
+      </div>
     </div>
-    <div class="stages" id="stages"></div>
-    <p class="note" id="window-line"></p>
-    <p class="note" id="submit-line" hidden></p>
+
+    <div class="track" id="track" aria-label="Round stages"></div>
+
+    <div class="matchup">
+      <div class="king-card" id="king-card">
+        <div class="king-head">
+          <div class="king-av" id="king-av"><span class="ph"></span></div>
+          <div>
+            <div class="king-name" id="king-name">No king yet</div>
+            <div class="king-meta" id="king-meta">the first strategy to beat the baseline takes the crown</div>
+          </div>
+        </div>
+        <div class="king-facts" id="king-facts"></div>
+      </div>
+      <div class="vs" aria-hidden="true">vs</div>
+      <div class="field">
+        <div class="field-count" id="field-count">—</div>
+        <div class="avs" id="field-avs"></div>
+        <div class="field-note" id="field-note"></div>
+      </div>
+    </div>
   </section>
 
-  <div class="strip rise">
-    <div class="stat"><b id="submissions">—</b><span>submissions</span></div>
-    <div class="stat"><b id="ntasks">0</b><span id="tasks-label">tasks</span></div>
-    <div class="stat"><b id="sealed">—</b><span>strategies sealed</span></div>
-    <div class="stat"><b id="king-now">—</b><span>king</span><span class="sub" id="king-sub"></span></div>
+  <!-- the race and what just happened -->
+  <div class="live-grid">
+    <section class="board" aria-labelledby="tower-title">
+      <div class="board-head"><h2 id="tower-title">Timing tower</h2><p id="tower-sub"></p></div>
+      <div class="tower" id="tower"><div class="tower-empty">Waiting for the round to start.</div></div>
+      <p class="note" id="rejected" hidden style="margin-top:.8rem"></p>
+    </section>
+    <section class="board" aria-labelledby="feed-title">
+      <div class="board-head"><h2 id="feed-title">Live feed</h2><p>new events appear as they happen</p></div>
+      <ol class="feed" id="feed" aria-live="polite"></ol>
+    </section>
   </div>
 
-  <section class="panel rise" id="subs-panel" hidden>
-    <h2>Submissions <small>open pull requests, one per hotkey, each carrying only a signed commitment; the strategy itself is private until the round is scored, and the latest signed bundle counts at the seal</small></h2>
-    <div class="wrap"><table>
-      <thead><tr><th class="l">miner</th><th class="l">pull request</th><th>submitted</th><th>last push</th><th title="weight after the last close">weight</th><th title="score after the last close">score</th><th title="Δc after the last close">Δc</th></tr></thead>
-      <tbody id="subs"><tr><td class="empty" colspan="7">no submission yet</td></tr></tbody>
+  <!-- the season -->
+  <section id="season" class="numbers" aria-label="Season in numbers"></section>
+
+  <section class="board" aria-labelledby="crown-title">
+    <div class="board-head"><h2 id="crown-title">The crown, round by round</h2><p>bar height is the king's gain over the baseline; colour is who held it</p></div>
+    <div class="timeline" id="timeline"></div>
+    <div class="timeline-axis"><span id="tl-first"></span><span id="tl-last"></span></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section class="board" aria-labelledby="season-title">
+    <div class="board-head"><h2 id="season-title">Season standings</h2><p>every closed round; score and weight are the pooled 8-round window, the crown is each round's own</p></div>
+    <div class="wrap"><table class="season">
+      <thead><tr><th class="l">#</th><th class="l">miner</th><th>crowns</th><th class="opt" title="rounds in which this strategy beat the baseline">rounds above baseline</th><th class="opt">best streak</th><th class="opt" title="best single-round gain over the baseline">best Δ</th><th title="pooled 8-round score">score</th><th title="share of the reward weight">weight</th></tr></thead>
+      <tbody id="season-body"><tr><td class="l" colspan="8">loading…</td></tr></tbody>
     </table></div>
   </section>
 
-  <section class="panel rise" id="board-panel">
-    <h2 id="board-title">Board <small id="board-sub"></small></h2>
+  <section class="board" id="rounds" aria-labelledby="rounds-title">
+    <div class="board-head"><h2 id="rounds-title">Closed rounds <span id="rounds-count" class="muted"></span></h2><p>open a round for its scores, weights and king; the full page and artefacts are linked inside</p></div>
     <div class="wrap"><table>
-      <thead id="board-head"></thead>
-      <tbody id="board"><tr><td class="empty" colspan="9">waiting for the seal</td></tr></tbody>
-    </table></div>
-    <p class="note" id="rejected" hidden style="margin-top:.8rem"></p>
-  </section>
-
-  <section class="panel rise" id="rounds">
-    <h2>Closed rounds <span id="rounds-count" class="muted"></span> <small>open a round for its scores, weights and king; the full page and artefacts are linked inside</small></h2>
-    <div class="wrap"><table>
-      <thead><tr><th class="l">round</th><th class="l">king</th><th title="the king's Δ vs baseline on that round's instances">Δ round</th><th title="the king's pooled score at that close">score</th><th title="the king's weight at that close">weight</th><th>episodes</th><th>SFT</th><th>DPO</th><th class="l">commitments</th><th>closed</th></tr></thead>
-      <tbody id="history"><tr><td class="empty" colspan="10">none yet</td></tr></tbody>
+      <thead><tr><th class="l">round</th><th class="l">king</th><th title="the king's Δ vs baseline on that round's instances">Δ round</th><th title="the king's pooled score at that close">score</th><th title="the king's weight at that close">weight</th><th>SFT</th><th>DPO</th><th class="l">commitments</th><th>closed</th></tr></thead>
+      <tbody id="history"><tr><td class="empty" colspan="9">loading…</td></tr></tbody>
     </table></div>
     <p class="note" id="queue-line" style="margin-top:.8rem"></p>
   </section>
@@ -70,7 +106,7 @@
 
 <footer class="foot">
   <span>Artefacts: <a id="link-rounds" href="https://github.com/gittensor-model-hub/Spark-Hermes/tree/main/rounds">rounds/</a></span>
-  <span>Source: <a href="live.json">live.json</a>, rewritten by the validator at every stage</span>
+  <span>Source: <a href="live.json">live.json</a> and <a href="../rounds/index.json">rounds/index.json</a>, written by the validator</span>
 </footer>
 
 <div id="round-modal" class="modal" hidden>
@@ -81,369 +117,6 @@
   </div>
 </div>
 
-<script>
-(function () {
-  let LIVE = null, deepLinked = false, lastHistory = "", lastKing = "", lastFocus = null
-  // Every closed round, from ../rounds/index.json (rewritten only when a round closes). live.json carries just the
-  // last 20, so older rounds fell off the table; when the index cannot be read, the last 20 are still shown.
-  let ALL = null, indexTried = false;  // a deep link waits for the index, or an old round would miss it
-  const closedRounds = () => (Array.isArray(ALL) && ALL.length ? ALL : (LIVE && LIVE.history) || []);
-  const opened = new Set();  // surfaces whose per-instance detail is expanded
-  const ROUND_ID = /^[a-z]\d{1,4}$/;  // r0004, s1 — what a deep link or a row may name
-  const $ = (id) => document.getElementById(id);
-  const LABEL = { open: "open", window: "window", seal: "seal", evaluate: "evaluate", close: "score", crown: "crown",
-                  announce: "verdict", export: "export", publish_close: "publish", done: "done", waiting: "waiting for tasks" };
-  const PHASE = { window: ["window", "submissions open"], done: ["closed", "closed"], waiting: ["closed", "waiting for the next round's tasks"] };
-  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const clock = (t) => new Date(t * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  const hhmm = (t) => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  const iso = (s) => s ? new Date(s).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—";
-  const ago = (t) => { const s = Math.max(0, Date.now() / 1000 - t);
-    return s < 90 ? Math.round(s) + " s ago" : s < 5400 ? Math.round(s / 60) + " min ago" : Math.round(s / 3600) + " h ago"; };
-  const span = (s) => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
-    return h ? h + "h " + String(m).padStart(2, "0") + "m" : m ? m + "m " + String(x).padStart(2, "0") + "s" : x + "s"; };
-  const pct = (x) => x == null ? "—" : Math.round(100 * x) + "%";
-  const num = (x, d) => x == null ? "—" : Number(x).toFixed(d);
-  const signed = (x, d, unit) => x == null ? "—" : (x > 0 ? "+" : "") + Number(x).toFixed(d) + (unit || "");
-  const cls = (x) => x == null || x === 0 ? "zero" : x > 0 ? "pos" : "neg";
-  const short = (h) => h.length <= 16 ? h : h.slice(0, 6) + "…" + h.slice(-4);
-  const hk = (h) => '<span class="hk" title="' + esc(h) + '">' + esc(short(h)) + "</span>";
-  // a strategy's identity: its author's GitHub avatar and name when known (carried in live.github), with the
-  // hotkey beneath — the hotkey is what the chain pays, the GitHub handle is who to recognise.
-  const ident = (live, h, crowned) => {
-    const g = (live.github || {})[h];
-    const img = g ? '<img class="gh-av" src="https://github.com/' + esc(g) + '.png?size=48" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add(\'gh-none\');this.removeAttribute(\'src\')">' : '<span class="gh-av gh-none" aria-hidden="true"></span>';
-    const av = crowned ? '<span class="gh-av-wrap">' + img + '<span class="crown-badge" title="crowned">👑</span></span>' : img;
-    const name = g ? '<a class="gh-name" href="https://github.com/' + esc(g) + '">@' + esc(g) + "</a>" : '<span class="gh-name gh-anon">unlinked</span>';
-    return '<span class="ident">' + av + '<span class="ident-txt">' + name + hk(h) + "</span></span>";
-  };
-  const th = (label, title, left) => "<th" + (left ? ' class="l"' : "") + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + "</th>";
-  const pr = (live, n) => { const k = Number(n); return '<a href="https://github.com/' + esc(live.repo) + "/pull/" + k + '">#' + k + "</a>"; };
-  let current = null;
-
-  // Every episode a score is made of: one line per instance, the bar filled to the credit that held with a tick
-  // where the baseline landed, so six instances can be read at a glance instead of compared digit by digit.
-  function taskRows(live, s, reason) {
-    const by = (live.progress || {}).by_surface || {};
-    const mine = (by[s] || {}).tasks || {}, base = (by["null"] || {}).tasks || {};
-    const ids = [...new Set([...Object.keys(mine), ...Object.keys(base)])].sort();
-    if (!ids.length) return '<div class="eps"><p class="note">no episodes recorded for this strategy yet</p></div>';
-    const isRef = s === "null" || s === "canon";
-    const head = '<div class="ep ep-head"><span>instance</span><span>' +
-      (isRef ? "checks that held" : "checks that held · tick = baseline") + "</span><span>credit</span>" +
-      (isRef ? "" : "<span>Δ</span>") + "<span></span></div>";
-    const body = ids.map((t) => {
-      const m = mine[t], b = base[t];
-      if (!m) return '<div class="ep"><span class="ep-id">' + esc(t) + '</span><span class="ep-bar"></span>' +
-        '<span class="ep-pct">—</span>' + (isRef ? "" : '<span class="ep-d">—</span>') +
-        '<span><span class="ep-flag">not run</span></span></div>';
-      const d = b && !isRef ? m.credit - b.credit : null;
-      const tone = d == null || Math.abs(d) < 1e-9 ? "" : d > 0 ? " pos" : " neg";
-      const tick = b && !isRef ? '<b style="left:' + (100 * b.credit).toFixed(1) + '%"></b>' : "";
-      const flag = m.dq ? '<span class="ep-flag dq">disqualified</span>'
-        : m.void ? '<span class="ep-flag">void · re-run</span>'
-        : m.verified ? '<span class="ep-flag win">all held</span>' : "";
-      return '<div class="ep"><span class="ep-id" title="' + esc(t) + '">' + esc(t) + "</span>" +
-        '<span class="ep-bar' + tone + '"><i style="width:' + (100 * m.credit).toFixed(1) + '%"></i>' + tick + "</span>" +
-        '<span class="ep-pct">' + pct(m.credit) + "</span>" +
-        (isRef ? "" : '<span class="ep-d' + tone + '">' + (d == null ? "—" : signed(100 * d, 0)) + "</span>") +
-        "<span>" + flag + "</span></div>";
-    }).join("");
-    return '<div class="eps">' + (reason ? '<p class="eps-why">' + esc(reason) + "</p>" : "") + head + body + "</div>";
-  }
-  const caretCell = (cell, s) => cell.replace('<td class="l">', '<td class="l"><span class="caret" aria-hidden="true"></span>');
-  const detailRow = (live, s, cols, reason) =>
-    '<tr class="detail" data-for="' + esc(s) + '"' + (opened.has(s) ? "" : " hidden") + '><td colspan="' + cols + '">' +
-    taskRows(live, s, reason) + "</td></tr>";
-
-  function surfaceCell(live, s, crowned) {
-    const info = (live.active || {})[s];
-    let tag = "";
-    if (s === "null") tag = '<span class="tag">baseline</span>';
-    else if (s === "canon") tag = '<span class="tag">canon</span>';
-    else if (info && info.incumbent && info.pr) tag = '<span class="tag king" title="the crown defends with this PR, merged if it holds">incumbent · defense ' + pr(live, info.pr) + "</span>";
-    else if (info && info.incumbent) tag = '<span class="tag king" title="defends without a PR: a round it wins pays nothing">incumbent</span>';
-    else if (info && info.pr) tag = '<span class="tag">' + pr(live, info.pr) + "</span>";
-    else tag = '<span class="tag" title="scored on its episodes from earlier rounds in the window; not sealed this round">window</span>';
-    return '<td class="l">' + (s === "null" || s === "canon" ? '<span class="hk">' + s + "</span>" : ident(live, s, crowned)) + tag + "</td>";
-  }
-
-  function submissions(live) {
-    const subs = Array.isArray(live.submissions) ? live.submissions : [], st = live.standings || {};
-    $("subs-panel").hidden = live.stage !== "window";
-    $("subs").innerHTML = subs.length ? subs.slice().sort((a, b) => a.pr - b.pr).map((s) => {
-      const k = st[s.hotkey] || {};
-      return "<tr><td class='l'>" + ident(live, s.hotkey) + (live.active && live.active[s.hotkey] && live.active[s.hotkey].incumbent ? '<span class="tag king">incumbent</span>' : "") + "</td>" +
-        "<td class='l'>" + pr(live, s.pr) + "</td><td>" + iso(s.created_at) + "</td><td>" + iso(s.updated_at) + "</td>" +
-        "<td class='" + (k.weight ? "" : "zero") + "'>" + num(k.weight, 3) + "</td><td>" + num(k.score, 4) + "</td><td>" + num(k.delta_c, 3) + "</td></tr>";
-    }).join("") : '<tr><td class="empty" colspan="7">no submission yet — the window is open</td></tr>';
-  }
-
-  function board(live) {
-    const by = (live.progress || {}).by_surface || {};
-    const active = live.active || {};
-    const sc = live.scores, cr = live.crown;
-    const miners = Object.keys(active);
-    const share = (r) => r && r.n ? (r.credit != null ? r.credit : r.verified / r.n) : null;  // mean share of checks passed
-    const nullRate = share(by["null"]);
-    const rate = (s) => share(by[s]);
-    $("board-panel").hidden = live.stage === "window" || live.stage === "waiting";
-
-    if (sc && sc.per_hotkey) {
-      const fs = Object.values(sc.family_stats || {})[0] || {};
-      const st = (cr && cr.standings) || {};
-      $("board-title").firstChild.textContent = "Final ";
-      const nullShare = fs.null_credit != null ? fs.null_credit : fs.null_p, canonShare = fs.canon_credit != null ? fs.canon_credit : fs.canon_p;
-      $("board-sub").textContent = "baseline passes " + pct(nullShare) + " of checks" + (by["canon"] ? " · canon " + pct(canonShare) : "") + " — the crown is this round's and is what the reward follows; score is Δ over the window, weight its share among strategies above the baseline";
-      $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("rank", "this round: by Δ vs baseline on these instances") +
-        th("Δ round", "mean of (share of checks passed − the baseline's) per instance, this round only") + th("checks", "mean share of withheld checks passed, this round") +
-        th("episodes", "pooled window") + th("Δ window", "mean paired delta over the pooled window") +
-        th("Δc", "one-sided 90% lower bound of Δ window — how sure the gain is") +
-        th("score", "Δ window after the overfit and copy penalties — above zero means better than the baseline") +
-        th("weight", "share among the strategies above the baseline; the shares sum to 1") + "</tr>";
-      const refs = ["null", "canon"].filter((s) => s === "null" || by[s]).map((s) =>  // canon runs in calibration rounds only
-        '<tr class="ref expandable' + (opened.has(s) ? " open" : "") + '" data-surface="' + s + '" tabindex="0">' +
-        caretCell(surfaceCell(live, s), s) +
-        "<td></td><td></td><td>" + pct(share(by[s])) + "</td><td>" + (by[s] ? by[s].n : "—") + "</td><td>" +
-        "</td><td colspan='3'></td></tr>" + detailRow(live, s, 9));
-      const all = [...new Set([...miners, ...Object.keys(sc.per_hotkey)])];
-      const ranked = all.sort((a, b) => ((st[a] || {}).rank || 1e6) - ((st[b] || {}).rank || 1e6) || (sc.weights[b] || 0) - (sc.weights[a] || 0) || a.localeCompare(b));
-      const rows = ranked.map((h) => {
-        const s = sc.per_hotkey[h], w = sc.weights[h] || 0, t = st[h] || {}, isKing = h === (cr && cr.king);
-        const reason = s && w === 0 && s.reason ? s.reason : "";
-        const why = reason ? '<span class="why" title="' + esc(reason) + '">' + esc(reason) + "</span>" : "";
-        const cell = surfaceCell(live, h, isKing).replace("</td>", why + "</td>");
-        return '<tr class="expandable' + (isKing ? " king" : "") + (opened.has(h) ? " open" : "") +
-          '" data-surface="' + esc(h) + '" tabindex="0">' + caretCell(cell, h) +
-          "<td>" + (t.rank || "—") + "</td><td class='" + cls(t.delta) + "'>" + signed(t.delta, 3) + "</td><td>" + pct(t.credit) + "</td>" +
-          "<td>" + (s ? s.n : 0) + "</td><td class='" + cls(s && s.mean_d) + "'>" + signed(s && s.mean_d, 3) + "</td><td>" + (s ? num(s.delta_c || 0, 3) : "—") + "</td>" +
-          "<td>" + (s ? num(s.score || 0, 4) : "—") + "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>" + detailRow(live, h, 9, reason);
-      });
-      $("board").innerHTML = refs.join("") + (rows.join("") || '<tr><td class="empty" colspan="9">no strategies were sealed</td></tr>');
-      return;
-    }
-
-    const evaluating = live.stage === "evaluate";
-    $("board-title").firstChild.textContent = evaluating ? "Evaluating " : "Sealed ";
-    $("board-sub").textContent = evaluating ? "share of checks passed so far — the crown and the scores are computed at close" : miners.length ? "strategies in this round, by PR head SHA" : "";
-    $("board-head").innerHTML = "<tr>" + th("strategy", "", true) + th("episodes") + th("full passes", "episodes where every withheld check held") +
-      th("checks passed", "mean share of the withheld checks that held — what is scored") +
-      th("vs baseline", "checks passed so far minus the baseline's, in points") + "</tr>";
-    const order = ["null", ...(by["canon"] ? ["canon"] : []), ...miners.sort((a, b) => (rate(b) ?? -1) - (rate(a) ?? -1) || a.localeCompare(b))];
-    $("board").innerHTML = miners.length || evaluating ? order.map((s) => {
-      const r = by[s] || { n: 0, verified: 0 }, p = rate(s);
-      const d = s === "null" || s === "canon" || p == null || nullRate == null ? null : p - nullRate;
-      return '<tr class="expandable' + (s === "null" || s === "canon" ? " ref" : "") + (opened.has(s) ? " open" : "") +
-        '" data-surface="' + esc(s) + '" tabindex="0">' +
-        caretCell(surfaceCell(live, s), s) + "<td>" + r.n + "</td><td>" + r.verified +
-        "</td><td>" + pct(p) + "</td><td class='" + cls(d) + "'>" + (s === "null" || s === "canon" ? "" : signed(d == null ? null : 100 * d, 0, " pts")) + "</td></tr>" +
-        detailRow(live, s, 5);
-    }).join("") : '<tr><td class="empty" colspan="5">waiting for the seal</td></tr>';
-  }
-
-  function paint() {
-    if (!current) return;
-    const w = current.window, now = Date.now() / 1000, stage = current.stage;
-    if (w) {
-      const open = stage === "window", frac = Math.min(1, Math.max(0, (now - w.opens_at) / w.seconds));
-      $("wbar").style.width = Math.round(100 * (open ? frac : 1)) + "%";
-      $("wbarbox").classList.toggle("done", !open);
-      $("wleft").textContent = open ? (w.closes_at > now ? span(w.closes_at - now) + " left" : "closing…") : "closed " + hhmm(w.closes_at);
-    } else {
-      $("wbar").style.width = "0%";
-      $("wleft").textContent = "—";
-    }
-  }
-
-  function render(live) {
-    LIVE = live;
-    current = live;
-    const stale = typeof live.updated === "number" && Date.now() / 1000 - live.updated > 900;
-    document.body.classList.toggle("stale", stale);
-    const king = live.crown && live.crown.king;
-    $("round").textContent = live.round_id || "—";  // before the first round opens there is none
-    const when = typeof live.updated === "number" ? "updated " + ago(live.updated) : "waiting for the first round";
-    $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale · " : "") + when;
-    const ph = PHASE[live.stage] || ["evaluate", LABEL[live.stage] || live.stage];
-    const wn = live.window && live.window.reopened ? live.window.reopened + 1 : 1;
-    $("phase").className = "phase " + ph[0];
-    $("phase").textContent = ph[1] + (live.stage === "window" && wn > 1 ? " · window " + wn : "");
-
-    const stages = live.stages || Object.keys(LABEL);
-    const reached = new Set((live.phases || []).map((p) => p.stage));
-    const nowIdx = stages.indexOf(live.stage);
-    $("stages").innerHTML = stages.map((s, i) =>
-      '<span class="stage ' + (s === live.stage ? "now" : reached.has(s) || i < nowIdx ? "done" : "") + '">' + (LABEL[s] || s) + "</span>").join("");
-    const w = live.window;
-    $("window-line").textContent = !w ? "" : (w.reopened
-      ? "Window " + (w.reopened + 1) + ": " + clock(w.opens_at) + " → " + clock(w.closes_at) + ". Reopened — " + w.reason + ", so the round was not sealed; same tasks, a fresh window."
-      : "Window " + clock(w.opens_at) + " → " + clock(w.closes_at) + " (" + Math.round(w.seconds / 60) + " min). A window that closes with no submission reopens; submissions after a seal are not counted.");
-
-    const srv = typeof live.submit_server === "string" && live.submit_server.startsWith("https://") ? live.submit_server : "";
-    $("submit-line").hidden = !(srv && live.stage === "window");
-    $("submit-line").innerHTML = srv ? "Submissions are private: <code>python -m sh.cli.miner submit</code> uploads the bundle to <code>" +
-      esc(srv) + "</code> and opens a PR that carries only the signed commitment. A king defends without resubmitting, but a round it " +
-      "wins pays only through a defense PR — the crowned bundle, unchanged, submitted again in this window." : "";
-    const p = live.progress || {}, done = p.done || 0, total = p.total || 0;
-    $("erow").hidden = live.stage === "window" || live.stage === "waiting";
-    $("ebar").style.width = (total ? Math.round(100 * done / total) : live.stage === "done" ? 100 : 0) + "%";
-    $("episodes").textContent = total ? done + " / " + total + " episodes" : "—";
-    const subs = Array.isArray(live.submissions) ? live.submissions : [];  // older states carried a count
-    $("submissions").textContent = subs.length || (typeof live.submissions === "number" ? live.submissions : 0) || Object.keys(live.active || {}).filter((h) => live.active[h].pr).length || "0";
-    $("ntasks").textContent = live.tasks || 0;
-    $("tasks-label").innerHTML = live.tasks ? '<a href="https://github.com/' + esc(live.repo) + "/tree/" + esc(live.branch) + "/rounds/" + esc(live.round_id) + '/tasks">tasks</a>' : "tasks";
-    $("sealed").textContent = Object.keys(live.active || {}).length || "—";
-    const last = (live.history || []).slice(-1)[0];
-    const kingScore = (h, src) => src && src[h] ? " · score " + num(src[h].score, 4) + " · weight " + num(src[h].weight, 3) : "";
-    const nowScores = live.scores && live.scores.per_hotkey ? Object.fromEntries(Object.entries(live.scores.per_hotkey).map(([h, s]) => [h, { ...s, weight: live.scores.weights[h] || 0 }])) : null;
-    let kingHtml = "—", kingSub = "";
-    if (king) { kingHtml = ident(live, king, true); kingSub = "this round" + kingScore(king, nowScores || live.standings); }
-    else if (last && last.king) { kingHtml = ident({ github: last.github || live.github, repo: live.repo }, last.king, true); kingSub = "since " + last.round_id + kingScore(last.king, last.scores); }
-    if (kingHtml !== lastKing) { lastKing = kingHtml; $("king-now").innerHTML = kingHtml; }  // unchanged: keep the <img>, no refetch
-    $("king-sub").textContent = kingSub;
-    paint();
-    submissions(live);
-    board(live);
-
-    const rej = Object.entries(live.rejected || {});
-    $("rejected").hidden = !rej.length;
-    $("rejected").innerHTML = rej.length ? "Rejected at seal: " + rej.map(([n, why]) => pr(live, n) + " — " + esc(why)).join(" · ") : "";
-
-    const hist = closedRounds().slice().reverse();
-    $("rounds-count").textContent = hist.length ? "(" + hist.length + ")" : "";
-    const histKey = JSON.stringify([closedRounds(), live.github || {}, live.repo]);  // re-render only on change:
-    if (histKey !== lastHistory) { lastHistory = histKey;                                 // every row carries an <img>
-    $("history").innerHTML = hist.length ? hist.map((h) => {
-      const ks = h.king && h.scores ? h.scores[h.king] : null, kc = h.king && h.crown ? h.crown[h.king] : null;
-      return '<tr><td class="l"><a class="round-link" href="../rounds/' + esc(h.round_id) + '/" data-round="' + esc(h.round_id) + '">' + esc(h.round_id) + "</a></td>" +
-        "<td class='l'>" + (h.king ? ident({ github: h.github || live.github, repo: live.repo }, h.king, true) + (h.pr ? " " + pr(live, h.pr) : "") : "<span class='zero'>none</span>") + "</td>" +
-        "<td class='" + cls(kc && kc.delta) + "'>" + signed(kc && kc.delta, 3) + "</td><td>" + num(ks && ks.score, 4) + "</td><td>" + num(ks && ks.weight, 3) + "</td>" +
-        "<td>" + h.episodes + "</td><td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
-        "<td class='l'>" + (h.commitments_ok ? "<span class='pos'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td>" +
-        "<td>" + clock(h.closed_at) + "</td></tr>";
-    }).join("") : '<tr><td class="empty" colspan="10">none yet</td></tr>';
-    }
-    const q = live.queue || [];
-    $("queue-line").textContent = q.length ? "Minted ahead, unread until they open: " + q.map((r) => r.round_id).join(" · ") + " (task digests published in rounds/queue.json)." : "";
-
-    if (live.repo) $("nav-repo").href = "https://github.com/" + live.repo;
-    if (live.hf_repo) $("nav-hf").href = "https://huggingface.co/datasets/" + live.hf_repo;
-    if (live.repo && live.branch) $("link-rounds").href = "https://github.com/" + live.repo + "/tree/" + live.branch + "/rounds";
-    if (!deepLinked && indexTried) {  // last, and on its own: a bad deep link must not take the board down with it
-      deepLinked = true;
-      const m = location.hash.match(/^#round-([a-z]\d{1,4})$/);
-      if (m) { try { openRound(m[1]); } catch (e) { console.warn("round modal", e); } }
-    }
-  }
-
-  // A closed round opens in a modal built from its own history entry (same-origin, already polled) — no navigation,
-  // no fetch; the full static page and the GitHub artefacts are linked inside for anyone who wants to recompute it.
-  function roundDetail(live, h) {
-    const gh = { github: h.github || live.github, repo: live.repo };
-    const scores = h.scores || {}, crown = h.crown || {};
-    const sc = (k, f) => (scores[k] || {})[f] || 0;
-    const ranked = Object.keys(scores).sort((a, b) => sc(b, "weight") - sc(a, "weight") || sc(b, "score") - sc(a, "score") || a.localeCompare(b));
-    const rows = ranked.map((k) => {
-      const s = scores[k] || {}, c = crown[k] || {}, isK = k === h.king, w = s.weight || 0;
-      return "<tr" + (isK ? " class='king'" : "") + "><td class='l'>" + ident(gh, k, isK) + "</td><td>" + (c.rank || "—") +
-        "</td><td class='" + cls(c.delta) + "'>" + signed(c.delta, 3) + "</td><td>" + num(s.score, 4) +
-        "</td><td class='" + (w ? "" : "zero") + "'>" + num(w, 3) + "</td></tr>";
-    }).join("") || "<tr><td class='empty' colspan='5'>no strategies were sealed</td></tr>";
-    const stat = (v, k) => "<div class='stat'><b>" + v + "</b><span>" + k + "</span></div>";
-    const kingId = h.king ? ident(gh, h.king, true) : "<span class='zero'>none</span>";
-    const kingPr = h.king && h.pr ? "<span class='sub'>" + pr(live, h.pr) + "</span>" : "";
-    const tree = "https://github.com/" + esc(live.repo) + "/tree/" + esc(live.branch) + "/rounds/" + esc(h.round_id);
-    return "<div class='head'><h1>Round <span class='grad'>" + esc(h.round_id) + "</span></h1>" +
-      "<span class='phase closed'>closed</span><span class='muted small'>" + clock(h.closed_at) + "</span></div>" +
-      "<div class='strip' style='margin:1rem 0'>" + stat(h.episodes, "episodes") + stat(h.sft_rows ?? "—", "SFT rows") +
-      stat(h.dpo_pairs ?? "—", "DPO pairs") + "<div class='stat'><b>" + kingId + "</b><span>king</span>" + kingPr + "</div>" +
-      "<div class='stat'><b class='" + (h.commitments_ok ? "pos" : "neg") + "'>" + (h.commitments_ok ? "verified" : "mismatch") +
-      "</b><span>commitments</span></div></div>" +
-      "<div class='wrap'><table><thead><tr><th class='l'>strategy</th><th>rank</th>" +
-      '<th title="Δ vs baseline on this round\'s instances">Δ round</th><th>score</th><th>weight</th></tr></thead>' +
-      "<tbody>" + rows + "</tbody></table></div>" +
-      '<p class="note" style="margin-top:1rem">Full detail and artefacts: <a href="../rounds/' + esc(h.round_id) + '/">round page</a> · ' +
-      '<a href="' + tree + '">rounds/' + esc(h.round_id) + "/</a>" +
-      (Array.isArray(h.revealed) && h.revealed.length ? ' · <a href="' + tree + '/revealed">revealed bundles (' + h.revealed.length + ")</a>" : "") +
-      (typeof h.hf === "string" && h.hf.startsWith("https://") ? ' · <a href="' + esc(h.hf) + '">dataset</a>' : "") + "</p>";
-  }
-  const behind = () => document.querySelectorAll("main, nav, footer");  // what a modal takes out of the tab order
-  function openRound(id) {
-    if (!ROUND_ID.test(id)) return;
-    const h = closedRounds().find((x) => x.round_id === id);
-    if (!h) { location.href = "../rounds/" + id + "/"; return; }  // older than the window: fall back to the static page
-    const modal = $("round-modal"), card = modal.querySelector(".modal-card");
-    $("rm-body").innerHTML = roundDetail(LIVE, h);
-    if (modal.hidden) lastFocus = document.activeElement;
-    modal.hidden = false;
-    document.body.classList.add("modal-open");
-    behind().forEach((el) => { el.inert = true; });
-    card.tabIndex = -1;
-    card.focus({ preventScroll: true });
-    if (location.hash !== "#round-" + id) history.replaceState(null, "", "#round-" + id);
-  }
-  function closeRound() {
-    $("round-modal").hidden = true;
-    document.body.classList.remove("modal-open");
-    behind().forEach((el) => { el.inert = false; });
-    if (location.hash.startsWith("#round-")) history.replaceState(null, "", location.pathname + location.search);
-    if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
-    lastFocus = null;
-  }
-  $("history").addEventListener("click", (e) => {
-    const a = e.target.closest(".round-link");
-    if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;  // let new-tab clicks through
-    e.preventDefault();
-    openRound(a.dataset.round);
-  });
-  function toggleRow(tr) {
-    const s = tr.dataset.surface, d = tr.nextElementSibling;
-    if (!s || !d || !d.classList.contains("detail")) return;
-    const show = d.hidden;
-    d.hidden = !show;
-    tr.classList.toggle("open", show);
-    show ? opened.add(s) : opened.delete(s);
-  }
-  $("board").addEventListener("click", (e) => {
-    if (e.target.closest("a")) return;  // the PR chip and the @login are links, not a toggle
-    const tr = e.target.closest("tr.expandable");
-    if (tr) toggleRow(tr);
-  });
-  $("board").addEventListener("keydown", (e) => {
-    if (e.key !== "Enter" && e.key !== " ") return;
-    const tr = e.target.closest("tr.expandable");
-    if (tr) { e.preventDefault(); toggleRow(tr); }
-  });
-  $("round-modal").addEventListener("click", (e) => { if (e.target.matches("[data-close]")) closeRound(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("round-modal").hidden) closeRound(); });
-  window.addEventListener("hashchange", () => {  // Back/Forward and a hand-edited hash open or close the modal too
-    const m = location.hash.match(/^#round-([a-z]\d{1,4})$/);
-    if (m) openRound(m[1]);
-    else if (!$("round-modal").hidden) closeRound();
-  });
-
-  async function tick() {
-    try {
-      const r = await fetch("live.json?t=" + Date.now(), { cache: "no-store" });
-      if (r.ok) render(await r.json());
-      else $("status").innerHTML = '<span class="pulse bad"></span>live.json ' + r.status;
-    } catch (e) {
-      $("status").innerHTML = '<span class="pulse bad"></span>unreachable';
-    }
-  }
-  async function loadRounds() {
-    const before = JSON.stringify(ALL);
-    try {
-      const r = await fetch("../rounds/index.json?t=" + Date.now(), { cache: "no-store" });
-      const j = r.ok ? await r.json() : null;
-      if (j && Array.isArray(j.rounds)) ALL = j.rounds;
-    } catch (e) { /* the last 20 from live.json stay on the table */ }
-    const first = !indexTried;
-    indexTried = true;
-    if (LIVE && (first || JSON.stringify(ALL) !== before)) render(LIVE);
-  }
-  tick(); loadRounds(); setInterval(tick, 15000); setInterval(loadRounds, 60000); setInterval(paint, 1000);
-})();
-</script>
+<script src="arena.js"></script>
 </body>
 </html>
