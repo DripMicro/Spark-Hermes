@@ -1,10 +1,14 @@
 /* Spark-Hermes site — one stylesheet for the landing page, the live board and every round page.
-   Dark by design: the pages live in the world of the project's own artwork. No third-party fonts or scripts. */
+   Dark by design: the pages live in the world of the project's own artwork. No third-party fonts or scripts: the display face is self-hosted. */
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-weight: 500; font-display: swap; src: url("assets/fonts/chakra-petch-500.woff2") format("woff2"); }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-weight: 600; font-display: swap; src: url("assets/fonts/chakra-petch-600.woff2") format("woff2"); }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-weight: 700; font-display: swap; src: url("assets/fonts/chakra-petch-700.woff2") format("woff2"); }
 [hidden] { display: none !important; }  /* a card marked hidden stays hidden even when a layout rule sets display */
 :root {
   --bg: #0a0a10; --panel: #12121b; --soft: #191926; --line: #262636; --ink: #ecebf5; --muted: #9c9bb4;
   --accent: #a78bfa; --accent-2: #22d3ee; --good: #4ade80; --warn: #fbbf24; --bad: #f87171; --crown: #fbbf24;
   --glow: 0 0 24px rgba(167, 139, 250, .28);
+  --display: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;  /* self-hosted (OFL), assets/fonts */
   --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --r: 14px; --gap: 1.6rem;
@@ -23,7 +27,7 @@ a:hover, a:focus-visible { text-decoration: underline; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 code, .hk, .num { font-family: var(--mono); font-size: .9em; }
 code { background: var(--soft); padding: .08em .45em; border-radius: 6px; border: 1px solid var(--line); }
-h1 { font-size: 1.6rem; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+h1 { font: 700 1.7rem/1.15 var(--display); margin: 0; letter-spacing: .005em; text-wrap: balance; }
 h2 { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 1rem; font-weight: 600; }
 p { margin: 0; max-width: 66ch; }
 .muted { color: var(--muted); }
