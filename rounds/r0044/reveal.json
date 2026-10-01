@@ -1,0 +1,211 @@
+{
+ "swe-fix-r0044-01": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_uphill_downhill_with_no_elevations"
+    ]
+   ],
+   "assets_sha256": "c6464c20d7bcb32a98326b980284b4c3b28da14551f6f5f1601a7210ca2af388",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "f14426d19b781ed2a1f43091ee4a4385fa976131152e2ff79222bed2339befef",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tkrajina__gpxpy.09fc46b3.lm_rewrite__6vk0xepl",
+   "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3"
+  }
+ },
+ "swe-fix-r0044-06": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_bad_message_name"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_enable_disable"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_expect"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_flush_input"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_on_message"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_periodic_message_modify_signal_before_start"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_send"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_send_with_scaling"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_tester.py::CanToolsTesterTest::test_set_and_get_signals"
+    ]
+   ],
+   "assets_sha256": "3551e495189f24d73e90498b10dbbdab30b156d0c664c2ecb51ff01c2291cc3e",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "edde9f070b597ba895ee0c4c8591bfa5773e847d92a75e55d0d1dbc7a1d5fb08",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.combine_file__jzfns9hi",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0044-11": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_hyperlink.py::DescribeHyperlink::it_knows_the_full_url_for_web_addresses[w:hyperlink{r:id=rId6,w:anchor=foo}/w:r/w:t\"post\"-https://google.com/#foo]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/text/test_hyperlink.py::DescribeHyperlink::it_knows_the_full_url_for_web_addresses[w:hyperlink{w:anchor=_Toc147925734}-]"
+    ]
+   ],
+   "assets_sha256": "e6ee7a00da88d164268973d35971fb7a51931e5bb5f791dd886ed8281ae1fcb7",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "1f90437f4ab20c0f56e79bdbbbf2b5e7c970ebb01c3cef2978443530b4d400c0",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__y0cho4r1",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0044-12": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_dump_j1939"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_j1939_frame_id_pack_bad_data"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_j1939_frame_id_pack_unpack"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_j1939_frame_id_unpack_bad_data"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_j1939_pgn_pack_unpack"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_j1939_pgn_unpack_bad_data"
+    ]
+   ],
+   "assets_sha256": "b1d3948e7766bc802f07d202f1848ec19f244d8bd60c695b210944b5227522f5",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "26fbcee41ce45fb26a76e89ce8a52a6bd1486b797e898cc9d119c322560de0af",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.combine_file__01jft1mj",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0044-14": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_bigquery.py::TestBigQuery::test_json_extract"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_bigquery.py::TestBigQuery::test_json_extract_array"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_dialect.py::TestDialect::test_json"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_postgres.py::TestPostgres::test_postgres"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_redshift.py::TestRedshift::test_redshift"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_snowflake.py::TestSnowflake::test_snowflake"
+    ]
+   ],
+   "assets_sha256": "f618d3cd3cc325866cca69561aee4f44703295d70d7288e5ddd34b71c6297c52",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "e189706fe0b4fc44fa657a0581e70aeae480dd38d1163be0abe2a864620c09fa",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.lm_rewrite__ng2hotsp",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0044-15": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_grouping.py::test_comparison_with_typed_literal"
+    ]
+   ],
+   "assets_sha256": "383e3b10c8cb1ed2b1d6d55b526bb5641793dd079a0b5befe07362080f323cf9",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "ed36180bee284f4ac6242c0962b2b18e2a836fecbe578437108403f32ac896d0",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "andialbrecht__sqlparse.e57923b3.func_basic__4gsssbwq",
+   "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3"
+  }
+ }
+}
