@@ -16,7 +16,7 @@ import re
 import sys
 from pathlib import Path
 
-from sh.web.chrome import REPO_URL, footer, header
+from sh.web.chrome import REPO_URL, footer, header, social
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -165,7 +165,7 @@ def render_markdown(md: str, root: str) -> tuple[str, str, list[tuple[str, str]]
     return title, "\n".join(out), toc
 
 
-def render_page(md: str, current: str, title: str, description: str, lead: str, source: str) -> str:
+def render_page(md: str, current: str, title: str, description: str, lead: str, source: str, dst: str = "") -> str:
     root = "../"
     _, body, toc = render_markdown(md, root)
     nav = "".join(f'<li><a href="#{sid}">{html.escape(t)}</a></li>' for sid, t in toc)
@@ -177,12 +177,13 @@ def render_page(md: str, current: str, title: str, description: str, lead: str, 
 <title>{html.escape(title)} · Spark-Hermes</title>
 <meta name="description" content="{html.escape(description)}">
 <meta name="theme-color" content="#06050d">
+{social(f"{title} · Spark-Hermes", lead, dst)}
 <link rel="icon" href="{root}assets/favicon.png">
 <link rel="stylesheet" href="{root}site.css">
 </head>
 <body data-root="{root}">
 {header(root, current)}
-<main class="doc">
+<main class="doc" id="main">
   <div class="doc-head">
     <h1>{html.escape(title)}</h1>
     <p class="lead">{html.escape(lead)}</p>
@@ -206,7 +207,15 @@ def build(check: bool = False) -> list[str]:
     """Write (or, with `check`, compare) every page; returns the pages that were stale."""
     stale = []
     for src, dst, current, title, description, lead in PAGES:
-        page = render_page((ROOT / src).read_text(), current, title, description, lead, src)
+        page = render_page(
+            (ROOT / src).read_text(),
+            current,
+            title,
+            description,
+            lead,
+            src,
+            dst.removeprefix("docs/").removesuffix("index.html"),
+        )
         out = ROOT / dst
         if not out.exists() or out.read_text() != page:
             stale.append(dst)

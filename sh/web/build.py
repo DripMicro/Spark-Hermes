@@ -15,7 +15,7 @@ import sys
 import time
 from pathlib import Path
 
-from sh.web.chrome import footer, header
+from sh.web.chrome import footer, header, social
 
 DEFAULT_REPO = "gittensor-model-hub/Spark-Hermes"
 DEFAULT_BRANCH = "main"
@@ -148,12 +148,13 @@ def render(close: dict, meta: dict | None = None) -> str:
 <title>Spark-Hermes {_e(rid)}</title>
 <meta name="description" content="Scores, weights and verification for round {_e(rid)} of the Spark-Hermes strategy competition.">
 <meta name="theme-color" content="#06050d">
+{social(f"Spark-Hermes {rid}", f"Round {rid}: scores, king and verification", f"rounds/{rid}/")}
 <link rel="icon" href="../../assets/favicon.png">
 <link rel="stylesheet" href="../../site.css">
 </head>
 <body data-root="../../" data-round="{_e(rid)}">
 {header("../../", "rounds")}
-<main>
+<main id="main">
   <nav class="pager" id="pager" aria-label="Other rounds"></nav>
   <section class="round">
     <div class="head"><h1>Round {_e(rid)}</h1>{badge}<span class="muted small">{"closed " + _e(when) if when else ""}{era}</span></div>

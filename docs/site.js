@@ -113,7 +113,7 @@
       let what = crowned ? "crowned" : STAGE[st] || st;
       if (st === "evaluate" && p.total) what += " " + (p.done || 0) + "/" + p.total;
       if (st === "window" && L.window) { const left = Math.max(0, L.window.closes_at - Date.now() / 1000); what += " · " + Math.floor(left / 3600) + "h " + String(Math.floor(left % 3600 / 60)).padStart(2, "0") + "m"; }
-      chip.className = "now " + (stale ? "" : crowned ? "crowned" : st === "done" || st === "waiting" ? "" : "live");
+      chip.className = "round-chip " + (stale ? "" : crowned ? "crowned" : st === "done" || st === "waiting" ? "" : "live");
       chip.innerHTML = "<i></i><span>" + String(L.round_id || "").replace(/[^a-z0-9]/gi, "") + "<b> · " + what.replace(/[<>&]/g, "") + (stale ? " (stale)" : "") + "</b></span>";
       chip.title = "Round " + L.round_id + ": " + what;
       chip.hidden = false;
@@ -184,6 +184,48 @@
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") hide(); });
     window.addEventListener("scroll", hide, { passive: true, capture: true });
   })();
+
+  // ─── a document page: the contents list follows the section being read ─────────────────────────────────
+  (function tocSpy() {
+    const links = [...document.querySelectorAll(".toc a[href^='#']")];
+    if (!links.length) return;
+    const heads = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1)))).filter(Boolean);
+    let current = null, ticking = false;
+    function mark(id) {
+      if (id === current) return;
+      current = id;
+      links.forEach((a) => {
+        const on = a.hash.slice(1) === id;
+        a.classList.toggle("on", on);
+        if (on) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current");
+      });
+    }
+    function update() {
+      ticking = false;
+      const line = 120;                                  // just under the sticky header
+      let id = heads.length ? heads[0].id : null;
+      for (const h of heads) { if (h.getBoundingClientRect().top <= line) id = h.id; else break; }
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4 && heads.length) id = heads[heads.length - 1].id;
+      mark(id);
+    }
+    window.addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    window.addEventListener("resize", update);
+    links.forEach((a) => a.addEventListener("click", () => mark(a.hash.slice(1))));
+    update();
+  })();
+
+  // ─── a table wider than its box fades at the edge that has more to scroll to ──────────────────────────────
+  function markWraps() {
+    document.querySelectorAll(".wrap").forEach((w) => {
+      const more = w.scrollWidth - w.clientWidth > 1;
+      w.classList.toggle("more-right", more && w.scrollLeft + w.clientWidth < w.scrollWidth - 1);
+      w.classList.toggle("more-left", more && w.scrollLeft > 1);
+    });
+  }
+  document.addEventListener("scroll", (e) => { if (e.target instanceof Element && e.target.classList.contains("wrap")) markWraps(); }, { passive: true, capture: true });
+  window.addEventListener("resize", markWraps);
+  markWraps();
+  setInterval(markWraps, 2000);   // the live board redraws its tables
 
   // ─── copy buttons ─────────────────────────────────────────────────────────────────────────────────────────
   document.addEventListener("click", (e) => {

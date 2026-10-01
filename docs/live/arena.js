@@ -156,7 +156,7 @@
       return '<div class="st ' + state + '"><b>' + esc(LABEL[s]) + "</b>" + (t ? hhmm(t) : "&nbsp;") + "</div>";
     }).join("");
     const cur = $("track").querySelector(".st.now");   // on a narrow screen, keep the current stage in view
-    if (cur && $("track").scrollWidth > $("track").clientWidth) $("track").scrollLeft = Math.max(0, cur.offsetLeft - $("track").offsetLeft - 40);
+    if (cur && $("track").scrollWidth > $("track").clientWidth) { const tr = $("track"); tr.scrollLeft = Math.max(0, cur.offsetLeft - tr.offsetLeft - (tr.clientWidth - cur.offsetWidth) / 2); }
 
     // the king and the field
     const rounds = closedRounds();
@@ -189,7 +189,7 @@
       note = field.length ? "entered so far" : "no entries yet";
     } else {
       field = sealed.length ? sealed : Object.keys(active).filter((h) => h !== king);
-      note = st === "done" ? "challengers this round" : "racing the baseline";
+      note = st === "done" ? "challengers this round" : st === "waiting" ? "next round opens when its tasks are ready" : "racing the baseline";
     }
     $("field-count").innerHTML = field.length + "<small>" + (field.length === 1 ? "challenger" : "challengers") + "</small>";
     $("field-avs").innerHTML = field.slice(0, 14).map((h) => '<span title="' + esc(nameOf(h)) + '">' + avatar(h, "av") + "</span>").join("");
@@ -294,7 +294,7 @@
     $("rejected").innerHTML = rej.length ? "Rejected at the seal: " + rej.map(([n, why]) => prLink(n) + " — " + esc(why)).join(" · ") : "";
   }
   function who(h, chips) {
-    return '<span class="who">' + avatar(h, "") + '<span class="nm"><b>' + esc(nameOf(h)) + "</b>" +
+    return '<span class="who">' + avatar(h, "") + '<span class="nm"><b data-tip="' + esc(nameOf(h)) + '">' + esc(nameOf(h)) + "</b>" +
       '<span title="' + esc(h) + '">' + (h === "null" ? "no strategy" : h === "canon" ? "reference strategy" : esc(short(h))) + (chips || "") + "</span></span></span>";
   }
   function toggleLane(el) {
@@ -464,7 +464,7 @@
   // ─── closed rounds and the round detail ────────────────────────────────────────────────────────────────
   function identCell(h, gh) {
     const g = (gh || {})[h] || githubOf(h);
-    return '<span class="ident">' + avatar(h, "gh-av") + '<span class="ident-txt">' + (g ? '<a class="gh-name" href="https://github.com/' + encodeURIComponent(g) + '">@' + esc(g) + "</a>" : '<span class="gh-name gh-anon">unlinked</span>') +
+    return '<span class="ident">' + avatar(h, "gh-av") + '<span class="ident-txt">' + (g ? '<a class="gh-name" href="https://github.com/' + encodeURIComponent(g) + '" data-tip="@' + esc(g) + '">@' + esc(g) + "</a>" : '<span class="gh-name gh-anon">unlinked</span>') +
       '<span class="hk" title="' + esc(h) + '">' + esc(short(h)) + "</span></span></span>";
   }
   let lastHistory = "", showAll = false;
@@ -479,7 +479,7 @@
     $("history").innerHTML = rows.length ? rows.map((h) => {
       const ks = h.king && h.scores ? h.scores[h.king] : null, kc = h.king && h.crown ? h.crown[h.king] : null;
       return '<tr><td class="l"><a class="round-link" href="../rounds/' + esc(h.round_id) + '/" data-round="' + esc(h.round_id) + '">' + esc(h.round_id) + "</a></td>" +
-        '<td class="l">' + (h.king ? identCell(h.king, h.github) : '<span class="zero">nobody beat the baseline</span>') + "</td>" +
+        '<td class="l">' + (h.king ? identCell(h.king, h.github) : '<span class="zero" data-tip="nobody beat the baseline">no king</span>') + "</td>" +
         '<td class="l">' + (h.king && h.pr ? prLink(h.pr) : '<span class="zero">—</span>') + "</td>" +
         "<td class='" + (kc && kc.delta > 0 ? "pos" : "zero") + "'>" + signed(kc && kc.delta, 3) + "</td><td>" + num(ks && ks.score, 4) + "</td><td>" + num(ks && ks.weight, 3) + "</td>" +
         "<td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
