@@ -134,6 +134,57 @@
     }).catch(() => {});
   }
 
+  // ─── tooltips: one styled tip for every [data-tip] and every [title] (whose native tooltip it replaces) ──────
+  (function tooltips() {
+    const tip = document.createElement("div");
+    tip.className = "tip"; tip.id = "sh-tip"; tip.setAttribute("role", "tooltip");
+    document.body.appendChild(tip);
+    let cur = null, timer = 0, hideT = 0;
+    const take = (el) => {                       // a title becomes a data-tip once, so the browser never shows its own
+      if (el.hasAttribute("title")) { if (!el.hasAttribute("data-tip")) el.setAttribute("data-tip", el.getAttribute("title")); el.removeAttribute("title"); }
+      return el.getAttribute("data-tip");
+    };
+    function place(el) {
+      const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight, m = 8;
+      let below = r.top - h - 10 < m;
+      let top = below ? r.bottom + 10 : r.top - h - 10;
+      let left = Math.min(Math.max(m, r.left + r.width / 2 - w / 2), window.innerWidth - w - m);
+      tip.classList.toggle("below", below);
+      tip.style.left = left + "px"; tip.style.top = top + "px";
+      tip.style.setProperty("--ax", Math.min(w - 14, Math.max(14, r.left + r.width / 2 - left)) + "px");
+    }
+    function show(el) {
+      const text = take(el); if (!text) return;
+      const head = el.getAttribute("data-tip-title");
+      tip.textContent = "";
+      if (head) { const b = document.createElement("b"); b.textContent = head; tip.appendChild(b); }
+      tip.appendChild(document.createTextNode(text));
+      cur = el; el.setAttribute("aria-describedby", "sh-tip");
+      tip.classList.add("on"); place(el);
+    }
+    function hide() {
+      clearTimeout(timer);
+      if (cur) cur.removeAttribute("aria-describedby");
+      cur = null; tip.classList.remove("on");
+    }
+    const target = (e) => e.target instanceof Element ? e.target.closest("[data-tip], [title]") : null;
+    document.addEventListener("pointerover", (e) => {
+      const el = target(e); if (!el || el === cur) return;
+      take(el); clearTimeout(timer); clearTimeout(hideT);
+      timer = setTimeout(() => show(el), cur ? 0 : 120);
+      if (e.pointerType === "touch") hideT = setTimeout(hide, 2600);
+    });
+    document.addEventListener("pointerout", (e) => {
+      const el = target(e); if (!el) return;
+      if (e.relatedTarget instanceof Node && el.contains(e.relatedTarget)) return;
+      if (e.pointerType !== "touch") hide(); else clearTimeout(timer);
+    });
+    document.addEventListener("focusin", (e) => { const el = target(e); if (el) show(el); });
+    document.addEventListener("focusout", hide);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") hide(); });
+    window.addEventListener("scroll", hide, { passive: true, capture: true });
+  })();
+
   // ─── copy buttons ─────────────────────────────────────────────────────────────────────────────────────────
   document.addEventListener("click", (e) => {
     const b = e.target.closest(".copy");

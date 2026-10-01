@@ -13,7 +13,7 @@
                        publish_close: "publishing", done: "closed", waiting: "waiting for tasks", open: "opening" };
 
   let LIVE = null, ALL = null, indexTried = false, deepLinked = false, lastFocus = null;
-  const opened = new Set();            // lanes whose per-task detail is open
+  let openLane = null;                 // the one lane whose per-task detail is open
   let prevPos = {}, moved = {};        // tower positions on the last render, and recent moves
   let seen = null;                     // what the feed has already reported (null until the first render)
   const feed = [];                     // newest first
@@ -273,7 +273,7 @@
       const width = x.credit == null ? 0 : 100 * x.credit;
       const baseCredit = (by["null"] || {}).n ? ((by["null"].credit != null ? by["null"].credit : by["null"].verified / by["null"].n)) : null;
       const gapCls = x.d == null ? "zero-g" : x.d > 1e-9 ? "pos-g" : x.d < -1e-9 ? "neg-g" : "zero-g";
-      const open = opened.has(x.s);
+      const open = openLane === x.s;
       return '<div class="lane' + (ref ? " ref" : "") + (x.s === kingNow ? " king" : "") + (x.dq ? " dq" : "") + '" data-s="' + esc(x.s) + '" style="--c:' + color(x.s) + '" tabindex="0" role="button" aria-expanded="' + open + '">' +
         '<span class="lp">' + (ref ? (x.s === "null" ? "BASE" : "REF") : p) + "</span>" +
         who(x.s, chips) +
@@ -299,8 +299,10 @@
   }
   function toggleLane(el) {
     const s = el.dataset.s; if (!s) return;
-    opened.has(s) ? opened.delete(s) : opened.add(s);
+    openLane = openLane === s ? null : s;   // opening one closes the other
     renderTower();
+    const el2 = $("tower").querySelector('.lane[data-s="' + CSS.escape(s) + '"]');   // keep the lane in view inside the scrolling tower
+    if (openLane && el2) { const t = $("tower"); const top = el2.offsetTop; /* the tower is the lanes' offset parent */ if (top < t.scrollTop || top + el2.offsetHeight > t.scrollTop + t.clientHeight) t.scrollTo({ top: Math.max(0, top - 8), behavior: REDUCED ? "auto" : "smooth" }); }
   }
   $("tower").addEventListener("click", (e) => { if (e.target.closest("a")) return; const el = e.target.closest(".lane[data-s]"); if (el && !e.target.closest(".lane-detail")) toggleLane(el); });
   $("tower").addEventListener("keydown", (e) => { if (e.key !== "Enter" && e.key !== " ") return; const el = e.target.closest(".lane[data-s]"); if (el) { e.preventDefault(); toggleLane(el); } });
@@ -384,6 +386,9 @@
     requestAnimationFrame(step);
   }
   let lastTimeline = "";
+  const TL_RECENT = 30;
+  let tlRange = "recent";
+  try { tlRange = localStorage.getItem("sh-tl-range") === "all" ? "all" : "recent"; } catch (e) { /* the default */ }
   function renderSeason() {
     const rounds = closedRounds();
     const crowns = {}, above = {}, bestD = {}, bestRun = {}, miners = new Set();
@@ -421,25 +426,40 @@
     }).join("") : '<tr><td class="l" colspan="8">No closed rounds yet</td></tr>';
 
     // the crown timeline (rebuilt only when a round closes)
-    const tlKey = rounds.map((r) => r.round_id + r.king).join();
+    const tlKey = rounds.map((r) => r.round_id + r.king).join() + tlRange + (window.innerWidth >> 6);
     if (tlKey === lastTimeline) return;
     lastTimeline = tlKey;
-    const maxD = Math.max(0.05, ...rounds.map((r) => (r.king && r.crown && r.crown[r.king] ? r.crown[r.king].delta : 0) || 0));
+    const every = rounds, shown = tlRange === "all" ? every : every.slice(-TL_RECENT);
+    const tlBox = $("timeline");
+    const dense = tlBox.clientWidth > 0 && tlBox.clientWidth / Math.max(1, shown.length) < 20;   // too narrow for a face on each change of hands
+    $("tl-range").hidden = every.length <= TL_RECENT;
+    $("tl-all").textContent = "All " + every.length;
+    [...$("tl-range").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.range === tlRange)));
+    tlBox.classList.toggle("dense", dense);
+    const dOf = (r) => r.king && r.crown && r.crown[r.king] ? r.crown[r.king].delta : null;
+    const maxD = Math.max(0.05, ...shown.map((r) => dOf(r) || 0));
     let last = null;
-    $("timeline").innerHTML = rounds.map((r) => {
-      const d = r.king && r.crown && r.crown[r.king] ? r.crown[r.king].delta : null;
-      const h = r.king ? Math.max(5, Math.round(100 * (d || 0) / maxD)) : 4;
-      const cap = r.king && r.king !== last ? avatar(r.king, "cap") : "";
+    tlBox.innerHTML = shown.map((r) => {
+      const d = dOf(r), h = r.king ? Math.max(5, Math.round(100 * (d || 0) / maxD)) : 4;
+      const cap = !dense && r.king && r.king !== last ? avatar(r.king, "cap") : "";
       if (r.king) last = r.king;
-      const title = r.round_id + ": " + (r.king ? nameOf(r.king) + (d != null ? ", " + pts(d) + " pts" : "") : "no king");
-      return '<button class="tl' + (r.king ? "" : " none") + '" style="height:' + h + "%;--c:" + (r.king ? color(r.king) : "#2a2545") + '" data-round="' + esc(r.round_id) + '" title="' + esc(title) + '" aria-label="' + esc(title) + '">' + cap + "</button>";
+      const tip = r.king ? nameOf(r.king) + (d != null ? ", " + pts(d) + " pts over the baseline" : "") : "nobody beat the baseline";
+      return '<button class="tl' + (r.king ? "" : " none") + '" type="button" data-round="' + esc(r.round_id) + '"' + ' style="height:' + h + "%;--c:" + (r.king ? color(r.king) : "#2a2545") + '" data-tip-title="' + esc(r.round_id) + '" data-tip="' + esc(tip) + '" aria-label="' + esc(r.round_id + ": " + tip) + '">' + cap + "</button>";
     }).join("");
-    $("tl-first").textContent = rounds.length ? rounds[0].round_id : "";
-    $("tl-last").textContent = rounds.length ? rounds[rounds.length - 1].round_id : "";
+    $("tl-first").textContent = shown.length ? shown[0].round_id : "";
+    $("tl-last").textContent = shown.length ? shown[shown.length - 1].round_id : "";
     $("legend").innerHTML = Object.keys(crowns).sort((a, b) => crowns[b] - crowns[a]).map((h) =>
       '<span style="--c:' + color(h) + '"><i></i><b>' + esc(nameOf(h)) + "</b> " + crowns[h] + "</span>").join("");
   }
   $("timeline").addEventListener("click", (e) => { const b = e.target.closest(".tl"); if (b) openRound(b.dataset.round); });
+  $("tl-range").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-range]"); if (!b) return;
+    tlRange = b.dataset.range;
+    try { localStorage.setItem("sh-tl-range", tlRange); } catch (err) { /* only this visit */ }
+    renderSeason();
+  });
+  let tlResize = 0;
+  window.addEventListener("resize", () => { clearTimeout(tlResize); tlResize = setTimeout(() => { if (LIVE) renderSeason(); }, 200); });
 
   // ─── closed rounds and the round detail ────────────────────────────────────────────────────────────────
   function identCell(h, gh) {
