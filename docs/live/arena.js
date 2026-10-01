@@ -37,9 +37,10 @@
 
   // every miner keeps one colour across the page: its lane, its bars in the crown history, its legend swatch. Colours
   // come from one palette in order of first appearance, so they stay put as rounds close and newcomers get their own.
-  const PALETTE = ["#a78bfa", "#22d3ee", "#f472b6", "#fbbf24", "#a3e635", "#fb923c", "#60a5fa", "#2dd4bf", "#f87171", "#e879f9", "#facc15", "#38bdf8"];
+  const PALETTE = ["#a78bfa", "#22d3ee", "#f472b6", "#a3e635", "#fb923c", "#60a5fa", "#2dd4bf", "#e879f9", "#38bdf8", "#818cf8", "#fda4af", "#bef264"];  // no yellow: gold is the crown
   const colours = {};
-  function assignColours() {
+  function assignColours() {   // recomputed from scratch, so every page gives a miner the same colour once the index is in
+    Object.keys(colours).forEach((k) => delete colours[k]);
     const order = [];
     closedRounds().forEach((r) => { if (r.king) order.push(r.king); Object.keys(r.crown || {}).sort().forEach((h) => order.push(h)); Object.keys(r.github || {}).sort().forEach((h) => order.push(h)); });
     if (LIVE) { Object.keys(LIVE.active || {}).sort().forEach((h) => order.push(h)); (LIVE.submissions || []).forEach((x) => order.push(x.hotkey)); }
@@ -67,6 +68,7 @@
     return '<img class="' + cls + '" style="--c:' + c + '" src="https://github.com/' + encodeURIComponent(g) + '.png?size=96" alt="" loading="lazy" referrerpolicy="no-referrer"' +
       " onerror=\"this.outerHTML='<span class=&quot;" + cls + " ph&quot; style=&quot;--c:" + c + "&quot;>" + initials + "</span>'\">";
   }
+  const CROWN = '<svg class="crown-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.6 3.8L12 5l4.4 6.8L21 8l-1.9 10.5H4.9z"/></svg>';
   const closedRounds = () => (Array.isArray(ALL) && ALL.length ? ALL : (LIVE && LIVE.history) || []);
 
   // ─── the split-flap clock ───────────────────────────────────────────────────────────────────────────────
@@ -136,13 +138,13 @@
     const L = LIVE, st = L.stage;
     $("round").textContent = L.round_id || "—";
     const crowned = !!(L.crown && L.crown.king);
-    const cls = st === "window" ? "window" : st === "done" || st === "waiting" ? (crowned ? "crowned" : "closed") : "evaluate";
+    const cls = st === "window" ? "window" : st === "done" || st === "waiting" ? (crowned ? "crowned" : "") : "evaluate";
     $("phase").className = "badge " + cls;
     $("phase-txt").textContent = st === "done" && crowned ? "crowned" : STAGE_TEXT[st] || st;
     $("arena").classList.toggle("idle", st === "done" || st === "waiting");
     const stale = typeof L.updated === "number" && Date.now() / 1000 - L.updated > 900;
     document.body.classList.toggle("stale", stale);
-    $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale · " : "live · ") + (typeof L.updated === "number" ? "updated " + ago(L.updated) : "");
+    $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale, " : "live, ") + (typeof L.updated === "number" ? "updated " + ago(L.updated) : "");
 
     // the stage track
     const stages = (Array.isArray(L.stages) && L.stages.length > 1 ? L.stages : Object.keys(LABEL)).filter((s) => LABEL[s]);
@@ -153,6 +155,8 @@
       const state = s === st ? "now" : reached.has(s) || (nowIdx >= 0 && i < nowIdx) || st === "done" ? "done" : "";
       return '<div class="st ' + state + '"><b>' + esc(LABEL[s]) + "</b>" + (t ? hhmm(t) : "&nbsp;") + "</div>";
     }).join("");
+    const cur = $("track").querySelector(".st.now");   // on a narrow screen, keep the current stage in view
+    if (cur && $("track").scrollWidth > $("track").clientWidth) $("track").scrollLeft = Math.max(0, cur.offsetLeft - $("track").offsetLeft - 40);
 
     // the king and the field
     const rounds = closedRounds();
@@ -165,14 +169,14 @@
     for (let i = rounds.length - 1; i >= 0; i--) { if (rounds[i].king === king) streak++; else if (rounds[i].king) break; }
     if (king) {
       const g = githubOf(king);
-      $("king-av").innerHTML = avatar(king, "") + '<span class="crown" aria-hidden="true">👑</span>';
+      $("king-av").innerHTML = avatar(king, "") + CROWN;
       $("king-name").innerHTML = g ? '<a href="https://github.com/' + encodeURIComponent(g) + '">@' + esc(g) + "</a>" : esc(short(king));
       const a = active[king];
       const defense = a && a.incumbent ? (a.pr ? "defense PR " + prLink(a.pr) : "no defense PR this round, so a win would not be paid") : "";
       $("king-meta").innerHTML = esc(how) + (defense ? " · " + defense : "") + '<br><span class="hk" title="' + esc(king) + '">' + esc(short(king)) + "</span>";
       const pooled = (L.standings || {})[king] || {};
       $("king-facts").innerHTML =
-        '<div class="fact"><b>' + (crowns[king] || 0) + "</b><span>crowns</span></div>" +
+        '<div class="fact"><b class="gold">' + (crowns[king] || 0) + "</b><span>" + ((crowns[king] || 0) === 1 ? "crown" : "crowns") + "</span></div>" +
         '<div class="fact"><b>' + streak + "</b><span>" + (streak === 1 ? "round" : "rounds") + " in a row</span></div>" +
         '<div class="fact"><b>' + num(pooled.score, 3) + "</b><span>pooled score</span></div>" +
         '<div class="fact"><b>' + (pooled.weight != null ? Math.round(100 * pooled.weight) + "%" : "—") + "</b><span>reward weight</span></div>";
@@ -226,7 +230,7 @@
       const subs = (L.submissions || []).slice().sort((a, b) => (iso(a.created_at) || 0) - (iso(b.created_at) || 0));
       if (!subs.length) { tower.innerHTML = '<div class="tower-empty">No entries yet. The window is open — <a href="https://github.com/' + esc(repo()) + '/blob/main/submissions/README.md">submit a strategy</a>.</div>'; return; }
       tower.innerHTML = subs.map((s, i) =>
-        '<div class="lane" style="--c:' + color(s.hotkey) + '"><span class="pos">' + (i + 1) + '</span>' + who(s.hotkey) +
+        '<div class="lane" style="--c:' + color(s.hotkey) + '"><span class="lp">' + (i + 1) + '</span>' + who(s.hotkey) +
         '<span class="field-note">entered ' + (iso(s.created_at) ? hhmm(iso(s.created_at)) : "—") + (s.updated_at && s.updated_at !== s.created_at ? " · updated " + hhmm(iso(s.updated_at)) : "") + "</span>" +
         '<span class="gap zero-g">' + prLink(s.pr) + '</span><span class="mv"></span></div>').join("");
       return;
@@ -249,7 +253,7 @@
     $("tower-title").textContent = crown ? "Final standings" : "Timing tower";
     $("tower-sub").textContent = crown
       ? "ranked by gain over the baseline on this round's tasks; the crown goes to the best gain above zero"
-      : (L.progress && L.progress.total ? "live share of hidden checks passed; the white tick is the baseline" : "lanes fill as episodes finish");
+      : (L.progress && L.progress.total ? "share of hidden checks passed so far; the marker on each bar is the baseline" : "lanes fill as episodes finish");
 
     // remember where each lane was, to animate the reorder
     const before = {};
@@ -263,7 +267,7 @@
       const mv = moved[x.s] && now - moved[x.s].at < 90000 ? moved[x.s].by : 0;
       if (p) prevPos[x.s] = p;
       const a = active[x.s] || {};
-      const chips = (x.s === kingNow ? '<span class="chip king">👑 crowned</span>' : a.incumbent ? '<span class="chip king">' + (a.pr ? "defending " + prLink(a.pr) : "incumbent") + "</span>" : a.pr ? '<span class="chip">' + prLink(a.pr) + "</span>" : "") +
+      const chips = (x.s === kingNow ? '<span class="chip king">crowned</span>' : a.incumbent ? '<span class="chip king">' + (a.pr ? "defending " + prLink(a.pr) : "incumbent") + "</span>" : a.pr ? '<span class="chip">' + prLink(a.pr) + "</span>" : "") +
                     (x.dq ? '<span class="chip dq">disqualified</span>' : "");
       const fin = Object.keys(x.r.tasks || {}).length;
       const width = x.credit == null ? 0 : 100 * x.credit;
@@ -271,7 +275,7 @@
       const gapCls = x.d == null ? "zero-g" : x.d > 1e-9 ? "pos-g" : x.d < -1e-9 ? "neg-g" : "zero-g";
       const open = opened.has(x.s);
       return '<div class="lane' + (ref ? " ref" : "") + (x.s === kingNow ? " king" : "") + (x.dq ? " dq" : "") + '" data-s="' + esc(x.s) + '" style="--c:' + color(x.s) + '" tabindex="0" role="button" aria-expanded="' + open + '">' +
-        '<span class="pos">' + (ref ? (x.s === "null" ? "BASE" : "REF") : p) + "</span>" +
+        '<span class="lp">' + (ref ? (x.s === "null" ? "BASE" : "REF") : p) + "</span>" +
         who(x.s, chips) +
         '<span class="lane-bar"><i style="width:' + width.toFixed(1) + '%"></i>' + (!ref && baseCredit != null ? '<b style="left:' + (100 * baseCredit).toFixed(1) + '%"></b>' : "") +
         "<s>" + (x.credit == null ? "" : Math.round(width) + "%") + "</s></span>" +
@@ -302,7 +306,11 @@
   $("tower").addEventListener("keydown", (e) => { if (e.key !== "Enter" && e.key !== " ") return; const el = e.target.closest(".lane[data-s]"); if (el) { e.preventDefault(); toggleLane(el); } });
 
   // ─── the live feed: what changed since the last poll ───────────────────────────────────────────────────
-  const ICON = { crown: "👑", sub: "📥", ep: "⚡", stage: "🛰️", seal: "🔒", dq: "⛔" };
+  const svg = (d) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d + "</svg>";
+  const ICON = { crown: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8l4.6 3.8L12 5l4.4 6.8L21 8l-1.9 10.5H4.9z"/></svg>',
+                 sub: svg('<path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14"/>'), ep: svg('<path d="M13 3L5 14h6l-1 7 8-11h-6l1-7z"/>'),
+                 stage: svg('<circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0114 0M2 12a10 10 0 0120 0"/>'),
+                 seal: svg('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>'), dq: svg('<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>') };
   function push(kind, t, html, fresh) {
     feed.push({ kind, t, html, fresh, id: kind + t + html });
   }
@@ -360,7 +368,7 @@
     $("feed").innerHTML = feed.length ? feed.map((e) =>
       '<li class="k-' + e.kind + (e.fresh ? " new" : "") + '"><span class="ic" aria-hidden="true">' + (ICON[e.kind] || "•") + '</span><span class="tx">' + e.html +
       '<span class="tm">' + (Date.now() / 1000 - e.t < 86400 ? hhmm(e.t) + " · " + ago(e.t) : when(e.t)) + "</span></span></li>").join("")
-      : '<li><span class="ic">•</span><span class="tx">Nothing yet.</span></li>';
+      : '<li><span class="ic">' + ICON.stage + '</span><span class="tx">Nothing has happened yet this round.</span></li>';
     feed.forEach((e) => { e.fresh = false; });
   }
 
@@ -429,7 +437,7 @@
     $("tl-first").textContent = rounds.length ? rounds[0].round_id : "";
     $("tl-last").textContent = rounds.length ? rounds[rounds.length - 1].round_id : "";
     $("legend").innerHTML = Object.keys(crowns).sort((a, b) => crowns[b] - crowns[a]).map((h) =>
-      '<span style="--c:' + color(h) + '"><i></i>' + esc(nameOf(h)) + " · " + crowns[h] + "</span>").join("");
+      '<span style="--c:' + color(h) + '"><i></i><b>' + esc(nameOf(h)) + "</b> " + crowns[h] + "</span>").join("");
   }
   $("timeline").addEventListener("click", (e) => { const b = e.target.closest(".tl"); if (b) openRound(b.dataset.round); });
 
@@ -439,24 +447,31 @@
     return '<span class="ident">' + avatar(h, "gh-av") + '<span class="ident-txt">' + (g ? '<a class="gh-name" href="https://github.com/' + encodeURIComponent(g) + '">@' + esc(g) + "</a>" : '<span class="gh-name gh-anon">unlinked</span>') +
       '<span class="hk" title="' + esc(h) + '">' + esc(short(h)) + "</span></span></span>";
   }
-  let lastHistory = "";
+  let lastHistory = "", showAll = false;
+  const SHOWN = 12;
   function renderHistory() {
     const hist = closedRounds().slice().reverse();
-    $("rounds-count").textContent = hist.length ? "(" + hist.length + ")" : "";
-    const key = JSON.stringify(hist.map((h) => [h.round_id, h.king, h.pr]));
+    $("rounds-count").textContent = hist.length ? String(hist.length) : "";
+    const key = JSON.stringify(hist.map((h) => [h.round_id, h.king, h.pr])) + showAll;
     if (key === lastHistory) return;
     lastHistory = key;
-    $("history").innerHTML = hist.length ? hist.map((h) => {
+    const rows = showAll ? hist : hist.slice(0, SHOWN);
+    $("history").innerHTML = rows.length ? rows.map((h) => {
       const ks = h.king && h.scores ? h.scores[h.king] : null, kc = h.king && h.crown ? h.crown[h.king] : null;
       return '<tr><td class="l"><a class="round-link" href="../rounds/' + esc(h.round_id) + '/" data-round="' + esc(h.round_id) + '">' + esc(h.round_id) + "</a></td>" +
-        '<td class="l">' + (h.king ? identCell(h.king, h.github) + (h.pr ? " " + prLink(h.pr) : "") : '<span class="zero">none</span>') + "</td>" +
+        '<td class="l">' + (h.king ? identCell(h.king, h.github) : '<span class="zero">nobody beat the baseline</span>') + "</td>" +
+        '<td class="l">' + (h.king && h.pr ? prLink(h.pr) : '<span class="zero">—</span>') + "</td>" +
         "<td class='" + (kc && kc.delta > 0 ? "pos" : "zero") + "'>" + signed(kc && kc.delta, 3) + "</td><td>" + num(ks && ks.score, 4) + "</td><td>" + num(ks && ks.weight, 3) + "</td>" +
         "<td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
-        "<td class='l'>" + (h.commitments_ok ? "<span class='pos'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td><td>" + when(h.closed_at) + "</td></tr>";
-    }).join("") : '<tr><td class="empty" colspan="9">none yet</td></tr>';
+        "<td class='l'>" + (h.commitments_ok ? "<span class='ok'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td><td class='faint'>" + when(h.closed_at) + "</td></tr>";
+    }).join("") : '<tr><td class="empty" colspan="10">No round has closed yet.</td></tr>';
+    const more = $("rounds-more");
+    more.hidden = hist.length <= SHOWN;
+    more.textContent = showAll ? "Show the latest " + SHOWN : "Show all " + hist.length + " rounds";
     const q = (LIVE && LIVE.queue) || [];
-    $("queue-line").textContent = q.length ? "Minted ahead, unread until they open: " + q.map((r) => r.round_id).join(", ") + " (task digests in rounds/queue.json)." : "";
+    $("queue-line").textContent = q.length ? "Minted ahead and sealed until they open: " + q.map((r) => r.round_id).join(", ") + ". Their task digests are in rounds/queue.json." : "";
   }
+  $("rounds-more").addEventListener("click", () => { showAll = !showAll; renderHistory(); if (!showAll) $("rounds").scrollIntoView({ block: "start" }); });
   function roundDetail(h) {
     const scores = h.scores || {}, crown = h.crown || {};
     const ranked = Object.keys(scores).sort((a, b) => ((crown[a] || {}).rank || 99) - ((crown[b] || {}).rank || 99) || ((scores[b] || {}).weight || 0) - ((scores[a] || {}).weight || 0));
@@ -465,7 +480,7 @@
         "</td><td>" + num(s.score, 4) + "</td><td>" + num(s.weight, 3) + "</td></tr>"; }).join("") || "<tr><td class='empty' colspan='5'>no strategies were sealed</td></tr>";
     const stat = (v, k) => "<div class='stat'><b>" + v + "</b><span>" + k + "</span></div>";
     const tree = "https://github.com/" + esc(repo()) + "/tree/" + esc(branch()) + "/rounds/" + esc(h.round_id);
-    return "<div class='head'><h1>Round <span class='grad'>" + esc(h.round_id) + "</span></h1><span class='phase closed'>closed</span><span class='muted small'>" + when(h.closed_at) + "</span></div>" +
+    return "<div class='head'><h1>Round " + esc(h.round_id) + "</h1><span class='badge" + (h.king ? " crowned'>crowned" : "'>no king") + "</span><span class='muted small'>closed " + when(h.closed_at) + "</span></div>" +
       "<div class='strip' style='margin:1rem 0'>" + stat(h.king ? identCell(h.king, h.github) : "<span class='zero'>none</span>", "king" + (h.pr ? " · " + prLink(h.pr) : "")) +
       stat(h.sft_rows ?? "—", "SFT rows") + stat(h.dpo_pairs ?? "—", "DPO pairs") +
       stat("<span class='" + (h.commitments_ok ? "pos" : "neg") + "'>" + (h.commitments_ok ? "verified" : "mismatch") + "</span>", "commitments") + "</div>" +
@@ -474,7 +489,7 @@
       (Array.isArray(h.revealed) && h.revealed.length ? ' · <a href="' + tree + '/revealed">revealed bundles (' + h.revealed.length + ")</a>" : "") +
       (typeof h.hf === "string" && h.hf.startsWith("https://") ? ' · <a href="' + esc(h.hf) + '">dataset</a>' : "") + "</p>";
   }
-  const behind = () => document.querySelectorAll("main, nav, footer");
+  const behind = () => document.querySelectorAll("main, header.top, footer");
   function openRound(id) {
     if (!ROUND_ID.test(id || "")) return;
     const h = closedRounds().find((x) => x.round_id === id);

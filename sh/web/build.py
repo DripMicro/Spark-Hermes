@@ -134,7 +134,14 @@ def render(close: dict, meta: dict | None = None) -> str:
     if present is not None:  # an older round may lack a directory; never link to a 404
         links = [(u, t) for u, t in links if t.split(" ")[0].split("/")[0] in present]
     links += [(hf, "dataset")] if hf else []
-    artefacts = " · ".join(f'<a href="{_e(u)}">{_e(t)}</a>' for u, t in links)
+    artefacts = "".join(f'<a href="{_e(u)}">{_e(t)}</a>' for u, t in links)
+    badge = '<span class="badge crowned">crowned</span>' if king else '<span class="badge">no king</span>'
+    era = f" · era {_e(close.get('era'))}" if close.get("era") else ""
+    gh_repo = f"https://github.com/{_e(repo)}"
+    menu_icon = (
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">'
+        '<path d="M4 7h16M4 12h16M4 17h16"/></svg>'
+    )
 
     return f"""<!doctype html>
 <html lang="en">
@@ -143,20 +150,30 @@ def render(close: dict, meta: dict | None = None) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spark-Hermes {_e(rid)}</title>
 <meta name="description" content="Scores, weights and verification for round {_e(rid)} of the Spark-Hermes strategy competition.">
+<meta name="theme-color" content="#06050d">
 <link rel="icon" href="../../assets/favicon.png">
 <link rel="stylesheet" href="../../site.css">
 </head>
-<body>
-<nav class="nav">
-  <a class="brand" href="../../"><img src="../../assets/logo.png" alt="">Spark-Hermes</a>
-  <a href="../../live/"><span class="live-dot"></span>Live</a>
-  <a href="../../live/#rounds" aria-current="page">Rounds</a>
-  <a href="https://github.com/{_e(repo)}/blob/{_e(branch)}/submissions/README.md">Submit</a>
-  <a href="https://github.com/{_e(repo)}">GitHub</a>
-</nav>
+<body data-root="../../" data-round="{_e(rid)}">
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="../../"><img src="../../assets/logo.png" alt="" width="30" height="30">Spark-Hermes<em>SN74</em></a>
+    <nav class="menu" id="menu" aria-label="Site">
+      <a href="../../live/">Live</a>
+      <a href="../../live/#season">Season</a>
+      <a href="../../live/#rounds" aria-current="page">Rounds</a>
+      <a href="../../#compete">Compete</a>
+      <a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Dataset</a>
+      <a href="{gh_repo}">GitHub</a>
+    </nav>
+    <a class="now" id="now" href="../../live/" hidden></a>
+    <button class="icon-btn menu-btn" type="button" aria-controls="menu" aria-expanded="false" aria-label="Menu">{menu_icon}</button>
+  </div>
+</header>
 <main>
+  <nav class="pager" id="pager" aria-label="Other rounds"></nav>
   <section class="round">
-    <div class="head"><h1>Round <span class="grad">{_e(rid)}</span></h1><span class="phase closed">closed</span><span class="muted small">{_e(when) if when else ""} · era {_e(close.get("era", ""))}</span></div>
+    <div class="head"><h1>Round {_e(rid)}</h1>{badge}<span class="muted small">{"closed " + _e(when) if when else ""}{era}</span></div>
     <div class="strip">{strip}</div>
   </section>
   <section class="panel">
@@ -167,21 +184,38 @@ def render(close: dict, meta: dict | None = None) -> str:
     </table></div>
   </section>
   <section class="panel">
-    <h2>Pooled statistics <small>over the last 8 rounds — a conservative lower bound, published as evidence; the round's reward follows the crown above</small></h2>
+    <h2>Pooled statistics <small>over the last 8 rounds: a conservative lower bound, published as evidence; the round's reward follows the crown above</small></h2>
     <div class="wrap"><table>
       <thead><tr><th class="l">strategy</th><th>#</th><th>episodes</th><th title="mean of (share of checks passed − the baseline's) per instance">Δ vs baseline</th><th title="one-sided 90% lower bound of Δ vs baseline — how sure the gain is">Δc</th><th title="correctness gate: the pooled window is not below the baseline (mean Δ + z·se ≥ 0)">gate</th><th title="passed the published check while failing the withheld one (families with a published half; swe_fix has none)">overfit</th><th title="disqualified episodes">dq</th><th title="Δ vs baseline over the window after the overfit and copy penalties; above zero means better than the baseline">score</th><th title="share among the strategies above the baseline; the shares sum to 1">weight</th></tr></thead>
       <tbody>{"".join(body) or '<tr><td class="empty" colspan="10">no strategies were sealed</td></tr>'}</tbody>
     </table></div>
   </section>
-  <section class="panel">
-    <h2>Families</h2>
-    <div class="wrap"><table>
-      <thead><tr><th class="l">family</th><th>baseline n</th><th title="mean share of withheld checks passed">baseline</th><th title="mean share of withheld checks passed">canon</th><th title="canon's Δc against the baseline">Δc canon</th><th class="l">label</th></tr></thead>
-      <tbody>{families or '<tr><td class="empty" colspan="6">—</td></tr>'}</tbody>
-    </table></div>
-  </section>
-  <p class="small muted">Artefacts: {artefacts}. Every withheld half and its salt is in <code>reveal.json</code>; <code>HMAC(salt, withheld)</code> must equal the commitment in the task record — published at open, or at close under <code>evaluated/</code> when miners were shown previews.</p>
+  <div class="two">
+    <section class="panel">
+      <h2>Families</h2>
+      <div class="wrap"><table>
+        <thead><tr><th class="l">family</th><th>baseline n</th><th title="mean share of withheld checks passed">baseline</th><th title="mean share of withheld checks passed">canon</th><th title="canon's Δc against the baseline">Δc canon</th><th class="l">label</th></tr></thead>
+        <tbody>{families or '<tr><td class="empty" colspan="6">—</td></tr>'}</tbody>
+      </table></div>
+    </section>
+    <section class="panel artefacts">
+      <h2>Check this round</h2>
+      <p class="note">Every withheld half and its salt is in <code>reveal.json</code>; <code>HMAC(salt, withheld)</code> must equal the commitment in the task record, published at open, or at close under <code>evaluated/</code> when miners were shown previews.</p>
+      <div class="chips">{artefacts}</div>
+    </section>
+  </div>
 </main>
+<footer class="foot">
+  <div>
+    <a class="brand" href="../../"><img src="../../assets/logo.png" alt="" width="26" height="26">Spark-Hermes</a>
+    <p>This page is built from the round's published artefacts alone, so everything on it can be recomputed.</p>
+  </div>
+  <div><h3>Competition</h3><ul><li><a href="../../live/">Live round</a></li><li><a href="../../live/#season">Season standings</a></li><li><a href="../../live/#rounds">Closed rounds</a></li></ul></div>
+  <div><h3>Compete</h3><ul><li><a href="{gh_repo}/blob/{_e(branch)}/submissions/README.md">Submission guide</a></li><li><a href="{gh_repo}/blob/{_e(branch)}/docs/pins.md">Pins</a></li><li><a href="../../#compete">How to enter</a></li></ul></div>
+  <div><h3>Open data</h3><ul><li><a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Training dataset</a></li><li><a href="{tree}">This round's artefacts</a></li><li><a href="{gh_repo}">Source code</a></li></ul></div>
+  <div class="legal"><a href="https://github.com/gittensor-model-hub">Gittensor</a> · MIT licence</div>
+</footer>
+<script src="../../site.js"></script>
 </body>
 </html>
 """

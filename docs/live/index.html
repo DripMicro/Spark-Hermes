@@ -7,25 +7,31 @@
 <meta name="description" content="The Spark-Hermes arena, live: the round on now, the king and the challengers, the race against the baseline as episodes land, the crown's history and the season standings.">
 <link rel="icon" href="../assets/favicon.png">
 <link rel="stylesheet" href="../site.css">
-<link rel="stylesheet" href="arena.css">
+<meta name="theme-color" content="#06050d">
 </head>
-<body class="arena-page">
-<nav class="nav">
-  <a class="brand" href="../"><img src="../assets/logo.png" alt="">Spark-Hermes</a>
-  <a href="./" aria-current="page"><span class="live-dot"></span>Live</a>
-  <a href="#season">Season</a>
-  <a href="#rounds">Rounds</a>
-  <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/submissions/README.md">Submit</a>
-  <a id="nav-hf" href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Dataset</a>
-  <a id="nav-repo" href="https://github.com/gittensor-model-hub/Spark-Hermes">GitHub</a>
-</nav>
+<body class="arena-page" data-root="../">
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="../"><img src="../assets/logo.png" alt="" width="30" height="30">Spark-Hermes<em>SN74</em></a>
+    <nav class="menu" id="menu" aria-label="Site">
+      <a href="./" aria-current="page">Live</a>
+      <a href="#season">Season</a>
+      <a href="#rounds">Rounds</a>
+      <a href="../#compete">Compete</a>
+      <a id="nav-hf" href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Dataset</a>
+      <a id="nav-repo" href="https://github.com/gittensor-model-hub/Spark-Hermes">GitHub</a>
+    </nav>
+    <a class="now" id="now" href="./" hidden></a>
+    <button class="icon-btn menu-btn" type="button" aria-controls="menu" aria-expanded="false" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  </div>
+</header>
 
 <main>
   <!-- the round on now -->
   <section class="arena" id="arena" aria-labelledby="round-title">
     <div class="arena-top">
       <h1 class="round-id" id="round-title"><span class="r">Round</span> <span id="round">—</span></h1>
-      <span class="badge closed" id="phase"><span class="dot"></span><span id="phase-txt">connecting</span></span>
+      <span class="badge" id="phase"><span class="dot"></span><span id="phase-txt">connecting</span></span>
       <span class="live-status" id="status"><span class="pulse"></span>connecting…</span>
     </div>
 
@@ -68,16 +74,16 @@
     <section class="board" aria-labelledby="tower-title">
       <div class="board-head"><h2 id="tower-title">Timing tower</h2><p id="tower-sub"></p></div>
       <div class="tower" id="tower"><div class="tower-empty">Waiting for the round to start.</div></div>
-      <p class="note" id="rejected" hidden style="margin-top:.8rem"></p>
+      <p class="note" id="rejected" hidden style="margin-top:.9rem"></p>
     </section>
     <section class="board" aria-labelledby="feed-title">
-      <div class="board-head"><h2 id="feed-title">Live feed</h2><p>new events appear as they happen</p></div>
+      <div class="board-head"><h2 id="feed-title">Live feed</h2><p>entries, finished episodes and crown decisions as they happen</p></div>
       <ol class="feed" id="feed" aria-live="polite"></ol>
     </section>
   </div>
 
   <!-- the season -->
-  <section id="season" class="numbers" aria-label="Season in numbers"></section>
+  <section id="season" class="numbers" aria-label="The season in numbers"></section>
 
   <section class="board" aria-labelledby="crown-title">
     <div class="board-head"><h2 id="crown-title">The crown, round by round</h2><p>bar height is the king's gain over the baseline; colour is who held it</p></div>
@@ -87,7 +93,7 @@
   </section>
 
   <section class="board" aria-labelledby="season-title">
-    <div class="board-head"><h2 id="season-title">Season standings</h2><p>every closed round; score and weight are the pooled 8-round window, the crown is each round's own</p></div>
+    <div class="board-head"><h2 id="season-title">Season standings</h2><p>crowns over every closed round; score and weight are today's pooled 8-round figures</p></div>
     <div class="wrap"><table class="season">
       <thead><tr><th class="l">#</th><th class="l">miner</th><th>crowns</th><th class="opt" title="rounds in which this strategy beat the baseline">rounds above baseline</th><th class="opt">best streak</th><th class="opt" title="best single-round gain over the baseline">best Δ</th><th title="pooled 8-round score">score</th><th title="share of the reward weight">weight</th></tr></thead>
       <tbody id="season-body"><tr><td class="l" colspan="8">loading…</td></tr></tbody>
@@ -95,18 +101,25 @@
   </section>
 
   <section class="board" id="rounds" aria-labelledby="rounds-title">
-    <div class="board-head"><h2 id="rounds-title">Closed rounds <span id="rounds-count" class="muted"></span></h2><p>open a round for its scores, weights and king; the full page and artefacts are linked inside</p></div>
+    <div class="board-head"><h2 id="rounds-title">Closed rounds <span id="rounds-count" class="count"></span></h2><p>open a round for its scores and king; its full page and artefacts are linked inside</p></div>
     <div class="wrap"><table>
-      <thead><tr><th class="l">round</th><th class="l">king</th><th title="the king's Δ vs baseline on that round's instances">Δ round</th><th title="the king's pooled score at that close">score</th><th title="the king's weight at that close">weight</th><th>SFT</th><th>DPO</th><th class="l">commitments</th><th>closed</th></tr></thead>
-      <tbody id="history"><tr><td class="empty" colspan="9">loading…</td></tr></tbody>
+      <thead><tr><th class="l">round</th><th class="l">king</th><th class="l">PR</th><th title="the king's gain over the baseline on that round's bugs">Δ round</th><th title="the king's pooled score at that close">score</th><th title="the king's weight at that close">weight</th><th title="supervised fine-tuning rows exported">SFT</th><th title="preference pairs exported">DPO</th><th class="l" title="every hidden task matched the commitment published before the round">commitments</th><th>closed</th></tr></thead>
+      <tbody id="history"><tr><td class="empty" colspan="10">Loading rounds…</td></tr></tbody>
     </table></div>
+    <button class="more" id="rounds-more" type="button" hidden>Show all rounds</button>
     <p class="note" id="queue-line" style="margin-top:.8rem"></p>
   </section>
 </main>
 
 <footer class="foot">
-  <span>Artefacts: <a id="link-rounds" href="https://github.com/gittensor-model-hub/Spark-Hermes/tree/main/rounds">rounds/</a></span>
-  <span>Source: <a href="live.json">live.json</a> and <a href="../rounds/index.json">rounds/index.json</a>, written by the validator</span>
+  <div>
+    <a class="brand" href="../"><img src="../assets/logo.png" alt="" width="26" height="26">Spark-Hermes</a>
+    <p>Everything on this page is computed in your browser from <a href="live.json">live.json</a> and <a href="../rounds/index.json">rounds/index.json</a>, which the validator publishes.</p>
+  </div>
+  <div><h3>Competition</h3><ul><li><a href="./">Live round</a></li><li><a href="#season">Season standings</a></li><li><a href="#rounds">Closed rounds</a></li></ul></div>
+  <div><h3>Compete</h3><ul><li><a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/submissions/README.md">Submission guide</a></li><li><a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/docs/pins.md">Pins</a></li><li><a href="../#compete">How to enter</a></li></ul></div>
+  <div><h3>Open data</h3><ul><li><a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Training dataset</a></li><li><a id="link-rounds" href="https://github.com/gittensor-model-hub/Spark-Hermes/tree/main/rounds">Round artefacts</a></li><li><a href="https://github.com/gittensor-model-hub/Spark-Hermes">Source code</a></li></ul></div>
+  <div class="legal"><a href="https://github.com/gittensor-model-hub">Gittensor</a> · MIT licence</div>
 </footer>
 
 <div id="round-modal" class="modal" hidden>
@@ -117,6 +130,7 @@
   </div>
 </div>
 
+<script src="../site.js"></script>
 <script src="arena.js"></script>
 </body>
 </html>

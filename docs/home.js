@@ -7,6 +7,7 @@
   const STAGE_TEXT = { window: "submissions open", seal: "sealing", images: "building tasks", evaluate: "evaluating",
                        close: "scoring", crown: "crowning", announce: "announcing", export: "exporting data",
                        publish_close: "publishing", done: "closed", waiting: "waiting for tasks", open: "opening" };
+  const CROWN = '<svg class="crown-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.6 3.8L12 5l4.4 6.8L21 8l-1.9 10.5H4.9z"/></svg>';
   let LIVE = null, ALL = null;
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -18,9 +19,10 @@
   const rounds = () => (Array.isArray(ALL) && ALL.length ? ALL : (LIVE && LIVE.history) || []);
 
   // the same colours as the live board: one palette, in order of first appearance
-  const PALETTE = ["#a78bfa", "#22d3ee", "#f472b6", "#fbbf24", "#a3e635", "#fb923c", "#60a5fa", "#2dd4bf", "#f87171", "#e879f9", "#facc15", "#38bdf8"];
+  const PALETTE = ["#a78bfa", "#22d3ee", "#f472b6", "#a3e635", "#fb923c", "#60a5fa", "#2dd4bf", "#e879f9", "#38bdf8", "#818cf8", "#fda4af", "#bef264"];  // no yellow: gold is the crown
   const colours = {};
-  function assignColours() {
+  function assignColours() {   // recomputed from scratch, so every page gives a miner the same colour once the index is in
+    Object.keys(colours).forEach((k) => delete colours[k]);
     const order = [];
     rounds().forEach((r) => { if (r.king) order.push(r.king); Object.keys(r.crown || {}).sort().forEach((h) => order.push(h)); Object.keys(r.github || {}).sort().forEach((h) => order.push(h)); });
     if (LIVE) { Object.keys(LIVE.active || {}).sort().forEach((h) => order.push(h)); (LIVE.submissions || []).forEach((x) => order.push(x.hotkey)); }
@@ -90,19 +92,19 @@
     const L = LIVE, st = L.stage, rs = rounds(), active = L.active || {};
     $("round").textContent = L.round_id || "—";
     const crowned = !!(L.crown && L.crown.king);
-    $("phase").className = "badge " + (st === "window" ? "window" : st === "done" || st === "waiting" ? (crowned ? "crowned" : "closed") : "evaluate");
+    $("phase").className = "badge " + (st === "window" ? "window" : st === "done" || st === "waiting" ? (crowned ? "crowned" : "") : "evaluate");
     $("phase-txt").textContent = st === "done" && crowned ? "crowned" : STAGE_TEXT[st] || st;
     $("arena").classList.toggle("idle", st === "done" || st === "waiting");
     const stale = typeof L.updated === "number" && Date.now() / 1000 - L.updated > 900;
     document.body.classList.toggle("stale", stale);
-    $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale · " : "live · ") + (typeof L.updated === "number" ? "updated " + ago(L.updated) : "");
+    $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale, " : "") + (typeof L.updated === "number" ? "updated " + ago(L.updated) : "");
 
     let king = crowned ? L.crown.king : null, how = "crowned this round";
     if (!king) { const inc = Object.keys(active).find((h) => active[h].incumbent); if (inc) { king = inc; how = "defending the crown"; } }
     if (!king) { for (let i = rs.length - 1; i >= 0; i--) if (rs[i].king) { king = rs[i].king; how = "reigning"; break; } }
     if (king) {
       const crowns = rs.filter((r) => r.king === king).length;
-      $("king-av").innerHTML = avatar(king, "") + '<span class="crown" aria-hidden="true">👑</span>';
+      $("king-av").innerHTML = avatar(king, "") + CROWN;
       $("king-name").textContent = nameOf(king);
       $("king-meta").textContent = how + " · " + crowns + (crowns === 1 ? " crown" : " crowns");
     }
@@ -145,18 +147,39 @@
     $("podium").innerHTML = top.length ? top.map((h, i) => {
       const g = githubOf(h), w = (pooled[h] || {}).weight;
       return '<div class="pod p' + (i + 1) + '" style="--c:' + color(h) + '"><span class="pod-rk">' + (i + 1) + "</span>" +
-        '<span class="pod-av">' + avatar(h, "") + (i === 0 ? '<span class="crown" aria-hidden="true">👑</span>' : "") + "</span>" +
-        '<span class="pod-name">' + (g ? '<a href="https://github.com/' + encodeURIComponent(g) + '">@' + esc(g) + "</a>" : esc(short(h))) + "</span>" +
-        '<span class="pod-stats"><b>' + crowns[h] + "</b> " + (crowns[h] === 1 ? "crown" : "crowns") + " · " + (above[h] || 0) + " rounds above baseline" +
-        (w != null ? " · " + Math.round(100 * w) + "% weight" : "") + "</span></div>";
+        '<span class="pod-av">' + avatar(h, "") + (i === 0 ? CROWN : "") + "</span>" +
+        '<span><span class="pod-name">' + (g ? '<a href="https://github.com/' + encodeURIComponent(g) + '">@' + esc(g) + "</a>" : esc(short(h))) + "</span>" +
+        '<span class="pod-stats"><b>' + crowns[h] + "</b> " + (crowns[h] === 1 ? "crown" : "crowns") + "</span>" +
+        '<span class="pod-sub">' + (above[h] || 0) + " rounds above the baseline" + (w != null ? ", " + Math.round(100 * w) + "% of today's weight" : "") + "</span></span></div>";
     }).join("") : '<p class="muted">No king yet: the first strategy to beat the baseline takes the crown.</p>';
+  }
+
+  let lastTimeline = "";
+  function renderTimeline() {
+    const rs = rounds(), crowns = {};
+    rs.forEach((r) => { if (r.king) crowns[r.king] = (crowns[r.king] || 0) + 1; });
+    const key = rs.map((r) => r.round_id + r.king).join();
+    if (key === lastTimeline) return;
+    lastTimeline = key;
+    const dOf = (r) => r.king && r.crown && r.crown[r.king] ? r.crown[r.king].delta : null;
+    const maxD = Math.max(0.05, ...rs.map((r) => dOf(r) || 0));
+    let last = null;
+    $("timeline").innerHTML = rs.map((r) => {
+      const d = dOf(r), h = r.king ? Math.max(8, Math.round(130 * (d || 0) / maxD)) : 6;
+      const cap = r.king && r.king !== last ? avatar(r.king, "cap") : "";
+      if (r.king) last = r.king;
+      const t = r.round_id + ": " + (r.king ? nameOf(r.king) + (d != null ? ", +" + Math.round(100 * d) + " pts over the baseline" : "") : "nobody beat the baseline");
+      return '<a class="tl' + (r.king ? "" : " none") + '" href="rounds/' + esc(r.round_id) + '/" style="height:' + h + "px;--c:" + (r.king ? color(r.king) : "#2a2545") + '" title="' + esc(t) + '" aria-label="' + esc(t) + '">' + cap + "</a>";
+    }).join("");
+    $("tl-first").textContent = rs.length ? rs[0].round_id : "";
+    $("tl-last").textContent = rs.length ? rs[rs.length - 1].round_id : "";
+    $("legend").innerHTML = Object.keys(crowns).sort((a, b) => crowns[b] - crowns[a]).map((h) =>
+      '<span style="--c:' + color(h) + '"><i></i><b>' + esc(nameOf(h)) + "</b> " + crowns[h] + "</span>").join("");
   }
 
   function render() {
     if (!LIVE) return;
-    assignColours(); renderRound(); paintClock(); renderSeason();
-    if (LIVE.repo) $("nav-repo").href = "https://github.com/" + LIVE.repo;
-    if (LIVE.hf_repo) $("nav-hf").href = "https://huggingface.co/datasets/" + LIVE.hf_repo;
+    assignColours(); renderRound(); paintClock(); renderSeason(); renderTimeline();
   }
   async function tick() {
     try {
