@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790825689.6462245,
+ "updated": 1790826747.6729705,
  "round_id": "r0042",
  "stage": "evaluate",
  "stages": [
@@ -120,6 +120,54 @@
   {
    "stage": "evaluate_relaunch",
    "t": 1790825553.3783596
+  },
+  {
+   "stage": "resume",
+   "t": 1790825752.7367027
+  },
+  {
+   "stage": "resume",
+   "t": 1790825812.9195552
+  },
+  {
+   "stage": "resume",
+   "t": 1790825873.0613186
+  },
+  {
+   "stage": "resume",
+   "t": 1790825933.2160227
+  },
+  {
+   "stage": "resume",
+   "t": 1790825993.3486495
+  },
+  {
+   "stage": "resume",
+   "t": 1790826053.4976254
+  },
+  {
+   "stage": "resume",
+   "t": 1790826113.6293488
+  },
+  {
+   "stage": "resume",
+   "t": 1790826173.7639964
+  },
+  {
+   "stage": "resume",
+   "t": 1790826233.9075618
+  },
+  {
+   "stage": "resume",
+   "t": 1790826294.0648572
+  },
+  {
+   "stage": "resume",
+   "t": 1790826356.5868335
+  },
+  {
+   "stage": "images",
+   "t": 1790826605.204994
   }
  ],
  "window": {
@@ -262,9 +310,23 @@
  },
  "rejected": {},
  "progress": {
-  "done": 0,
+  "done": 1,
   "total": 36,
-  "by_surface": {}
+  "by_surface": {
+   "null": {
+    "n": 1,
+    "verified": 0,
+    "credit": 0.0,
+    "tasks": {
+     "swe-fix-r0042-00": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     }
+    }
+   }
+  }
  },
  "crown": null,
  "scores": null,
