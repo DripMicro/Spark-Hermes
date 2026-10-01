@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0043-p05",
+ "round_id": "r0043",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPRQL parser fails with UnboundLocalError when parsing equality expressions\n\n#### Description\n\nThe PRQL dialect parser throws an `UnboundLocalError` when trying to parse PRQL queries containing equality expressions. This appears to be related to the `_parse_equality` method in the PRQL parser.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should work but throws UnboundLocalError\nsqlglot.transpile(\"from x filter a == null\", read=\"prql\", write=\"sql\")\n```\n\nThe error occurs when parsing PRQL queries that contain equality comparisons, particularly those involving null checks like `a == null` or `null != b`.\n\n#### Expected Behavior\n\nThe parser should successfully convert PRQL equality expressions to their SQL equivalents, handling null comparisons by converting them to `IS NULL` or `IS NOT NULL` as appropriate.\n\n#### Actual Behavior\n\n```\nUnboundLocalError: local variable 'eq' referenced before assignment\n```\n\nThis prevents any PRQL queries with equality expressions from being parsed correctly.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__4661qmbl",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_prql.py::TestPRQL::test_prql"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

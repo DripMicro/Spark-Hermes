@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0043-p02",
+ "round_id": "r0043",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nModule relative import resolution broken for non-package modules\n\n#### Description\n\nWhen resolving relative imports for modules that are not packages, the `relative_to_absolute_name` method returns incorrect module names. The issue occurs because the logic for determining the package name is inverted - it treats non-package modules as packages and vice versa.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom astroid import nodes\n\n# Create a non-package module\nmod = nodes.Module('very.multi.module', package=False)\n\n# Try to resolve relative imports\nmodname = mod.relative_to_absolute_name('utils', 1)\nprint(f\"Expected: 'very.multi.utils', Got: '{modname}'\")\n\nmodname = mod.relative_to_absolute_name('', 1) \nprint(f\"Expected: 'very.multi', Got: '{modname}'\")\n```\n\nThe above code should return `'very.multi.utils'` and `'very.multi'` respectively, but instead returns incorrect values due to the inverted package logic.\n\nThis affects import resolution in astroid when analyzing Python code with relative imports from non-package modules.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_ctrl_invert_if__ngyfl6hk",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_manager.py::AstroidManagerTest::test_namespace_package_pth_support",
+   "tests/test_regrtest.py::NonRegressionTests::test_module_path",
+   "tests/test_scoped_nodes.py::ModuleNodeTest::test_relative_to_absolute_name"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

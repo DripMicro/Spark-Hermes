@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0043-p04",
+ "round_id": "r0043",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nRow format parsing broken after recent changes\n\n#### Description\n\nThe `_parse_row_format` method in the parser appears to have been corrupted, causing SQL statements with row format specifications to fail parsing. The method logic has been scrambled with statements appearing out of order and unreachable code.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should parse successfully but fails\nsql = \"\"\"\nCREATE TABLE test (\n    id INT,\n    name STRING\n)\nROW FORMAT DELIMITED\nFIELDS TERMINATED BY ','\nLINES TERMINATED BY '\\n'\n\"\"\"\n\ntry:\n    parsed = sqlglot.parse_one(sql, dialect='hive')\n    print(\"Parsed successfully:\", parsed)\nexcept Exception as e:\n    print(\"Parse error:\", e)\n```\n\nExpected: The SQL should parse without errors and create a proper AST.\nActual: The parser fails or produces incorrect results due to the corrupted `_parse_row_format` method.\n\nThe issue affects any SQL that uses row format specifications like:\n- `ROW FORMAT DELIMITED`\n- `ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'`\n- Various field/line terminator specifications\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__ycteatpr",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_athena.py::TestAthena::test_ddl",
+   "tests/dialects/test_hive.py::TestHive::test_ddl",
+   "tests/dialects/test_hive.py::TestHive::test_hive",
+   "tests/dialects/test_spark.py::TestSpark::test_spark",
+   "tests/dialects/test_spark.py::TestSpark::test_transform_query",
+   "tests/test_expressions.py::TestExpressions::test_functions",
+   "tests/test_serde.py::TestSerDe::test_serde",
+   "tests/test_transpile.py::TestTranspile::test_identity"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

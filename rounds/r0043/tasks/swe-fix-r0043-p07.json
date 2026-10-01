@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0043-p07",
+ "round_id": "r0043",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nBigQuery column qualification broken for non-BigQuery dialects\n\n#### Description\n\nWhen qualifying columns for non-BigQuery dialects, the `ambiguous` variable is not properly initialized, causing incorrect column qualification behavior. This affects SQL optimization for dialects other than BigQuery.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\nfrom sqlglot.schema import MappingSchema\n\n# This should work for ClickHouse dialect but fails\nsql = \"WITH data AS (SELECT 1 AS id, 2 AS my_id, 'a' AS name, 'b' AS full_name) SELECT id AS my_id, CONCAT(id, name) AS full_name FROM data WHERE my_id = 1 GROUP BY my_id, full_name HAVING my_id = 1\"\n\nunused_schema = {'l': {'c': 'int'}}\nresult = optimizer.qualify_columns.qualify_columns(\n    sqlglot.parse_one(sql, dialect='clickhouse'), \n    schema=MappingSchema(schema=unused_schema, dialect='clickhouse')\n)\n\nprint(\"Expected:\")\nprint(\"WITH data AS (SELECT 1 AS id, 2 AS my_id, 'a' AS name, 'b' AS full_name) SELECT data.id AS my_id, CONCAT(data.id, data.name) AS full_name FROM data WHERE data.id = 1 GROUP BY data.id, CONCAT(data.id, data.name) HAVING data.id = 1\")\n\nprint(\"\\nActual:\")\nprint(result.sql())\n```\n\nThe issue occurs because the `ambiguous` variable is not properly set for non-BigQuery dialects, leading to incorrect column reference resolution in GROUP BY and HAVING clauses.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_invert_if__hprtmzks",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_expand_alias_refs",
+   "tests/test_optimizer.py::TestOptimizer::test_qualify_columns"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

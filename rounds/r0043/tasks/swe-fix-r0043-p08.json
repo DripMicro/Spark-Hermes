@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0043-p08",
+ "round_id": "r0043",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDocument.styles property returns copy instead of original styles object\n\n#### Description\n\nThe `Document.styles` property is returning a copy of the styles object instead of the original styles object, breaking existing code that expects to get the same object reference.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\n\n# Create a document\ndoc = Document()\n\n# Get styles reference twice\nstyles1 = doc.styles\nstyles2 = doc.styles\n\n# These should be the same object but they're not\nprint(styles1 is styles2)  # Expected: True, Actual: False\n```\n\nThe issue appears when accessing the `styles` property multiple times - each access returns a different copy rather than the same styles object reference that was previously returned.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__nrwb1dto",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_document.py::DescribeDocument::it_provides_access_to_its_styles"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
