@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0044-p06",
+ "round_id": "r0044",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nKCD dump fails with NameError when exporting database\n\n#### Description\n\nWhen trying to export a database to KCD format, the operation fails with `NameError: name 'message_element' is not defined` or `NameError: name 'producer' is not defined`. This affects both programmatic usage and command line conversion.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load any database file\ndb = cantools.database.load_file('tests/files/dbc/motohawk.dbc')\n\n# Try to export as KCD string\nkcd_string = db.as_kcd_string()\n```\n\nOr using command line:\n\n```bash\ncantools convert input.dbc output.kcd\n```\n\nBoth operations result in a NameError during the KCD export process.\n\n#### Expected Behavior\n\nThe database should be successfully exported to KCD format without errors.\n\n#### Actual Behavior\n\nThe export fails with NameError exceptions related to undefined variables in the KCD dumping code.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_remove_assign__ra7qslky",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_command_line.py::CanToolsCommandLineTest::test_convert",
+   "tests/test_convert.py::CanToolsConvertFullTest::test_kcd_dump_default_sort_signals",
+   "tests/test_convert.py::CanToolsConvertFullTest::test_kcd_dump_sort_signals_by_name",
+   "tests/test_database.py::CanToolsDatabaseTest::test_as_kcd_string",
+   "tests/test_database.py::CanToolsDatabaseTest::test_vehicle"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

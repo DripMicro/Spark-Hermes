@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0044-p15",
+ "round_id": "r0044",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Python output format in sqlparse is broken\n\n## Description\n\nWhen trying to format SQL queries with the Python output format, I'm getting an error. This seems to be a regression in the code.\n\n## Steps to reproduce\n\nI'm using the following code to format SQL queries:\n\n```python\nimport sqlparse\n\nsql = 'select * from foo;'\nformatted = sqlparse.format(sql, output_format='python')\nprint(formatted)\n```\n\n## Expected behavior\n\nThe code should output:\n```\nsql = 'select * from foo;'\n```\n\nAnd for multiple statements:\n```python\nsql = 'select * from foo; select 1 from dual'\nformatted = sqlparse.format(sql, output_format='python')\nprint(formatted)\n```\n\nShould output:\n```\nsql = 'select * from foo; '\nsql2 = 'select 1 from dual'\n```\n\n## Actual behavior\n\nInstead, I'm getting an AttributeError. It seems like the OutputPythonFilter class is missing some functionality that it should inherit from its parent class.\n\n## Environment\n- sqlparse version: latest\n- Python version: 3.10\n\nI noticed that the PHP output format works fine, but the Python output format is broken. This is causing issues in my project where I need to generate Python code from SQL queries.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "andialbrecht__sqlparse.e57923b3.func_pm_class_rm_base__wjmn1ygf",
+  "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3",
+  "fail_to_pass": [
+   "tests/test_format.py::TestOutputFormat::test_python",
+   "tests/test_format.py::TestOutputFormat::test_python_multiple_statements"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

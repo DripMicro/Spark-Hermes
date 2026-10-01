@@ -1,0 +1,30 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0044-p14",
+ "round_id": "r0044",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSQL generation returns empty string after simplify optimization\n\n#### Description\n\nWhen using the simplify optimizer, SQL generation is producing empty strings instead of the expected SQL output. This affects various optimization functions that rely on SQL generation.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer, parse_one, exp\n\n# Simple expression that should generate SQL\nexpression = parse_one('SELECT a, c, b FROM table1 WHERE 1 = 1')\nwhere_clause = expression.find(exp.Where)\n\n# This should return SQL but returns empty string\nresult = optimizer.simplify.gen(where_clause)\nprint(f\"Result: '{result}'\")  # Expected: 'WHERE 1 = 1' or similar, Actual: ''\n\n# Another example\nquery = parse_one('SELECT x FROM t')\nresult = optimizer.simplify.gen(query)\nprint(f\"Result: '{result}'\")  # Expected: 'SELECT x FROM t', Actual: ''\n\n# Anonymous function example\nanon = parse_one('anonymous(x, y)')\nresult = optimizer.simplify.gen(anon)\nprint(f\"Result: '{result}'\")  # Expected: 'ANONYMOUS(x,y)', Actual: ''\n```\n\nThe `optimizer.simplify.gen()` function is returning empty strings for all SQL expressions instead of generating the proper SQL representation.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_loop__ler1buoe",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_normalize",
+   "tests/test_optimizer.py::TestOptimizer::test_optimize",
+   "tests/test_optimizer.py::TestOptimizer::test_pushdown_predicates",
+   "tests/test_optimizer.py::TestOptimizer::test_simplify",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds",
+   "tests/test_optimizer.py::TestOptimizer::test_tpch"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

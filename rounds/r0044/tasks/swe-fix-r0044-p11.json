@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0044-p11",
+ "round_id": "r0044",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nInlineShapes returns empty collection when document contains inline shapes\n\n#### Description\n\nWhen working with documents that contain inline shapes, the `InlineShapes` collection appears empty even though the document actually contains inline shapes. This affects operations like counting shapes, iterating over shapes, and accessing shapes by index.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\n\n# Load a document with inline shapes\ndoc = Document('document_with_inline_shapes.docx')\n\n# Try to access inline shapes\ninline_shapes = doc.inline_shapes\n\n# This returns 0 even when shapes exist\nprint(f\"Number of inline shapes: {len(inline_shapes)}\")\n\n# Iteration returns no items\nfor shape in inline_shapes:\n    print(f\"Found shape: {shape}\")\n\n# Indexed access fails\ntry:\n    first_shape = inline_shapes[0]\nexcept IndexError:\n    print(\"No shapes found for indexing\")\n```\n\nThe expected behavior is that documents containing inline shapes should return the correct count and allow proper iteration and indexing of those shapes.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__zg8ffx4j",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_shape.py::DescribeInlineShapes::it_can_iterate_over_its_InlineShape_instances",
+   "tests/test_shape.py::DescribeInlineShapes::it_knows_how_many_inline_shapes_it_contains",
+   "tests/test_shape.py::DescribeInlineShapes::it_provides_indexed_access_to_inline_shapes",
+   "tests/test_shape.py::DescribeInlineShapes::it_raises_on_indexed_access_out_of_range"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

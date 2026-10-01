@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0044-p01",
+ "round_id": "r0044",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nGPXTrackSegment.remove_point() doesn't remove the correct point\n\n#### Description\n\nWhen calling `remove_point()` on a GPXTrackSegment, the method doesn't remove the point at the specified index. Instead, it appears to not remove any point at all.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\n\n# Load a GPX file with track segments\nwith open('sample.gpx', 'r') as f:\n    gpx = gpxpy.parse(f)\n\ntrack = gpx.tracks[0]\nsegment = track.segments[0]\n\n# Get original point count and the point we want to remove\noriginal_count = len(segment.points)\npoint_to_remove = segment.points[3]\n\n# Remove point at index 3\nsegment.remove_point(3)\n\n# Check if point was actually removed\nprint(f\"Original count: {original_count}\")\nprint(f\"New count: {len(segment.points)}\")\nprint(f\"Point still there: {segment.points[3] == point_to_remove}\")\n```\n\nExpected behavior: The point at index 3 should be removed, reducing the segment length by 1.\nActual behavior: The point count remains the same and the point at index 3 is still the same point.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_basic__m94bphgj",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_remove_point_from_segment"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
