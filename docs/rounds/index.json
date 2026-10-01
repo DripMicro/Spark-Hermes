@@ -4002,6 +4002,130 @@
     "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben"
    },
    "pr": 387
+  },
+  {
+   "round_id": "r0042",
+   "closed_at": 1790836480.8143203,
+   "window": {
+    "opens_at": 1790781314.9579096,
+    "closes_at": 1790788514.9579096,
+    "seconds": 7200
+   },
+   "episodes": 269,
+   "king": "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ",
+   "weights": {
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": 0.08645892807063217,
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": 0.3294726386392001,
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": 0.3391843379295935,
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": 0.2407455617467204,
+    "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": 0.004138533613853808,
+    "5CovGSVyGsbo4QfcWVBCM2DJj6RZq623B3NLRXr4E6XcPyXf": 0.0
+   },
+   "scores": {
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+     "score": 0.077381,
+     "weight": 0.08645892807063217,
+     "mean_d": 0.077381,
+     "delta_c": 0.014271614224230261,
+     "n": 42
+    },
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+     "score": 0.294879,
+     "weight": 0.3294726386392001,
+     "mean_d": 0.294879,
+     "delta_c": 0.20819125307791325,
+     "n": 42
+    },
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+     "score": 0.303571,
+     "weight": 0.3391843379295935,
+     "mean_d": 0.303571,
+     "delta_c": 0.21751874351870282,
+     "n": 48
+    },
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+     "score": 0.215468,
+     "weight": 0.2407455617467204,
+     "mean_d": 0.215468,
+     "delta_c": 0.1327922383151849,
+     "n": 47
+    },
+    "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+     "score": 0.003704,
+     "weight": 0.004138533613853808,
+     "mean_d": 0.003704,
+     "delta_c": 0.0,
+     "n": 30
+    },
+    "5CovGSVyGsbo4QfcWVBCM2DJj6RZq623B3NLRXr4E6XcPyXf": {
+     "score": 0.0,
+     "weight": 0.0,
+     "mean_d": null,
+     "delta_c": 0.0,
+     "n": 6
+    }
+   },
+   "crown": {
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+     "n": 6,
+     "verified": 3,
+     "dq": 0,
+     "credit": 0.5,
+     "delta": 0.5,
+     "rank": 2
+    },
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+     "n": 6,
+     "verified": 4,
+     "dq": 0,
+     "credit": 0.666667,
+     "delta": 0.666667,
+     "rank": 1
+    },
+    "5CovGSVyGsbo4QfcWVBCM2DJj6RZq623B3NLRXr4E6XcPyXf": {
+     "n": 6,
+     "verified": 2,
+     "dq": 0,
+     "credit": 0.416667,
+     "delta": 0.416667,
+     "rank": 4
+    },
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+     "n": 6,
+     "verified": 2,
+     "dq": 0,
+     "credit": 0.416667,
+     "delta": 0.416667,
+     "rank": 3
+    },
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+     "n": 6,
+     "verified": 2,
+     "dq": 0,
+     "credit": 0.333333,
+     "delta": 0.333333,
+     "rank": 5
+    }
+   },
+   "commitments_ok": true,
+   "sft_rows": 4,
+   "dpo_pairs": 4,
+   "hf": "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds/tree/main/rounds/r0042",
+   "revealed": [
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh",
+    "5CovGSVyGsbo4QfcWVBCM2DJj6RZq623B3NLRXr4E6XcPyXf",
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6",
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb"
+   ],
+   "github": {
+    "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": "K-3-LT",
+    "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": "kaivaryn",
+    "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": "dato-bitar",
+    "5CovGSVyGsbo4QfcWVBCM2DJj6RZq623B3NLRXr4E6XcPyXf": "DripMicro",
+    "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": "harrythomasben",
+    "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": "kaivexa"
+   },
+   "pr": 391
   }
  ]
 }
