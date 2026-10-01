@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790876325.1596644,
+ "updated": 1790876668.9735076,
  "round_id": "r0045",
- "stage": "window",
+ "stage": "evaluate",
  "stages": [
   "open",
   "window",
@@ -24,6 +24,10 @@
   {
    "stage": "open",
    "t": 1790869454.27765
+  },
+  {
+   "stage": "window",
+   "t": 1790876654.0405858
   }
  ],
  "window": {
@@ -138,9 +142,68 @@
  },
  "last_round": "r0044",
  "tasks": 6,
- "active": {},
+ "active": {
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "pr": 413,
+   "head": "b5086a298b196aa113186376a28292fa9aef3339",
+   "bundle_sha256": "8615b4a7139bacc0d5e3a99ebc7aa3abbca6e1f0721cc022039c40e62a6721b2",
+   "incumbent": true,
+   "was_incumbent": false,
+   "defense": true,
+   "github": "kaivaryn"
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "pr": 412,
+   "head": "e3af571d2ac7ada6017613dc2457ea9aac0804c9",
+   "bundle_sha256": "c8e9e6bcf59df029a4d926f886f3685e0d2998134761c5afd692eaf7d9af4688",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "harrythomasben"
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": 414,
+   "head": "0dcdaf89c3281be44d06553688ecde497f2ddc28",
+   "bundle_sha256": "5bff188327c49aa671952d7b4729ac129aa2216a577e0ca71573377c864ed993",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "dato-bitar"
+  },
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "pr": 415,
+   "head": "2db25b768ba563d2d734ab54c6fcb776a67c787a",
+   "bundle_sha256": "4684776ac9123eb4455a9b67abe7f4bd9bbc93ece6b9e5c93b47454502fa722a",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "kaivexa"
+  },
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+   "pr": 416,
+   "head": "faae3ef1d86eed2ce907a47fef6a607798d351ef",
+   "bundle_sha256": "10a18bb68617cdf20dd034ab19149a4ca74428d842634b3f487fbf9b8c5d973c",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "K-3-LT"
+  },
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "pr": 417,
+   "head": "e9d7e47a66f5aefc7a1a8a11123741896201022a",
+   "bundle_sha256": "7292e4426bbb2e2325a3c4ec609aa0fe743128ee48bd32b76fda3436dc14cf63",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "Tet-9"
+  }
+ },
  "rejected": {},
- "progress": {},
+ "progress": {
+  "done": 0,
+  "total": 0,
+  "by_surface": {}
+ },
  "crown": null,
  "scores": null,
  "queue": [
