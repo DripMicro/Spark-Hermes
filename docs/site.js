@@ -185,6 +185,35 @@
     window.addEventListener("scroll", hide, { passive: true, capture: true });
   })();
 
+  // ─── a document page: the contents list follows the section being read ─────────────────────────────────
+  (function tocSpy() {
+    const links = [...document.querySelectorAll(".toc a[href^='#']")];
+    if (!links.length) return;
+    const heads = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1)))).filter(Boolean);
+    let current = null, ticking = false;
+    function mark(id) {
+      if (id === current) return;
+      current = id;
+      links.forEach((a) => {
+        const on = a.hash.slice(1) === id;
+        a.classList.toggle("on", on);
+        if (on) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current");
+      });
+    }
+    function update() {
+      ticking = false;
+      const line = 120;                                  // just under the sticky header
+      let id = heads.length ? heads[0].id : null;
+      for (const h of heads) { if (h.getBoundingClientRect().top <= line) id = h.id; else break; }
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4 && heads.length) id = heads[heads.length - 1].id;
+      mark(id);
+    }
+    window.addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    window.addEventListener("resize", update);
+    links.forEach((a) => a.addEventListener("click", () => mark(a.hash.slice(1))));
+    update();
+  })();
+
   // ─── copy buttons ─────────────────────────────────────────────────────────────────────────────────────────
   document.addEventListener("click", (e) => {
     const b = e.target.closest(".copy");
