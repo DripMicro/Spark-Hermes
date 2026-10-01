@@ -28,7 +28,7 @@ PAGES = [
         "guide",
         "Miner guide",
         "How to enter Spark-Hermes: what a strategy is, the commands for each round, what you are scored on and how the crown is paid.",
-        "Everything a miner needs for a round, from the practice bugs to a sealed, signed entry, and what happens after.",
+        "Everything a miner needs, from practice bugs to a paid crown",
     ),
     (
         "docs/pins.md",
@@ -36,7 +36,7 @@ PAGES = [
         "",
         "Pins",
         "What every Spark-Hermes round is measured against: the agent, model, engine, sampling, sandbox, scoring and round clock.",
-        "The agent, model, engine, sampling, sandbox, scoring and round clock that every strategy runs against.",
+        "What every strategy runs against",
     ),
 ]
 
@@ -191,11 +191,11 @@ def render_page(md: str, current: str, title: str, description: str, lead: str, 
     <nav class="toc" aria-label="On this page"><p>On this page</p><ol>{nav}</ol></nav>
     <article class="prose">
 {body}
-      <p class="doc-src">This page is generated from <code>{source}</code> in the repository, the source of record.</p>
+      <p class="doc-src">Generated from <code>{source}</code></p>
     </article>
   </div>
 </main>
-{footer(root, "A strategy competition on Gittensor SN74. Open code, open rounds, open training data.")}
+{footer(root, "Strategy competition on Gittensor SN74")}
 <script src="{root}site.js"></script>
 </body>
 </html>

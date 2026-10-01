@@ -160,14 +160,14 @@ def render(close: dict, meta: dict | None = None) -> str:
     <div class="strip">{strip}</div>
   </section>
   <section class="panel">
-    <h2>This round <small>{_e(crowned.get("rule", "the crown is decided on this round's instances alone"))}</small></h2>
+    <h2>This round <small>best gain over the baseline takes the crown</small></h2>
     <div class="wrap"><table>
       <thead><tr><th class="l">strategy</th><th>rank</th><th title="instances shared with the baseline this round">paired</th><th>verified</th><th title="mean of (share of checks passed − the baseline's) per instance, this round">Δ vs baseline</th></tr></thead>
       <tbody>{"".join(this_round) or '<tr><td class="empty" colspan="5">no crown standings for this round</td></tr>'}</tbody>
     </table></div>
   </section>
   <section class="panel">
-    <h2>Pooled statistics <small>over the last 8 rounds: a conservative lower bound, published as evidence; the round's reward follows the crown above</small></h2>
+    <h2>Pooled statistics <small>last 8 rounds, for evidence: the reward follows the crown</small></h2>
     <div class="wrap"><table>
       <thead><tr><th class="l">strategy</th><th>#</th><th>episodes</th><th title="mean of (share of checks passed − the baseline's) per instance">Δ vs baseline</th><th title="one-sided 90% lower bound of Δ vs baseline — how sure the gain is">Δc</th><th title="correctness gate: the pooled window is not below the baseline (mean Δ + z·se ≥ 0)">gate</th><th title="passed the published check while failing the withheld one (families with a published half; swe_fix has none)">overfit</th><th title="disqualified episodes">dq</th><th title="Δ vs baseline over the window after the overfit and copy penalties; above zero means better than the baseline">score</th><th title="share among the strategies above the baseline; the shares sum to 1">weight</th></tr></thead>
       <tbody>{"".join(body) or '<tr><td class="empty" colspan="10">no strategies were sealed</td></tr>'}</tbody>
@@ -183,12 +183,12 @@ def render(close: dict, meta: dict | None = None) -> str:
     </section>
     <section class="panel artefacts">
       <h2>Check this round</h2>
-      <p class="note">Every withheld half and its salt is in <code>reveal.json</code>; <code>HMAC(salt, withheld)</code> must equal the commitment in the task record, published at open, or at close under <code>evaluated/</code> when miners were shown previews.</p>
+      <p class="note"><code>HMAC(salt, withheld)</code> from <code>reveal.json</code> must match each task's commitment</p>
       <div class="chips">{artefacts}</div>
     </section>
   </div>
 </main>
-{footer("../../", "This page is built from the round's published artefacts alone, so everything on it can be recomputed.")}
+{footer("../../", "Built from the round's published artefacts only")}
 <script src="../../site.js"></script>
 </body>
 </html>

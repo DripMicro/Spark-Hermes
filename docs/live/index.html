@@ -55,7 +55,7 @@
           <div class="king-av" id="king-av"><span class="ph"></span></div>
           <div>
             <div class="king-name" id="king-name">No king yet</div>
-            <div class="king-meta" id="king-meta">the first strategy to beat the baseline takes the crown</div>
+            <div class="king-meta" id="king-meta">first to beat the baseline takes it</div>
           </div>
         </div>
         <div class="king-facts" id="king-facts"></div>
@@ -73,11 +73,11 @@
   <div class="live-grid">
     <section class="board" aria-labelledby="tower-title">
       <div class="board-head"><h2 id="tower-title">Timing tower</h2><p id="tower-sub"></p></div>
-      <div class="tower" id="tower"><div class="tower-empty">Waiting for the round to start.</div></div>
+      <div class="tower" id="tower"><div class="tower-empty">Waiting for the round to start</div></div>
       <p class="note" id="rejected" hidden style="margin-top:.9rem"></p>
     </section>
     <section class="board" aria-labelledby="feed-title">
-      <div class="board-head"><h2 id="feed-title">Live feed</h2><p>entries, finished episodes and crown decisions as they happen</p></div>
+      <div class="board-head"><h2 id="feed-title">Live feed</h2><p>entries, episodes and crowns as they happen</p></div>
       <ol class="feed" id="feed" aria-live="polite"></ol>
     </section>
   </div>
@@ -86,14 +86,14 @@
   <section id="season" class="numbers" aria-label="The season in numbers"></section>
 
   <section class="board" aria-labelledby="crown-title">
-    <div class="board-head"><h2 id="crown-title">The crown, round by round</h2><p>bar height is the king's gain over the baseline; colour is who held it</p></div>
+    <div class="board-head"><h2 id="crown-title">The crown, round by round</h2><p>bar height is the king's gain, colour is who held it</p></div>
     <div class="timeline" id="timeline"></div>
     <div class="timeline-axis"><span id="tl-first"></span><span id="tl-last"></span></div>
     <div class="legend" id="legend"></div>
   </section>
 
   <section class="board" aria-labelledby="season-title">
-    <div class="board-head"><h2 id="season-title">Season standings</h2><p>crowns over every closed round; score and weight are today's pooled 8-round figures</p></div>
+    <div class="board-head"><h2 id="season-title">Season standings</h2><p>score and weight pool the last 8 rounds</p></div>
     <div class="wrap"><table class="season">
       <thead><tr><th class="l">#</th><th class="l">miner</th><th>crowns</th><th class="opt" title="rounds in which this strategy beat the baseline">rounds above baseline</th><th class="opt">best streak</th><th class="opt" title="best single-round gain over the baseline">best Δ</th><th title="pooled 8-round score">score</th><th title="share of the reward weight">weight</th></tr></thead>
       <tbody id="season-body"><tr><td class="l" colspan="8">loading…</td></tr></tbody>
@@ -101,7 +101,7 @@
   </section>
 
   <section class="board" id="rounds" aria-labelledby="rounds-title">
-    <div class="board-head"><h2 id="rounds-title">Closed rounds <span id="rounds-count" class="count"></span></h2><p>open a round for its scores and king; its full page and artefacts are linked inside</p></div>
+    <div class="board-head"><h2 id="rounds-title">Closed rounds <span id="rounds-count" class="count"></span></h2><p>open one for its scores and king</p></div>
     <div class="wrap"><table>
       <thead><tr><th class="l">round</th><th class="l">king</th><th class="l">PR</th><th title="the king's gain over the baseline on that round's bugs">Δ round</th><th title="the king's pooled score at that close">score</th><th title="the king's weight at that close">weight</th><th title="supervised fine-tuning rows exported">SFT</th><th title="preference pairs exported">DPO</th><th class="l" title="every hidden task matched the commitment published before the round">commitments</th><th>closed</th></tr></thead>
       <tbody id="history"><tr><td class="empty" colspan="10">Loading rounds…</td></tr></tbody>
@@ -114,7 +114,7 @@
 <footer class="foot">
   <div>
     <a class="brand" href="../"><img src="../assets/logo.png" alt="" width="26" height="26">Spark-Hermes</a>
-    <p>Everything on this page is computed in your browser from <a href="live.json">live.json</a> and <a href="../rounds/index.json">rounds/index.json</a>, which the validator publishes.</p>
+    <p>Computed in your browser from <a href="live.json">live.json</a> and <a href="../rounds/index.json">rounds/index.json</a></p>
   </div>
   <div><h3>Competition</h3><ul><li><a href="../live/">Live round</a></li><li><a href="../live/#season">Season standings</a></li><li><a href="../live/#rounds">Closed rounds</a></li></ul></div>
   <div><h3>Compete</h3><ul><li><a href="../guide/">Miner guide</a></li><li><a href="../pins/">Pins</a></li><li><a href="../#how">How a round runs</a></li></ul></div>

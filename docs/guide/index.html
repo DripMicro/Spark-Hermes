@@ -28,7 +28,7 @@
 <main class="doc">
   <div class="doc-head">
     <h1>Miner guide</h1>
-    <p class="lead">Everything a miner needs for a round, from the practice bugs to a sealed, signed entry, and what happens after.</p>
+    <p class="lead">Everything a miner needs, from practice bugs to a paid crown</p>
   </div>
   <div class="doc-grid">
     <nav class="toc" aria-label="On this page"><p>On this page</p><ol><li><a href="#what-a-strategy-is">What a strategy is</a></li><li><a href="#the-loop-as-a-miner">The loop, as a miner</a></li><li><a href="#what-you-re-scored-on">What you&#x27;re scored on</a></li><li><a href="#reproduce-a-practice-bug-locally">Reproduce a practice bug locally</a></li><li><a href="#getting-paid">Getting paid</a></li><li><a href="#what-happens-next">What happens next</a></li></ol></nav>
@@ -75,14 +75,14 @@ uv run python -m sh.cli.miner status --hotkey &lt;ss58&gt;</code></pre><button c
 <p>Open any board row to see the per-instance credits every one of these numbers is made of.</p>
 <h2 id="what-happens-next"><a class="anchor" href="#what-happens-next">What happens next</a></h2>
 <ol><li><strong>Lint</strong> runs on your PR automatically — and, with private submissions, on the server when you upload, which also refuses an answer-copy. It is the whole of what CI does: no code from a submission is ever executed in this repository.</li><li><strong>Seal</strong>, when the window closes: one PR per hotkey — the <strong>latest <em>signed</strong></em> counts, not the newest PR (what you signed is public, so a newer PR carrying your old bundle cannot displace your real one). With private submissions the validator fetches your revealed bundle by the digest your commitment names and re-checks it. Your PR must change only your own <code>submissions/&lt;hotkey&gt;/</code> directory and nothing else, or it is rejected.</li><li><strong>Evaluation</strong> on the validator's GPU, inside the sealed sandbox, against the strategy-less NULL baseline on the same instances (the CANON reference strategy runs every 8th round, for calibration). The board shows progress live.</li><li><strong>Crown</strong>: the strategy with the best Δ vs baseline <em>on this round's instances</em> — if it beat the baseline — is labelled <code>sh:&lt;round&gt;:crown</code> (e.g. <code>sh:r0001:crown</code>), merged into <code>submissions/</code>, and defends as the incumbent next round. Every other competition PR is closed with the reason. <strong>The reward follows a merged PR, so a king is paid for a round it defends only if it opened a defense PR in that round's window:</strong> run the CLI's <code>submit</code> again with the crowned bundle unchanged. That PR carries only a fresh <code>attestation.json</code> for the round, over the same digest; the seal treats it as the incumbent (ties still go to it, and it is not a new bundle that could cost the crown), and if the crown holds, that PR is merged and labelled. A king that opens no defense PR still defends, but a round it wins pays nothing. The incumbent is <strong>dethroned</strong> (removed from <code>submissions/</code>) only when a challenger is crowned over it, when its pooled 8-round window says it is worse than the baseline (the correctness gate fails on enough evidence), or after 3 rounds in a row without the crown — a single round that crowns nobody does not unseat it.</li><li><strong>Payment</strong> pools the last 8 rounds: Δc, the lower bound of your Δ vs baseline, is what earns weight. Consistency pays; a single round does not.</li><li><strong>Your scorecard</strong> is posted on the PR with the revealed withheld halves and salts, so you can recompute the grading yourself; every out-of-competition bundle's prose is published under <code>rounds/&lt;round&gt;/revealed/</code> so you can match its committed digest against its content. The definition of the score is <code>sh/scoring/v2.py</code>; the crown rule is <code>sh/scoring/crown.py</code>; what they run against is <a href="../pins/"><code>docs/pins.md</code></a>.</li></ol>
-      <p class="doc-src">This page is generated from <code>submissions/README.md</code> in the repository, the source of record.</p>
+      <p class="doc-src">Generated from <code>submissions/README.md</code></p>
     </article>
   </div>
 </main>
 <footer class="foot">
   <div>
     <a class="brand" href="../"><img src="../assets/logo.png" alt="" width="26" height="26">Spark-Hermes</a>
-    <p>A strategy competition on Gittensor SN74. Open code, open rounds, open training data.</p>
+    <p>Strategy competition on Gittensor SN74</p>
   </div>
   <div><h3>Competition</h3><ul><li><a href="../live/">Live round</a></li><li><a href="../live/#season">Season standings</a></li><li><a href="../live/#rounds">Closed rounds</a></li></ul></div>
   <div><h3>Compete</h3><ul><li><a href="../guide/">Miner guide</a></li><li><a href="../pins/">Pins</a></li><li><a href="../#how">How a round runs</a></li></ul></div>

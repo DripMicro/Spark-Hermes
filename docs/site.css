@@ -351,7 +351,7 @@ body.modal-open { overflow: hidden; }
 
 /* ─── landing ─── */
 .hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 2rem 3rem; align-items: center; padding-block: 1.5rem 1rem; }
-.hero h1 { font-size: clamp(2.3rem, 5vw, 3.9rem); line-height: 1.02; letter-spacing: -.005em; max-width: 16ch; }
+.hero h1 { font-size: clamp(2.2rem, 4.4vw, 3.4rem); line-height: 1.05; letter-spacing: -.005em; }
 .hero .lead { font-size: 1.1rem; line-height: 1.65; margin-top: 1.2rem; max-width: 56ch; }
 .hero .ctas { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.7rem; }
 .facts { display: flex; flex-wrap: wrap; gap: .6rem 2.2rem; margin: 2rem 0 0; padding: 0; }
@@ -393,7 +393,7 @@ body.modal-open { overflow: hidden; }
                       font: 700 .88rem/1 var(--display); color: var(--violet-soft); border: 1px solid var(--line-strong); background: rgba(167, 139, 250, .1); }
 .stepper li:not(:last-child)::after { content: ""; position: absolute; left: .92rem; top: 1.95rem; bottom: -1.05rem; width: 1px; background: var(--line); }
 .stepper b { color: var(--ink); font-weight: 600; }
-.stepper p { margin-top: .2rem; }
+.stepper p { margin-top: .2rem; color: var(--text); }
 .cmd { position: relative; display: flex; align-items: center; gap: .5rem; margin-top: .55rem; padding: .6rem .6rem .6rem .85rem; border-radius: var(--r-sm);
        background: rgba(0, 0, 0, .35); border: 1px solid var(--line); }
 .cmd code { flex: 1; min-width: 0; background: none; border: 0; padding: 0; font-size: .82rem; color: var(--ink); white-space: pre-wrap; }
@@ -401,6 +401,12 @@ body.modal-open { overflow: hidden; }
 .copy:hover { color: var(--ink); border-color: var(--line-strong); }
 .copy.done { color: var(--pos); border-color: rgba(52, 211, 153, .45); }
 .check { display: flex; flex-direction: column; gap: .85rem; margin-bottom: 1.2rem; }
+.checks { list-style: none; margin: 0 0 1.3rem; padding: 0; display: grid; }
+.checks li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 1rem; padding: .75rem 0; border-bottom: 1px solid var(--line); }
+.checks li:first-child { padding-top: 0; }
+.checks li:last-child { border-bottom: 0; }
+.checks b { color: var(--ink); font-weight: 600; }
+.checks span { color: var(--text); }
 
 /* ─── a closed round's page ─── */
 .round { position: relative; overflow: hidden; border-radius: var(--r-xl); border: 1px solid var(--line-strong); padding: 1.6rem 1.7rem; display: flex; flex-direction: column; gap: 1.3rem;
@@ -513,7 +519,7 @@ main.doc { max-width: 74rem; }
   .lifecycle { grid-template-columns: minmax(0, 1fr); }
   .prose { padding: 1.2rem 1rem 1.4rem; font-size: .96rem; }
   .lifecycle li::after { display: none; }
-  .pins div { grid-template-columns: minmax(0, 1fr); gap: .2rem; }
+  .pins div, .checks li { grid-template-columns: minmax(0, 1fr); gap: .2rem; }
   .foot { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .facts dd { font-size: 1.35rem; }
 }

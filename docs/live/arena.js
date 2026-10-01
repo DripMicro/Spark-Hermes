@@ -172,7 +172,7 @@
       $("king-av").innerHTML = avatar(king, "") + CROWN;
       $("king-name").innerHTML = g ? '<a href="https://github.com/' + encodeURIComponent(g) + '">@' + esc(g) + "</a>" : esc(short(king));
       const a = active[king];
-      const defense = a && a.incumbent ? (a.pr ? "defense PR " + prLink(a.pr) : "no defense PR this round, so a win would not be paid") : "";
+      const defense = a && a.incumbent ? (a.pr ? "defense PR " + prLink(a.pr) : "no defense PR, a win is not paid") : "";
       $("king-meta").innerHTML = esc(how) + (defense ? " · " + defense : "") + '<br><span class="hk" title="' + esc(king) + '">' + esc(short(king)) + "</span>";
       const pooled = (L.standings || {})[king] || {};
       $("king-facts").innerHTML =
@@ -186,10 +186,10 @@
     const sealed = Object.keys(active).filter((h) => h !== king && !active[h].incumbent);
     if (st === "window") {
       field = [...new Set((L.submissions || []).map((s) => s.hotkey))].filter((h) => h !== king);
-      note = field.length ? "entered so far; the window is open" : "nobody has entered yet — the window is open";
+      note = field.length ? "entered so far" : "no entries yet";
     } else {
       field = sealed.length ? sealed : Object.keys(active).filter((h) => h !== king);
-      note = st === "done" ? "challengers this round" : "sealed challengers, racing the baseline";
+      note = st === "done" ? "challengers this round" : "racing the baseline";
     }
     $("field-count").innerHTML = field.length + "<small>" + (field.length === 1 ? "challenger" : "challengers") + "</small>";
     $("field-avs").innerHTML = field.slice(0, 14).map((h) => '<span title="' + esc(nameOf(h)) + '">' + avatar(h, "av") + "</span>").join("");
@@ -226,9 +226,9 @@
 
     if (st === "window") {
       $("tower-title").textContent = "On the grid";
-      $("tower-sub").textContent = "entries for this round; the race starts when the window closes";
+      $("tower-sub").textContent = "entries so far, the race starts when the window closes";
       const subs = (L.submissions || []).slice().sort((a, b) => (iso(a.created_at) || 0) - (iso(b.created_at) || 0));
-      if (!subs.length) { tower.innerHTML = '<div class="tower-empty">No entries yet. The window is open: <a href="../guide/">enter a strategy</a>.</div>'; return; }
+      if (!subs.length) { tower.innerHTML = '<div class="tower-empty">No entries yet: <a href="../guide/">enter a strategy</a></div>'; return; }
       tower.innerHTML = subs.map((s, i) =>
         '<div class="lane" style="--c:' + color(s.hotkey) + '"><span class="lp">' + (i + 1) + '</span>' + who(s.hotkey) +
         '<span class="field-note">entered ' + (iso(s.created_at) ? hhmm(iso(s.created_at)) : "—") + (s.updated_at && s.updated_at !== s.created_at ? " · updated " + hhmm(iso(s.updated_at)) : "") + "</span>" +
@@ -252,8 +252,8 @@
     const kingNow = crown && crown.king;
     $("tower-title").textContent = crown ? "Final standings" : "Timing tower";
     $("tower-sub").textContent = crown
-      ? "ranked by gain over the baseline on this round's tasks; the crown goes to the best gain above zero"
-      : (L.progress && L.progress.total ? "share of hidden checks passed so far; the marker on each bar is the baseline" : "lanes fill as episodes finish");
+      ? "ranked by gain over the baseline"
+      : (L.progress && L.progress.total ? "hidden checks passed, the marker is the baseline" : "lanes fill as episodes finish");
 
     // remember where each lane was, to animate the reorder
     const before = {};
@@ -283,7 +283,7 @@
         '<span class="mv">' + (ref ? (tasks ? fin + "/" + tasks : String(fin)) : mv > 0 ? '<span class="up">▲' + mv + "</span>" : mv < 0 ? '<span class="down">▼' + (-mv) + "</span>" : tasks ? fin + "/" + tasks : "") + "</span>" +
         (open ? laneDetail(x.s, by) : "") + "</div>";
     }).join("");
-    tower.innerHTML = html || '<div class="tower-empty">Waiting for the seal.</div>';
+    tower.innerHTML = html || '<div class="tower-empty">Waiting for the seal</div>';
     if (!REDUCED) tower.querySelectorAll(".lane[data-s]").forEach((el) => {   // FLIP: lanes glide to their new place
       const b = before[el.dataset.s]; if (b == null) return;
       const dy = b - el.getBoundingClientRect().top; if (Math.abs(dy) < 2) return;
@@ -323,7 +323,7 @@
         const took = prev && prev !== r.king ? " from <b>" + esc(nameOf(prev)) + "</b>" : prev === r.king ? " again" : "";
         push("crown", r.closed_at, "<b>" + esc(nameOf(r.king)) + "</b> took the crown" + took + " in " + esc(r.round_id) + (d != null ? " (" + pts(d) + " pts over the baseline)" : ""));
         prev = r.king;
-      } else push("stage", r.closed_at, esc(r.round_id) + " closed with nobody above the baseline; the crown stays");
+      } else push("stage", r.closed_at, esc(r.round_id) + ": nobody beat the baseline, the crown stays");
     });
     const L = LIVE;
     (L.phases || []).forEach((p) => { if (["open", "seal", "evaluate"].includes(p.stage)) push(p.stage === "seal" ? "seal" : "stage", p.t, stageLine(p.stage)); });
@@ -335,7 +335,7 @@
     const L = LIVE, n = Object.keys(L.active || {}).length;
     if (stage === "open") return "Round <b>" + esc(L.round_id) + "</b> opened: " + (L.tasks || 6) + " hidden bugs, a two-hour window";
     if (stage === "seal") return "Round <b>" + esc(L.round_id) + "</b> sealed with " + n + " strateg" + (n === 1 ? "y" : "ies");
-    if (stage === "evaluate") return "Evaluation started: every strategy against the baseline on the same bugs";
+    if (stage === "evaluate") return "Evaluation started";
     return esc(STAGE_TEXT[stage] || stage);
   }
   function diff() {
@@ -368,7 +368,7 @@
     $("feed").innerHTML = feed.length ? feed.map((e) =>
       '<li class="k-' + e.kind + (e.fresh ? " new" : "") + '"><span class="ic" aria-hidden="true">' + (ICON[e.kind] || "•") + '</span><span class="tx">' + e.html +
       '<span class="tm">' + (Date.now() / 1000 - e.t < 86400 ? hhmm(e.t) + " · " + ago(e.t) : when(e.t)) + "</span></span></li>").join("")
-      : '<li><span class="ic">' + ICON.stage + '</span><span class="tx">Nothing has happened yet this round.</span></li>';
+      : '<li><span class="ic">' + ICON.stage + '</span><span class="tx">Nothing yet this round</span></li>';
     feed.forEach((e) => { e.fresh = false; });
   }
 
@@ -418,7 +418,7 @@
         '<td><span class="crowns"><i style="width:' + Math.round(70 * (crowns[h] || 0) / top) + 'px"></i><b>' + (crowns[h] || 0) + "</b></span></td>" +
         '<td class="opt">' + (above[h] || 0) + '</td><td class="opt">' + (bestRun[h] || 0) + '</td><td class="opt">' + (bestD[h] != null ? pts(bestD[h]) : "—") + "</td>" +
         "<td>" + num(p.score, 3) + "</td><td>" + (p.weight != null ? Math.round(100 * p.weight) + "%" : "—") + "</td></tr>";
-    }).join("") : '<tr><td class="l" colspan="8">No closed round yet.</td></tr>';
+    }).join("") : '<tr><td class="l" colspan="8">No closed rounds yet</td></tr>';
 
     // the crown timeline (rebuilt only when a round closes)
     const tlKey = rounds.map((r) => r.round_id + r.king).join();
@@ -464,12 +464,12 @@
         "<td class='" + (kc && kc.delta > 0 ? "pos" : "zero") + "'>" + signed(kc && kc.delta, 3) + "</td><td>" + num(ks && ks.score, 4) + "</td><td>" + num(ks && ks.weight, 3) + "</td>" +
         "<td>" + (h.sft_rows ?? "—") + "</td><td>" + (h.dpo_pairs ?? "—") + "</td>" +
         "<td class='l'>" + (h.commitments_ok ? "<span class='ok'>verified</span>" : "<span class='neg'>mismatch</span>") + "</td><td class='faint'>" + when(h.closed_at) + "</td></tr>";
-    }).join("") : '<tr><td class="empty" colspan="10">No round has closed yet.</td></tr>';
+    }).join("") : '<tr><td class="empty" colspan="10">No closed rounds yet</td></tr>';
     const more = $("rounds-more");
     more.hidden = hist.length <= SHOWN;
     more.textContent = showAll ? "Show the latest " + SHOWN : "Show all " + hist.length + " rounds";
     const q = (LIVE && LIVE.queue) || [];
-    $("queue-line").textContent = q.length ? "Minted ahead and sealed until they open: " + q.map((r) => r.round_id).join(", ") + ". Their task digests are in rounds/queue.json." : "";
+    $("queue-line").textContent = q.length ? "Minted ahead: " + q.map((r) => r.round_id).join(", ") + " (digests in rounds/queue.json)" : "";
   }
   $("rounds-more").addEventListener("click", () => { showAll = !showAll; renderHistory(); if (!showAll) $("rounds").scrollIntoView({ block: "start" }); });
   function roundDetail(h) {
@@ -485,7 +485,7 @@
       stat(h.sft_rows ?? "—", "SFT rows") + stat(h.dpo_pairs ?? "—", "DPO pairs") +
       stat("<span class='" + (h.commitments_ok ? "pos" : "neg") + "'>" + (h.commitments_ok ? "verified" : "mismatch") + "</span>", "commitments") + "</div>" +
       "<div class='wrap'><table><thead><tr><th class='l'>strategy</th><th>rank</th><th>Δ round</th><th>score</th><th>weight</th></tr></thead><tbody>" + rows + "</tbody></table></div>" +
-      '<p class="note" style="margin-top:1rem">Full detail and artefacts: <a href="../rounds/' + esc(h.round_id) + '/">round page</a> · <a href="' + tree + '">rounds/' + esc(h.round_id) + "/</a>" +
+      '<p class="note" style="margin-top:1rem"><a href="../rounds/' + esc(h.round_id) + '/">Full round page</a> · <a href="' + tree + '">rounds/' + esc(h.round_id) + "/</a>" +
       (Array.isArray(h.revealed) && h.revealed.length ? ' · <a href="' + tree + '/revealed">revealed bundles (' + h.revealed.length + ")</a>" : "") +
       (typeof h.hf === "string" && h.hf.startsWith("https://") ? ' · <a href="' + esc(h.hf) + '">dataset</a>' : "") + "</p>";
   }

@@ -29,18 +29,16 @@
 <main>
   <section class="hero">
     <div>
-      <h1>One pinned agent. A competition on how it is instructed.</h1>
-      <p class="lead">Miners compete with prose: a <code>SOUL.md</code> and optional skills that tell the Hermes agent how to fix bugs.
-      Every round the validator runs the same model under each strategy on hidden bugs from real Python repositories, in a sealed sandbox.
-      The strategy that beats the no-strategy baseline by the most takes the crown.</p>
+      <h1>One pinned agent<br>Prose is the only edge</h1>
+      <p class="lead">Miners write the strategy in prose, the validator runs it on hidden bugs from real Python repos, and the best gain over the baseline takes the crown</p>
       <div class="ctas">
         <a class="btn primary" href="live/">Watch the live round</a>
-        <a class="btn ghost" href="guide/">Read the miner guide</a>
+        <a class="btn ghost" href="guide/">Miner guide</a>
       </div>
       <dl class="facts">
         <div><dt>hidden bugs a round</dt><dd>6</dd></div>
         <div><dt>submission window</dt><dd>2 h</dd></div>
-        <div><dt>rounds pooled for payment</dt><dd>8</dd></div>
+        <div><dt>rounds pooled for pay</dt><dd>8</dd></div>
       </dl>
     </div>
 
@@ -61,7 +59,7 @@
             <div class="king-av" id="king-av"><span class="ph"></span></div>
             <div>
               <div class="king-name" id="king-name">No king yet</div>
-              <div class="king-meta" id="king-meta">the first strategy to beat the baseline takes the crown</div>
+              <div class="king-meta" id="king-meta">first to beat the baseline takes it</div>
             </div>
           </div>
         </div>
@@ -78,8 +76,8 @@
 
   <div class="season-grid">
     <section class="board" aria-labelledby="podium-title">
-      <div class="board-head"><h2 id="podium-title">Kings of the season</h2><p>most crowns across every closed round</p></div>
-      <div class="podium" id="podium"><p class="muted">Loading the season…</p></div>
+      <div class="board-head"><h2 id="podium-title">Kings of the season</h2><p>most crowns, all rounds</p></div>
+      <div class="podium" id="podium"><p class="muted">Loading…</p></div>
     </section>
     <section class="board" aria-labelledby="crown-title">
       <div class="board-head"><h2 id="crown-title">The crown, round by round</h2><p>bar height is the king's gain over the baseline</p></div>
@@ -90,13 +88,13 @@
   </div>
 
   <section class="board" id="how" aria-labelledby="life-title">
-    <div class="board-head"><h2 id="life-title">How a round runs</h2><p>a new round opens the moment the last one closes</p></div>
+    <div class="board-head"><h2 id="life-title">How a round runs</h2><p>the next round opens as soon as one closes</p></div>
     <ol class="lifecycle">
-      <li><h3>Open</h3><p>Six bugs are drawn from real Python repositories. Miners see practice bugs from the same codebases; the scored ones stay hidden behind a published commitment.</p></li>
-      <li><h3>Window <small>2 hours</small></h3><p>Strategies are uploaded privately and signed with a hotkey registered on SN74. Each miner's pull request carries only the signed commitment.</p></li>
-      <li><h3>Evaluate</h3><p>Every strategy and the no-strategy baseline run the same agent and model on the same hidden bugs, each episode in a sealed sandbox.</p></li>
-      <li><h3>Crown</h3><p>The best gain over the baseline on this round's bugs wins, if it is above zero. On a tie the reigning king keeps the crown.</p></li>
-      <li><h3>Publish</h3><p>Hidden bugs, salts, scores and every losing strategy are published. The king's fully verified runs become open training data.</p></li>
+      <li><h3>Open</h3><p>6 hidden bugs from real Python repos, with practice bugs to study</p></li>
+      <li><h3>Window <small>2 hours</small></h3><p>Strategies are uploaded privately, each PR holds only a signed commitment</p></li>
+      <li><h3>Evaluate</h3><p>Every strategy and the baseline run on the same bugs in a sealed sandbox</p></li>
+      <li><h3>Crown</h3><p>The best gain over the baseline wins, a tie keeps the king</p></li>
+      <li><h3>Publish</h3><p>Bugs, scores and losing strategies go public, the king's runs become training data</p></li>
     </ol>
   </section>
 
@@ -105,39 +103,39 @@
     <div>
       <div class="board-head"><h2 id="stack-title">What every strategy runs on</h2></div>
       <dl class="pins">
-        <div><dt>Agent</dt><dd>Hermes agent v0.21.3, pinned to one commit</dd></div>
-        <div><dt>Model</dt><dd>Qwen3.8-27B in NVFP4 for the RTX 5090, at a pinned revision</dd></div>
-        <div><dt>Engine</dt><dd>SparkInfer 0.5.7 with a 64K context</dd></div>
-        <div><dt>Sampling</dt><dd>temperature 0.7, top-p 0.95, enforced by the proxy</dd></div>
-        <div><dt>Sandbox</dt><dd>no network, 600K-token budget per episode</dd></div>
+        <div><dt>Agent</dt><dd>Hermes agent v0.21.3, one pinned commit</dd></div>
+        <div><dt>Model</dt><dd>Qwen3.8-27B NVFP4, pinned revision</dd></div>
+        <div><dt>Engine</dt><dd>SparkInfer 0.5.7, 64K context</dd></div>
+        <div><dt>Sampling</dt><dd>temperature 0.7, top-p 0.95</dd></div>
+        <div><dt>Sandbox</dt><dd>no network, 600K tokens per episode</dd></div>
       </dl>
-      <p class="note" style="margin-top:1rem"><a href="pins/">Every pin, and when it last changed</a></p>
+      <p class="note" style="margin-top:1rem"><a href="pins/">All pins</a></p>
     </div>
   </section>
 
   <div class="two" id="compete">
     <section class="board" aria-labelledby="compete-title">
-      <div class="board-head"><h2 id="compete-title">Compete</h2><p>from practice bugs to a sealed entry</p></div>
+      <div class="board-head"><h2 id="compete-title">Compete</h2><p>practice bugs to a sealed entry</p></div>
       <ol class="stepper">
-        <li><b>See this round's practice bugs.</b> One per hidden bug the round is scored on.
+        <li><b>Get the practice bugs</b>
           <div class="cmd"><code>uv run python -m sh.cli.miner tasks</code><button class="copy" type="button">Copy</button></div></li>
-        <li><b>Write the strategy.</b> A <code>SOUL.md</code> on fixing bugs in those codebases, plus <code>skills/&lt;name&gt;/SKILL.md</code> if you want. Prose only.</li>
-        <li><b>Submit privately.</b> This lints the bundle, signs it for the round, uploads it to the submission server and opens your one pull request, which carries only the signed commitment.
+        <li><b>Write the strategy</b><p>A <code>SOUL.md</code> plus optional <code>skills/</code>, prose only</p></li>
+        <li><b>Submit privately</b><p>Signs, uploads and opens your PR</p>
           <div class="cmd"><code>uv run python -m sh.cli.miner submit --bundle DIR --key HOTKEY --checkout . --head-owner YOU</code><button class="copy" type="button">Copy</button></div></li>
-        <li><b>Race on the live board.</b> When the window closes the round is sealed and evaluated. The king's pull request is merged, and the merge is what the reward follows.</li>
-        <li><b>Defend the crown.</b> A king defends every round, but a round it wins pays only through a defense pull request: run <code>submit</code> again in that window with the crowned bundle unchanged.</li>
+        <li><b>Race</b><p>Sealed at the close, the king's PR is merged and paid</p></li>
+        <li><b>Defend</b><p>A king is paid only through a defense PR: submit the same bundle again</p></li>
       </ol>
-      <p class="note" style="margin-top:1.2rem">Setup, the full rules and how scoring works: <a href="guide/">the miner guide</a>.</p>
+      <p class="note" style="margin-top:1.2rem"><a href="guide/">Full rules in the miner guide</a></p>
     </section>
     <section class="board" aria-labelledby="check-title">
-      <div class="board-head"><h2 id="check-title">Check every result</h2><p>nothing here has to be taken on trust</p></div>
-      <div class="check">
-        <p>When a round opens it publishes its practice bugs, its window and a digest of the hidden bugs. When it closes it publishes the hidden bugs,
-        <code>close.json</code>, <code>crown.json</code>, <code>reveal.json</code> with every withheld half and its salt, and the scorecards.</p>
-        <p><code>HMAC(salt, withheld)</code> must equal each task's commitment, and the crown recomputes from the published episodes.</p>
-        <p>Every strategy that leaves the competition is published under <code>rounds/&lt;id&gt;/revealed/</code>, where it hashes to the digest its pull request committed to. The king's stays private until it is dethroned.</p>
-        <p class="muted">Payment pools the last 8 rounds, so consistency pays. The crown is each round's alone.</p>
-      </div>
+      <div class="board-head"><h2 id="check-title">Check every result</h2><p>nothing to take on trust</p></div>
+      <ul class="checks">
+        <li><b>At open</b><span>practice bugs, the window and a digest of the hidden bugs</span></li>
+        <li><b>At close</b><span>hidden bugs, <code>close.json</code>, <code>crown.json</code>, <code>reveal.json</code> and scorecards</span></li>
+        <li><b>Commitments</b><span><code>HMAC(salt, withheld)</code> must match every task</span></li>
+        <li><b>Strategies</b><span>losing ones published under <code>rounds/&lt;id&gt;/revealed/</code>, the king's when dethroned</span></li>
+        <li><b>Pay</b><span>pooled over the last 8 rounds, the crown is per round</span></li>
+      </ul>
       <div class="chips">
         <a href="guide/">Miner guide</a>
         <a href="pins/">Pins</a>
@@ -150,7 +148,7 @@
 <footer class="foot">
   <div>
     <a class="brand" href="./"><img src="./assets/logo.png" alt="" width="26" height="26">Spark-Hermes</a>
-    <p>A strategy competition on Gittensor SN74. Open code, open rounds, open training data.</p>
+    <p>Strategy competition on Gittensor SN74</p>
   </div>
   <div><h3>Competition</h3><ul><li><a href="./live/">Live round</a></li><li><a href="./live/#season">Season standings</a></li><li><a href="./live/#rounds">Closed rounds</a></li></ul></div>
   <div><h3>Compete</h3><ul><li><a href="./guide/">Miner guide</a></li><li><a href="./pins/">Pins</a></li><li><a href="./#how">How a round runs</a></li></ul></div>

@@ -151,7 +151,7 @@
         '<span><span class="pod-name">' + (g ? '<a href="https://github.com/' + encodeURIComponent(g) + '">@' + esc(g) + "</a>" : esc(short(h))) + "</span>" +
         '<span class="pod-stats"><b>' + crowns[h] + "</b> " + (crowns[h] === 1 ? "crown" : "crowns") + "</span>" +
         '<span class="pod-sub">' + (above[h] || 0) + " rounds above the baseline" + (w != null ? ", " + Math.round(100 * w) + "% of today's weight" : "") + "</span></span></div>";
-    }).join("") : '<p class="muted">No king yet: the first strategy to beat the baseline takes the crown.</p>';
+    }).join("") : '<p class="muted">No king yet</p>';
   }
 
   let lastTimeline = "";
