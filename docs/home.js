@@ -151,7 +151,7 @@
         '<span><span class="pod-name">' + (g ? '<a href="https://github.com/' + encodeURIComponent(g) + '">@' + esc(g) + "</a>" : esc(short(h))) + "</span>" +
         '<span class="pod-stats"><b>' + crowns[h] + "</b> " + (crowns[h] === 1 ? "crown" : "crowns") + "</span>" +
         '<span class="pod-sub">' + (above[h] || 0) + " rounds above the baseline" + (w != null ? ", " + Math.round(100 * w) + "% of today's weight" : "") + "</span></span></div>";
-    }).join("") : '<p class="muted">No king yet: the first strategy to beat the baseline takes the crown.</p>';
+    }).join("") : '<p class="muted">No king yet</p>';
   }
 
   let lastTimeline = "";
@@ -165,11 +165,11 @@
     const maxD = Math.max(0.05, ...rs.map((r) => dOf(r) || 0));
     let last = null;
     $("timeline").innerHTML = rs.map((r) => {
-      const d = dOf(r), h = r.king ? Math.max(8, Math.round(130 * (d || 0) / maxD)) : 6;
+      const d = dOf(r), h = r.king ? Math.max(5, Math.round(100 * (d || 0) / maxD)) : 4;
       const cap = r.king && r.king !== last ? avatar(r.king, "cap") : "";
       if (r.king) last = r.king;
       const t = r.round_id + ": " + (r.king ? nameOf(r.king) + (d != null ? ", +" + Math.round(100 * d) + " pts over the baseline" : "") : "nobody beat the baseline");
-      return '<a class="tl' + (r.king ? "" : " none") + '" href="rounds/' + esc(r.round_id) + '/" style="height:' + h + "px;--c:" + (r.king ? color(r.king) : "#2a2545") + '" title="' + esc(t) + '" aria-label="' + esc(t) + '">' + cap + "</a>";
+      return '<a class="tl' + (r.king ? "" : " none") + '" href="rounds/' + esc(r.round_id) + '/" style="height:' + h + "%;--c:" + (r.king ? color(r.king) : "#2a2545") + '" title="' + esc(t) + '" aria-label="' + esc(t) + '">' + cap + "</a>";
     }).join("");
     $("tl-first").textContent = rs.length ? rs[0].round_id : "";
     $("tl-last").textContent = rs.length ? rs[rs.length - 1].round_id : "";

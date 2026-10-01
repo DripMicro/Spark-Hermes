@@ -68,12 +68,12 @@
         if (!step(p)) { pulses[i] = spawn(); return; }
         const n = p.trail.length;
         for (let k = 1; k < n; k++) {
-          ctx.strokeStyle = "rgba(" + p.c + "," + (0.5 * k / n).toFixed(3) + ")";
+          ctx.strokeStyle = "rgba(" + p.c + "," + (0.4 * k / n).toFixed(3) + ")";
           ctx.lineWidth = 1.4;
           ctx.beginPath(); ctx.moveTo(p.trail[k - 1][0], p.trail[k - 1][1]); ctx.lineTo(p.trail[k][0], p.trail[k][1]); ctx.stroke();
         }
         const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 9);
-        g.addColorStop(0, "rgba(" + p.c + ",.85)"); g.addColorStop(1, "rgba(" + p.c + ",0)");
+        g.addColorStop(0, "rgba(" + p.c + ",.65)"); g.addColorStop(1, "rgba(" + p.c + ",0)");
         ctx.fillStyle = g; ctx.fillRect(p.x - 9, p.y - 9, 18, 18);
       });
     }
