@@ -236,3 +236,26 @@ def test_the_round_page_links_the_revealed_bundles_only_when_the_round_published
     with_reveal = render(record, {**meta, "artefacts": ["close.json", "crown.json", "reveal.json", "revealed"]})
     assert "revealed bundles" in with_reveal and "/revealed" in with_reveal
     assert "revealed bundles" not in render(record, {**meta, "artefacts": ["close.json", "crown.json", "reveal.json"]})
+
+
+def test_the_doc_pages_match_their_markdown():
+    """The miner guide and the pins are pages of the site generated from the repository's Markdown; editing the
+    Markdown without regenerating (`python -m sh.web.docs`) would leave miners reading stale rules."""
+    from sh.web.docs import build
+
+    assert build(check=True) == []
+
+
+def test_the_doc_renderer_keeps_code_literal_and_links_site_pages():
+    from sh.web.docs import render_markdown
+
+    title, body, toc = render_markdown(
+        "# T\n\n## A b\n\ntools **`terminal` and `file` only**, no `!\\`…\\`` shell; see `docs/pins.md` and <b>.\n",
+        "../",
+    )
+    assert title == "T" and toc == [("a-b", "A b")]
+    assert "<strong><code>terminal</code> and <code>file</code> only</strong>" in body
+    assert "<code>!`…`</code>" in body and '<a href="../pins/"><code>docs/pins.md</code></a>' in body
+    assert "&lt;b&gt;" in body
+    _, table, _ = render_markdown("| a | b |\n|---|---|\n| `x\\|y` | z |\n", "../")
+    assert table.count("<td>") == 2 and "<code>x|y</code>" in table

@@ -228,7 +228,7 @@
       $("tower-title").textContent = "On the grid";
       $("tower-sub").textContent = "entries for this round; the race starts when the window closes";
       const subs = (L.submissions || []).slice().sort((a, b) => (iso(a.created_at) || 0) - (iso(b.created_at) || 0));
-      if (!subs.length) { tower.innerHTML = '<div class="tower-empty">No entries yet. The window is open — <a href="https://github.com/' + esc(repo()) + '/blob/main/submissions/README.md">submit a strategy</a>.</div>'; return; }
+      if (!subs.length) { tower.innerHTML = '<div class="tower-empty">No entries yet. The window is open: <a href="../guide/">enter a strategy</a>.</div>'; return; }
       tower.innerHTML = subs.map((s, i) =>
         '<div class="lane" style="--c:' + color(s.hotkey) + '"><span class="lp">' + (i + 1) + '</span>' + who(s.hotkey) +
         '<span class="field-note">entered ' + (iso(s.created_at) ? hhmm(iso(s.created_at)) : "—") + (s.updated_at && s.updated_at !== s.created_at ? " · updated " + hhmm(iso(s.updated_at)) : "") + "</span>" +
@@ -279,8 +279,8 @@
         who(x.s, chips) +
         '<span class="lane-bar"><i style="width:' + width.toFixed(1) + '%"></i>' + (!ref && baseCredit != null ? '<b style="left:' + (100 * baseCredit).toFixed(1) + '%"></b>' : "") +
         "<s>" + (x.credit == null ? "" : Math.round(width) + "%") + "</s></span>" +
-        '<span class="gap ' + gapCls + '" title="gain over the baseline on the tasks both have finished, in points">' + (ref ? (tasks ? fin + "/" + tasks : fin) : pts(x.d)) + "</span>" +
-        '<span class="mv">' + (ref ? "" : mv > 0 ? '<span class="up">▲' + mv + "</span>" : mv < 0 ? '<span class="down">▼' + (-mv) + "</span>" : tasks ? fin + "/" + tasks : "") + "</span>" +
+        '<span class="gap ' + gapCls + '" title="gain over the baseline on the tasks both have finished, in points">' + (ref ? "" : pts(x.d)) + "</span>" +
+        '<span class="mv">' + (ref ? (tasks ? fin + "/" + tasks : String(fin)) : mv > 0 ? '<span class="up">▲' + mv + "</span>" : mv < 0 ? '<span class="down">▼' + (-mv) + "</span>" : tasks ? fin + "/" + tasks : "") + "</span>" +
         (open ? laneDetail(x.s, by) : "") + "</div>";
     }).join("");
     tower.innerHTML = html || '<div class="tower-empty">Waiting for the seal.</div>';
@@ -294,8 +294,8 @@
     $("rejected").innerHTML = rej.length ? "Rejected at the seal: " + rej.map(([n, why]) => prLink(n) + " — " + esc(why)).join(" · ") : "";
   }
   function who(h, chips) {
-    return '<span class="who">' + avatar(h, "") + '<span class="nm"><b>' + esc(nameOf(h)) + (chips || "") + "</b>" +
-      '<span title="' + esc(h) + '">' + (h === "null" ? "no strategy" : h === "canon" ? "reference strategy" : esc(short(h))) + "</span></span></span>";
+    return '<span class="who">' + avatar(h, "") + '<span class="nm"><b>' + esc(nameOf(h)) + "</b>" +
+      '<span title="' + esc(h) + '">' + (h === "null" ? "no strategy" : h === "canon" ? "reference strategy" : esc(short(h))) + (chips || "") + "</span></span></span>";
   }
   function toggleLane(el) {
     const s = el.dataset.s; if (!s) return;
@@ -428,11 +428,11 @@
     let last = null;
     $("timeline").innerHTML = rounds.map((r) => {
       const d = r.king && r.crown && r.crown[r.king] ? r.crown[r.king].delta : null;
-      const h = r.king ? Math.max(8, Math.round(130 * (d || 0) / maxD)) : 6;
+      const h = r.king ? Math.max(5, Math.round(100 * (d || 0) / maxD)) : 4;
       const cap = r.king && r.king !== last ? avatar(r.king, "cap") : "";
       if (r.king) last = r.king;
       const title = r.round_id + ": " + (r.king ? nameOf(r.king) + (d != null ? ", " + pts(d) + " pts" : "") : "no king");
-      return '<button class="tl' + (r.king ? "" : " none") + '" style="height:' + h + "px;--c:" + (r.king ? color(r.king) : "#2a2545") + '" data-round="' + esc(r.round_id) + '" title="' + esc(title) + '" aria-label="' + esc(title) + '">' + cap + "</button>";
+      return '<button class="tl' + (r.king ? "" : " none") + '" style="height:' + h + "%;--c:" + (r.king ? color(r.king) : "#2a2545") + '" data-round="' + esc(r.round_id) + '" title="' + esc(title) + '" aria-label="' + esc(title) + '">' + cap + "</button>";
     }).join("");
     $("tl-first").textContent = rounds.length ? rounds[0].round_id : "";
     $("tl-last").textContent = rounds.length ? rounds[rounds.length - 1].round_id : "";
@@ -521,8 +521,6 @@
     if (seen === null && indexTried) seed();
     if (indexTried) diff();
     renderHero(); paintClock(); renderTower(); renderFeed(); renderSeason(); renderHistory();
-    if (LIVE.repo) { $("nav-repo").href = "https://github.com/" + LIVE.repo; $("link-rounds").href = "https://github.com/" + LIVE.repo + "/tree/" + branch() + "/rounds"; }
-    if (LIVE.hf_repo) $("nav-hf").href = "https://huggingface.co/datasets/" + LIVE.hf_repo;
     if (!deepLinked && indexTried) {
       deepLinked = true;
       const m = location.hash.match(/^#round-([a-z]\d{1,4})$/);

@@ -165,11 +165,11 @@
     const maxD = Math.max(0.05, ...rs.map((r) => dOf(r) || 0));
     let last = null;
     $("timeline").innerHTML = rs.map((r) => {
-      const d = dOf(r), h = r.king ? Math.max(8, Math.round(130 * (d || 0) / maxD)) : 6;
+      const d = dOf(r), h = r.king ? Math.max(5, Math.round(100 * (d || 0) / maxD)) : 4;
       const cap = r.king && r.king !== last ? avatar(r.king, "cap") : "";
       if (r.king) last = r.king;
       const t = r.round_id + ": " + (r.king ? nameOf(r.king) + (d != null ? ", +" + Math.round(100 * d) + " pts over the baseline" : "") : "nobody beat the baseline");
-      return '<a class="tl' + (r.king ? "" : " none") + '" href="rounds/' + esc(r.round_id) + '/" style="height:' + h + "px;--c:" + (r.king ? color(r.king) : "#2a2545") + '" title="' + esc(t) + '" aria-label="' + esc(t) + '">' + cap + "</a>";
+      return '<a class="tl' + (r.king ? "" : " none") + '" href="rounds/' + esc(r.round_id) + '/" style="height:' + h + "%;--c:" + (r.king ? color(r.king) : "#2a2545") + '" title="' + esc(t) + '" aria-label="' + esc(t) + '">' + cap + "</a>";
     }).join("");
     $("tl-first").textContent = rs.length ? rs[0].round_id : "";
     $("tl-last").textContent = rs.length ? rs[rs.length - 1].round_id : "";

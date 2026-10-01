@@ -12,16 +12,16 @@
 <body data-root="./">
 <header class="top">
   <div class="top-in">
-    <a class="brand" href="./" aria-current="page"><img src="assets/logo.png" alt="" width="30" height="30">Spark-Hermes<em>SN74</em></a>
+    <a class="brand" href="./"><img src="./assets/logo.png" alt="" width="30" height="30">Spark-Hermes<em>SN74</em></a>
     <nav class="menu" id="menu" aria-label="Site">
-      <a href="live/">Live</a>
-      <a href="live/#season">Season</a>
-      <a href="live/#rounds">Rounds</a>
-      <a href="#compete">Compete</a>
+      <a href="./live/">Live</a>
+      <a href="./live/#season">Season</a>
+      <a href="./live/#rounds">Rounds</a>
+      <a href="./guide/">Guide</a>
       <a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Dataset</a>
       <a href="https://github.com/gittensor-model-hub/Spark-Hermes">GitHub</a>
     </nav>
-    <a class="now" id="now" href="live/" hidden></a>
+    <a class="now" id="now" href="./live/" hidden></a>
     <button class="icon-btn menu-btn" type="button" aria-controls="menu" aria-expanded="false" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
   </div>
 </header>
@@ -35,7 +35,7 @@
       The strategy that beats the no-strategy baseline by the most takes the crown.</p>
       <div class="ctas">
         <a class="btn primary" href="live/">Watch the live round</a>
-        <a class="btn ghost" href="#compete">Enter a strategy</a>
+        <a class="btn ghost" href="guide/">Read the miner guide</a>
       </div>
       <dl class="facts">
         <div><dt>hidden bugs a round</dt><dd>6</dd></div>
@@ -89,7 +89,7 @@
     </section>
   </div>
 
-  <section class="board" aria-labelledby="life-title">
+  <section class="board" id="how" aria-labelledby="life-title">
     <div class="board-head"><h2 id="life-title">How a round runs</h2><p>a new round opens the moment the last one closes</p></div>
     <ol class="lifecycle">
       <li><h3>Open</h3><p>Six bugs are drawn from real Python repositories. Miners see practice bugs from the same codebases; the scored ones stay hidden behind a published commitment.</p></li>
@@ -111,7 +111,7 @@
         <div><dt>Sampling</dt><dd>temperature 0.7, top-p 0.95, enforced by the proxy</dd></div>
         <div><dt>Sandbox</dt><dd>no network, 600K-token budget per episode</dd></div>
       </dl>
-      <p class="note" style="margin-top:1rem">Every pin, and when it changed: <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/docs/pins.md">docs/pins.md</a></p>
+      <p class="note" style="margin-top:1rem"><a href="pins/">Every pin, and when it last changed</a></p>
     </div>
   </section>
 
@@ -120,13 +120,14 @@
       <div class="board-head"><h2 id="compete-title">Compete</h2><p>from practice bugs to a sealed entry</p></div>
       <ol class="stepper">
         <li><b>See this round's practice bugs.</b> One per hidden bug the round is scored on.
-          <div class="cmd"><code>python -m sh.cli.miner tasks</code><button class="copy" type="button">Copy</button></div></li>
+          <div class="cmd"><code>uv run python -m sh.cli.miner tasks</code><button class="copy" type="button">Copy</button></div></li>
         <li><b>Write the strategy.</b> A <code>SOUL.md</code> on fixing bugs in those codebases, plus <code>skills/&lt;name&gt;/SKILL.md</code> if you want. Prose only.</li>
         <li><b>Submit privately.</b> This lints the bundle, signs it for the round, uploads it to the submission server and opens your one pull request, which carries only the signed commitment.
           <div class="cmd"><code>uv run python -m sh.cli.miner submit --bundle DIR --key HOTKEY --checkout . --head-owner YOU</code><button class="copy" type="button">Copy</button></div></li>
         <li><b>Race on the live board.</b> When the window closes the round is sealed and evaluated. The king's pull request is merged, and the merge is what the reward follows.</li>
         <li><b>Defend the crown.</b> A king defends every round, but a round it wins pays only through a defense pull request: run <code>submit</code> again in that window with the crowned bundle unchanged.</li>
       </ol>
+      <p class="note" style="margin-top:1.2rem">Setup, the full rules and how scoring works: <a href="guide/">the miner guide</a>.</p>
     </section>
     <section class="board" aria-labelledby="check-title">
       <div class="board-head"><h2 id="check-title">Check every result</h2><p>nothing here has to be taken on trust</p></div>
@@ -138,9 +139,9 @@
         <p class="muted">Payment pools the last 8 rounds, so consistency pays. The crown is each round's alone.</p>
       </div>
       <div class="chips">
-        <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/submissions/README.md">Submission guide</a>
-        <a href="https://github.com/gittensor-model-hub/Spark-Hermes/tree/main/rounds">Round artefacts</a>
-        <a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/docs/seed-datasets.md">Where the bugs come from</a>
+        <a href="guide/">Miner guide</a>
+        <a href="pins/">Pins</a>
+        <a href="live/#rounds">Closed rounds</a>
       </div>
     </section>
   </div>
@@ -148,13 +149,13 @@
 
 <footer class="foot">
   <div>
-    <a class="brand" href="./"><img src="assets/logo.png" alt="" width="26" height="26">Spark-Hermes</a>
+    <a class="brand" href="./"><img src="./assets/logo.png" alt="" width="26" height="26">Spark-Hermes</a>
     <p>A strategy competition on Gittensor SN74. Open code, open rounds, open training data.</p>
   </div>
-  <div><h3>Competition</h3><ul><li><a href="live/">Live round</a></li><li><a href="live/#season">Season standings</a></li><li><a href="live/#rounds">Closed rounds</a></li></ul></div>
-  <div><h3>Compete</h3><ul><li><a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/submissions/README.md">Submission guide</a></li><li><a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/docs/pins.md">Pins</a></li><li><a href="https://github.com/gittensor-model-hub/Spark-Hermes/blob/main/docs/seed-datasets.md">Task supply</a></li></ul></div>
+  <div><h3>Competition</h3><ul><li><a href="./live/">Live round</a></li><li><a href="./live/#season">Season standings</a></li><li><a href="./live/#rounds">Closed rounds</a></li></ul></div>
+  <div><h3>Compete</h3><ul><li><a href="./guide/">Miner guide</a></li><li><a href="./pins/">Pins</a></li><li><a href="./#how">How a round runs</a></li></ul></div>
   <div><h3>Open data</h3><ul><li><a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Training dataset</a></li><li><a href="https://github.com/gittensor-model-hub/Spark-Hermes/tree/main/rounds">Round artefacts</a></li><li><a href="https://github.com/gittensor-model-hub/Spark-Hermes">Source code</a></li></ul></div>
-  <div class="legal"><a href="https://github.com/gittensor-model-hub">Gittensor</a> · MIT licence</div>
+  <div class="legal">Gittensor SN74 · MIT licence</div>
 </footer>
 
 <script src="site.js"></script>

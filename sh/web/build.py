@@ -15,6 +15,8 @@ import sys
 import time
 from pathlib import Path
 
+from sh.web.chrome import footer, header
+
 DEFAULT_REPO = "gittensor-model-hub/Spark-Hermes"
 DEFAULT_BRANCH = "main"
 
@@ -137,11 +139,6 @@ def render(close: dict, meta: dict | None = None) -> str:
     artefacts = "".join(f'<a href="{_e(u)}">{_e(t)}</a>' for u, t in links)
     badge = '<span class="badge crowned">crowned</span>' if king else '<span class="badge">no king</span>'
     era = f" · era {_e(close.get('era'))}" if close.get("era") else ""
-    gh_repo = f"https://github.com/{_e(repo)}"
-    menu_icon = (
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">'
-        '<path d="M4 7h16M4 12h16M4 17h16"/></svg>'
-    )
 
     return f"""<!doctype html>
 <html lang="en">
@@ -155,21 +152,7 @@ def render(close: dict, meta: dict | None = None) -> str:
 <link rel="stylesheet" href="../../site.css">
 </head>
 <body data-root="../../" data-round="{_e(rid)}">
-<header class="top">
-  <div class="top-in">
-    <a class="brand" href="../../"><img src="../../assets/logo.png" alt="" width="30" height="30">Spark-Hermes<em>SN74</em></a>
-    <nav class="menu" id="menu" aria-label="Site">
-      <a href="../../live/">Live</a>
-      <a href="../../live/#season">Season</a>
-      <a href="../../live/#rounds" aria-current="page">Rounds</a>
-      <a href="../../#compete">Compete</a>
-      <a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Dataset</a>
-      <a href="{gh_repo}">GitHub</a>
-    </nav>
-    <a class="now" id="now" href="../../live/" hidden></a>
-    <button class="icon-btn menu-btn" type="button" aria-controls="menu" aria-expanded="false" aria-label="Menu">{menu_icon}</button>
-  </div>
-</header>
+{header("../../", "rounds")}
 <main>
   <nav class="pager" id="pager" aria-label="Other rounds"></nav>
   <section class="round">
@@ -205,16 +188,7 @@ def render(close: dict, meta: dict | None = None) -> str:
     </section>
   </div>
 </main>
-<footer class="foot">
-  <div>
-    <a class="brand" href="../../"><img src="../../assets/logo.png" alt="" width="26" height="26">Spark-Hermes</a>
-    <p>This page is built from the round's published artefacts alone, so everything on it can be recomputed.</p>
-  </div>
-  <div><h3>Competition</h3><ul><li><a href="../../live/">Live round</a></li><li><a href="../../live/#season">Season standings</a></li><li><a href="../../live/#rounds">Closed rounds</a></li></ul></div>
-  <div><h3>Compete</h3><ul><li><a href="{gh_repo}/blob/{_e(branch)}/submissions/README.md">Submission guide</a></li><li><a href="{gh_repo}/blob/{_e(branch)}/docs/pins.md">Pins</a></li><li><a href="../../#compete">How to enter</a></li></ul></div>
-  <div><h3>Open data</h3><ul><li><a href="https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds">Training dataset</a></li><li><a href="{tree}">This round's artefacts</a></li><li><a href="{gh_repo}">Source code</a></li></ul></div>
-  <div class="legal"><a href="https://github.com/gittensor-model-hub">Gittensor</a> · MIT licence</div>
-</footer>
+{footer("../../", "This page is built from the round's published artefacts alone, so everything on it can be recomputed.")}
 <script src="../../site.js"></script>
 </body>
 </html>
