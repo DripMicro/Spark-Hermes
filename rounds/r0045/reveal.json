@@ -1,0 +1,181 @@
+{
+ "swe-fix-r0045-15": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_manager.py::ClearCacheTest::test_builtins_inference_after_clearing_cache_manually"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_manager.py::ClearCacheTest::test_clear_cache_clears_other_lru_caches"
+    ]
+   ],
+   "assets_sha256": "e0e4dbbdd4548034a2fa8c8d45f2bd50beeb2a9da9093ef1ccd50402b370236a",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "ec0c923bc53f2f4862945fabeed6b0d6a3eefdcfec13d1370f9b63024ba67cb4",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__cpwpx163",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0045-16": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_optimizer.py::TestOptimizer::test_optimize"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_optimizer.py::TestOptimizer::test_qualify_columns"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_optimizer.py::TestOptimizer::test_semistructured"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_optimizer.py::TestOptimizer::test_unnest_annotation"
+    ]
+   ],
+   "assets_sha256": "6f29f05d6fd60cf11ee906610243042cf7d340c39ec36977f7d1ff6ea2696c01",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "c674f98d82c4c02a7617aed14ab2a6ca81c6f5175631ffba8e581cc8e32004d4",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_cond__4k2hz7nk",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0045-20": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_dialect.py::TestDialect::test_ddl"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_dialect.py::TestDialect::test_limit"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_mysql.py::TestMySQL::test_canonical_functions"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_mysql.py::TestMySQL::test_ddl"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_prql.py::TestPRQL::test_prql"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_sqlite.py::TestSQLite::test_ddl"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_sqlite.py::TestSQLite::test_longvarchar_dtype"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_teradata.py::TestTeradata::test_create"
+    ]
+   ],
+   "assets_sha256": "ee2ce745f9ca61cc68ba7873a7908d3731b81b21bbc1601bc1cc9721282cc168",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "a5ce5a81014c4bebd046c7e3564f8b6aa8ad2c3ecde224fb1ed148675fc97d6a",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.combine_module__3uqs5jcs",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0045-23": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_bounds"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_get_bounds_and_refresh_bounds"
+    ]
+   ],
+   "assets_sha256": "dd321450e6a4ca8afe3bb6c42c8399e461f398d2ed5a8fb0ed2d0698e23bcab6",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "c8fc5c90ebd5d85cf978877f6687dea818db9aa53b9cc9d191e04e0bd49f47b3",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tkrajina__gpxpy.09fc46b3.func_basic__lz7ase76",
+   "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3"
+  }
+ },
+ "swe-fix-r0045-25": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/opc/test_rel.py::DescribeRelationships::it_can_find_or_add_a_relationship"
+    ]
+   ],
+   "assets_sha256": "85cb53b3aaa5f2f022a4207619d28424c512d24b01f09c2076253d14679c9523",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "9b626d0fe5413bb030dcb5e78136f8f746400d0df495bf0474bb40e4bf890f53",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.lm_rewrite__uskwg5dg",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0045-27": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_optimizer.py::TestOptimizer::test_simplify"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_optimizer.py::TestOptimizer::test_tpcds"
+    ]
+   ],
+   "assets_sha256": "fead85b91b4c4819a63c5f2221187a776b1f40271b3dcd38f385db8ab64a9a39",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "4579fc45de074cff763d9635688434648c50797d95949ce0b70a638f4f2941f4",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_cond__2nt6fq6w",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ }
+}
