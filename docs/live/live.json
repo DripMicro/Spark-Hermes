@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790874854.2480485,
+ "updated": 1790874980.4718683,
  "round_id": "r0045",
  "stage": "window",
  "stages": [
@@ -32,6 +32,13 @@
   "seconds": 7200
  },
  "submissions": [
+  {
+   "pr": 417,
+   "hotkey": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
+   "created_at": "2026-10-01T17:16:13Z",
+   "updated_at": "2026-10-01T17:16:13Z",
+   "url": "https://github.com/gittensor-model-hub/Spark-Hermes/pull/417"
+  },
   {
    "pr": 416,
    "hotkey": "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc",
