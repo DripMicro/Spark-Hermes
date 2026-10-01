@@ -10,11 +10,24 @@ import html
 
 REPO_URL = "https://github.com/gittensor-model-hub/Spark-Hermes"
 DATASET_URL = "https://huggingface.co/datasets/gittensor-model-hub/spark-hermes-rounds"
+SITE_URL = "https://gittensor-model-hub.github.io/Spark-Hermes/"
 
 MENU_ICON = (
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">'
     '<path d="M4 7h16M4 12h16M4 17h16"/></svg>'
 )
+
+
+def social(title: str, description: str, path: str = "") -> str:
+    """Link-preview tags, so a page pasted into Discord or X shows the banner, its title and what it is."""
+    t, d, url = html.escape(title), html.escape(description), html.escape(SITE_URL + path)
+    return f"""<meta property="og:type" content="website">
+<meta property="og:site_name" content="Spark-Hermes">
+<meta property="og:title" content="{t}">
+<meta property="og:description" content="{d}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE_URL}assets/banner.jpg">
+<meta name="twitter:card" content="summary_large_image">"""
 
 
 def header(root: str, current: str = "") -> str:
@@ -29,13 +42,14 @@ def header(root: str, current: str = "") -> str:
     menu = "\n".join(
         f'      <a href="{html.escape(u)}"{' aria-current="page"' if k == current else ""}>{t}</a>' for k, u, t in items
     )
-    return f"""<header class="top">
+    return f"""<a class="skip" href="#main">Skip to content</a>
+<header class="top">
   <div class="top-in">
     <a class="brand" href="{root}"><img src="{root}assets/logo.png" alt="" width="30" height="30">Spark-Hermes<em>SN74</em></a>
     <nav class="menu" id="menu" aria-label="Site">
 {menu}
     </nav>
-    <a class="now" id="now" href="{root}live/" hidden></a>
+    <a class="round-chip" id="now" href="{root}live/" hidden></a>
     <button class="icon-btn menu-btn" type="button" aria-controls="menu" aria-expanded="false" aria-label="Menu">{MENU_ICON}</button>
   </div>
 </header>"""

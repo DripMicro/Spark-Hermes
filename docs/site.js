@@ -113,7 +113,7 @@
       let what = crowned ? "crowned" : STAGE[st] || st;
       if (st === "evaluate" && p.total) what += " " + (p.done || 0) + "/" + p.total;
       if (st === "window" && L.window) { const left = Math.max(0, L.window.closes_at - Date.now() / 1000); what += " · " + Math.floor(left / 3600) + "h " + String(Math.floor(left % 3600 / 60)).padStart(2, "0") + "m"; }
-      chip.className = "now " + (stale ? "" : crowned ? "crowned" : st === "done" || st === "waiting" ? "" : "live");
+      chip.className = "round-chip " + (stale ? "" : crowned ? "crowned" : st === "done" || st === "waiting" ? "" : "live");
       chip.innerHTML = "<i></i><span>" + String(L.round_id || "").replace(/[^a-z0-9]/gi, "") + "<b> · " + what.replace(/[<>&]/g, "") + (stale ? " (stale)" : "") + "</b></span>";
       chip.title = "Round " + L.round_id + ": " + what;
       chip.hidden = false;
@@ -213,6 +213,19 @@
     links.forEach((a) => a.addEventListener("click", () => mark(a.hash.slice(1))));
     update();
   })();
+
+  // ─── a table wider than its box fades at the edge that has more to scroll to ──────────────────────────────
+  function markWraps() {
+    document.querySelectorAll(".wrap").forEach((w) => {
+      const more = w.scrollWidth - w.clientWidth > 1;
+      w.classList.toggle("more-right", more && w.scrollLeft + w.clientWidth < w.scrollWidth - 1);
+      w.classList.toggle("more-left", more && w.scrollLeft > 1);
+    });
+  }
+  document.addEventListener("scroll", (e) => { if (e.target instanceof Element && e.target.classList.contains("wrap")) markWraps(); }, { passive: true, capture: true });
+  window.addEventListener("resize", markWraps);
+  markWraps();
+  setInterval(markWraps, 2000);   // the live board redraws its tables
 
   // ─── copy buttons ─────────────────────────────────────────────────────────────────────────────────────────
   document.addEventListener("click", (e) => {
