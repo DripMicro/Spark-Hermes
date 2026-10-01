@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0045-p20",
+ "round_id": "r0045",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCREATE INDEX parsing incorrectly handles COLUMN vs table references\n\n#### Description\n\nWhen parsing CREATE INDEX statements, the parser incorrectly swaps the logic for handling COLUMN vs table references. This causes CREATE INDEX statements with COLUMN keyword to be parsed as table references instead of column references, and vice versa.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import parse_one\n\n# This should parse the column reference correctly but doesn't\nsql = \"CREATE INDEX idx ON table_name COLUMN (col1)\"\nast = parse_one(sql)\nprint(f\"Parsed AST: {ast}\")\n\n# The COLUMN keyword should indicate we're creating an index on a column\n# but the parser treats it as a table reference instead\n```\n\nThe issue manifests when trying to parse CREATE INDEX statements that use the COLUMN keyword to specify column-based indexing versus table-based indexing.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_invert_if__6dbaso6h",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_ddl",
+   "tests/dialects/test_tsql.py::TestTSQL::test_tsql",
+   "tests/test_parser.py::TestParser::test_drop_column",
+   "tests/test_parser.py::TestParser::test_parse_drop_schema",
+   "tests/test_transpile.py::TestTranspile::test_identity"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

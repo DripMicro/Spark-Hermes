@@ -1,0 +1,34 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0045-p25",
+ "round_id": "r0045",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPNG image processing broken after recent changes\n\n#### Description\n\nPNG images are not being processed correctly. The content type is returning as JPEG instead of PNG, and there are issues with chunk parsing that cause various image operations to fail.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.shared import Inches\n\n# Try to add a PNG image to a document\ndoc = Document()\ndoc.add_picture('test_image.png', width=Inches(2))\ndoc.save('test_doc.docx')\n```\n\nThis fails because PNG images are being misidentified. You can also reproduce by checking the content type directly:\n\n```python\nfrom docx.image.png import Png\nimport io\n\n# Load any PNG file\nwith open('test_image.png', 'rb') as f:\n    png_data = f.read()\n\npng_stream = io.BytesIO(png_data)\npng = Png.from_stream(png_stream)\nprint(png.content_type)  # Should be 'image/png' but returns 'image/jpeg'\n```\n\nThe issue also affects image dimensions - PNG width values are off by 1 pixel from what they should be.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.combine_file__7hvovluf",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[4]",
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[5]",
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[6]",
+   "tests/image/test_image.py::Describe_ImageHeaderFactory::it_constructs_the_right_class_for_a_given_image_stream[call_fixture0]",
+   "tests/image/test_png.py::DescribePng::it_knows_its_content_type",
+   "tests/image/test_png.py::Describe_Chunk::it_can_construct_from_a_stream_and_offset",
+   "tests/image/test_png.py::Describe_ChunkFactory::it_constructs_the_appropriate_Chunk_subclass[IEND]",
+   "tests/image/test_png.py::Describe_ChunkFactory::it_constructs_the_appropriate_Chunk_subclass[IHDR]",
+   "tests/image/test_png.py::Describe_ChunkFactory::it_constructs_the_appropriate_Chunk_subclass[pHYs]",
+   "tests/image/test_png.py::Describe_IHDRChunk::it_can_construct_from_a_stream_and_offset"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

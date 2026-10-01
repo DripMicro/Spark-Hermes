@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0045-p27",
+ "round_id": "r0045",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nRedshift APPROXIMATE COUNT and SQLite STRFTIME functions broken\n\nWhen using `APPROXIMATE COUNT(DISTINCT column)` in Redshift dialect, the parser always returns `None` instead of properly parsing the function. Similarly, SQLite's `STRFTIME` function with a single argument incorrectly returns an `Anonymous` function instead of the expected `TimeToStr` expression.\n\n#### Steps/Code to Reproduce\n\n**Redshift issue:**\n```python\nimport sqlglot\n\n# This should parse correctly but returns None\nsql = \"SELECT APPROXIMATE COUNT(DISTINCT y)\"\nparsed = sqlglot.parse(sql, dialect=\"redshift\")[0]\nprint(parsed)  # Shows None instead of proper ApproxDistinct expression\n```\n\n**SQLite issue:**\n```python\nimport sqlglot\n\n# Single argument STRFTIME should add CURRENT_TIMESTAMP and return TimeToStr\nsql = \"SELECT STRFTIME('%s')\"\nparsed = sqlglot.parse(sql, dialect=\"sqlite\")[0]\nprint(parsed)  # Returns Anonymous instead of TimeToStr with CURRENT_TIMESTAMP\n```\n\nThe Redshift parser fails to handle the `APPROXIMATE COUNT(DISTINCT ...)` syntax properly, while SQLite's `STRFTIME` function doesn't correctly handle the case where only a format string is provided (should default to `CURRENT_TIMESTAMP`).\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.combine_module__b5jgkwth",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_redshift.py::TestRedshift::test_identity",
+   "tests/dialects/test_redshift.py::TestRedshift::test_redshift",
+   "tests/dialects/test_sqlite.py::TestSQLite::test_strftime"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0045-p23",
+ "round_id": "r0045",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nGPXTrackSegment.get_bounds() returns None for segments with points\n\n#### Description\n\nWhen calling `get_bounds()` on a GPXTrackSegment that contains points, the method returns `None` instead of the expected GPXBounds object.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\n\n# Create a track segment with points\nsegment = gpxpy.GPXTrackSegment()\nsegment.points.append(gpxpy.GPXTrackPoint(latitude=-12, longitude=13))\nsegment.points.append(gpxpy.GPXTrackPoint(latitude=-100, longitude=-5))\nsegment.points.append(gpxpy.GPXTrackPoint(latitude=100, longitude=-13))\n\n# This should return a GPXBounds object but returns None\nbounds = segment.get_bounds()\nprint(bounds)  # Expected: GPXBounds object, Actual: None\n```\n\nThe same issue occurs when calling `get_bounds()` on GPX objects that contain tracks with segments:\n\n```python\nimport gpxpy\n\ngpx = gpxpy.GPX()\ntrack = gpxpy.GPXTrack()\nsegment = gpxpy.GPXTrackSegment()\nsegment.points.append(gpxpy.GPXTrackPoint(latitude=-12, longitude=13))\nsegment.points.append(gpxpy.GPXTrackPoint(latitude=-100, longitude=-5))\ntrack.segments.append(segment)\ngpx.tracks.append(track)\n\nbounds = gpx.get_bounds()\nprint(bounds)  # Expected: GPXBounds object, Actual: None\n```\n\nThis affects any code that relies on getting bounding box information from GPX track segments.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_pm_remove_loop__dmqa0834",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_bounds",
+   "test.py::GPXTests::test_get_bounds_and_refresh_bounds",
+   "test.py::GPXTests::test_track_with_empty_segment"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

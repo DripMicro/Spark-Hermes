@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0045-p16",
+ "round_id": "r0045",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### Describe the bug\n\nThe recent changes to the DuckDB dialect have introduced an issue with parsing bracket expressions. Specifically, when using array indexing or map access with bracket notation, the expected behavior is not being achieved.\n\n### How to Reproduce\n\nTo reproduce the issue, try executing the following SQL query:\n\n```sql\nSELECT some_arr[1] AS first FROM blah\n```\n\nIn the context of DuckDB, this should correctly parse and execute, but it currently does not behave as expected. Additionally, using map access like:\n\n```sql\nWITH _data AS (SELECT [{'a': 1, 'b': 2}, {'a': 2, 'b': 3}] AS col) \nSELECT t.col['b'] FROM _data, UNNEST(_data.col) AS t(col) WHERE t.col['a'] = 1\n```\n\nThis should return the correct map value, but it fails to do so.\n\n### Expected behavior\n\nThe array indexing should correctly interpret the index and return the appropriate element. Similarly, map access should return the correct value associated with the specified key.\n\n### Your project\n\n_No response_\n\n### Screenshots\n\n_No response_\n\n### OS\n\nLinux\n\n### Python version\n\n3.10.16\n\n### Sphinx version\n\n_Not applicable_\n\n### Sphinx extensions\n\n_Not applicable_\n\n### Extra tools\n\n_No response_\n\n### Additional context\n\n_No response_\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.lm_rewrite__3vkqsz1k",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_duckdb.py::TestDuckDB::test_array_index",
+   "tests/dialects/test_duckdb.py::TestDuckDB::test_cast",
+   "tests/dialects/test_duckdb.py::TestDuckDB::test_duckdb"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
