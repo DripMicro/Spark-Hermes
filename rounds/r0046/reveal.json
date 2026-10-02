@@ -1,0 +1,191 @@
+{
+ "swe-fix-r0046-06": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_error_responses.py::ErrorResponseTest::test_missing_client_id"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/endpoints/test_error_responses.py::ErrorResponseTest::test_unsupported_response_type"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/grant_types/test_authorization_code.py::AuthorizationCodeGrantTest::test_pkce_wrong_method"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/test_server.py::AuthorizationEndpointTest::test_invalid_type"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/openid/connect/core/grant_types/test_authorization_code.py::AuthorizationCodeGrantTest::test_pkce_wrong_method"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/openid/connect/core/grant_types/test_authorization_code.py::OpenIDAuthCodeInterferenceTest::test_pkce_wrong_method"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/openid/connect/core/grant_types/test_hybrid.py::AuthorizationCodeGrantTest::test_pkce_wrong_method"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/openid/connect/core/grant_types/test_hybrid.py::OpenIDHybridInterferenceTest::test_pkce_wrong_method"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/openid/connect/core/test_server.py::AuthorizationEndpointTest::test_invalid_type"
+    ]
+   ],
+   "assets_sha256": "08abd1b463c97b7f2eb5331a7d7a6943d9f5442c28aae8d9c68e9b99ef0859fd",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "3b6021747c51d9e899cb25ca1d51bb87ac9acc9a8a3b558c92c07e5cd5dc2599",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "oauthlib__oauthlib.1fd52536.func_pm_remove_cond__s259zj7t",
+   "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536"
+  }
+ },
+ "swe-fix-r0046-07": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/clients/test_base.py::ClientTest::test_add_mac_token"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/test_tokens.py::TokenTest::test_prepare_mac_header"
+    ]
+   ],
+   "assets_sha256": "109494934ff83034678570e7b7a168cd10bf769e6ed5e517c70d62be9091a7d8",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "da13c21c86fe5f6f272ba5b45c9c792837c44f01286d4607c297942057f27e1f",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "oauthlib__oauthlib.1fd52536.func_pm_remove_cond__fwwsp7kg",
+   "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536"
+  }
+ },
+ "swe-fix-r0046-10": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_convert.py::CanToolsConvertFullTest::test_kcd_dump_default_sort_signals"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_convert.py::CanToolsConvertFullTest::test_kcd_dump_sort_signals_by_name"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_as_kcd_string"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_vehicle"
+    ]
+   ],
+   "assets_sha256": "d0af1ce751560d51181171b34e367036d2fae28648d4bb85f99e604066e9f539",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "91edbe7b8df09691a6f31dfb73bcf46ddbbeb4d25bb7bbd53829e1c726e53e6e",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.func_basic__db2t1sw3",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0046-11": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_has_times_false"
+    ]
+   ],
+   "assets_sha256": "f252169815947234ce2716addf3603948a8d49e1dc5e1ef9082dbbd1018d2d80",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "72e9d95a567671c10951579bcf2223986c018e8d08b4c857cb3ebc13978b3355",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tkrajina__gpxpy.09fc46b3.func_basic__3owy2590",
+   "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3"
+  }
+ },
+ "swe-fix-r0046-12": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_builder.py::BuilderTest::test_data_build_error_filename"
+    ]
+   ],
+   "assets_sha256": "302199f8d7e03735370befd0b73c2ac9e9380063c90912a2fb39596bc887a161",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "1b9cd66c3c516ff991d8097dd29ef33a6d612a234edcbb233568d9b82df6036b",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.pr_2380",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0046-13": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_plot.py::CanToolsPlotTest::test_show_all_errors"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_plot.py::CanToolsPlotTest::test_show_invalid_data"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_plot.py::CanToolsPlotTest::test_show_invalid_syntax"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_plot.py::CanToolsPlotTest::test_show_unknown_frames"
+    ]
+   ],
+   "assets_sha256": "53176e7e63731a1f3213987e912fd533f619aad6143d13eaacafb138d49cad36",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "506736eb095dd880c6c6ac709e181212e6e5216b6b8ed1c5de8830d7021c9f3f",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__4gi073yf",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ }
+}
