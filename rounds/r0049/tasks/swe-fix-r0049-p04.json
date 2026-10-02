@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0049-p04",
+ "round_id": "r0049",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSlice inference broken with syntax errors in brain_builtin_inference.py\n\n#### Description\n\nThe slice inference functionality is broken due to syntax errors in the brain_builtin_inference.py file. When trying to infer slice objects, the code fails with TypeError.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# This should work but fails\ncode = \"\"\"\nclass MyClass:\n    def __init__(self):\n        self._slice = slice(0, 10)\n        \n    def test(self):\n        return self._slice\n\"\"\"\n\nmodule = astroid.parse(code)\nslice_node = list(module.nodes_of_class(astroid.Call))[0]  # slice(0, 10) call\ninferred = next(slice_node.infer())\n```\n\nAlso fails with basic slice operations:\n\n```python\nimport astroid\n\nnode = astroid.extract_node('[1, 2, 3][slice(None)]')\ninferred = next(node.infer())  # Should return [1, 2, 3] but fails\n```\n\nThe error occurs when the slice inference code tries to process slice arguments and encounters syntax issues in the brain inference module.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_pm_op_change__2pfjmti5",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::SliceTest::test_slice",
+   "tests/test_inference.py::test_recursion_error_inferring_slice"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0049-p06",
+ "round_id": "r0049",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPart.part_related_by() returns wrong part when reltype is reversed\n\n#### Description\n\nWhen calling `part_related_by()` with a relationship type string, the method returns an unexpected part due to the reltype being processed incorrectly.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx.opc.part import Part\n\n# Create a part instance\npart = Part('partname', 'content_type')\n\n# Try to find a related part by relationship type\nreltype = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout'\nrelated_part = part.part_related_by(reltype)\n\n# The method should find the part with the given reltype, but instead\n# it processes the reltype string in reverse order\n```\n\nThe issue occurs because the relationship type string gets reversed internally, causing the method to look for a completely different relationship type than intended.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__8pzoexl1",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/opc/test_part.py::DescribePartRelationshipManagementInterface::it_can_find_a_related_part_by_reltype"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

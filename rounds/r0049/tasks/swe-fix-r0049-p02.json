@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0049-p02",
+ "round_id": "r0049",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Type comments in function definitions not properly parsed\n\n## Description\n\nWhen using type comments in function definitions, the parser is not correctly handling the type annotations. This affects both function return type annotations and argument type annotations.\n\n## Steps to Reproduce\n\n```python\ndef func():\n    # type: (int) -> str\n    pass\n\ndef func_with_args(\n    a,  # type: int\n    b,  # type: int\n):\n    # type: (...) -> str\n    pass\n\ndef func_with_posonly_args(\n    a,  # type: int\n    /,\n    b,  # type: str\n):\n    # type: (...) -> None\n    pass\n```\n\n## Expected Results\n\nThe type comments should be properly parsed and accessible through the AST, with:\n- Function return type annotations available as `type_comment_returns`\n- Function argument type annotations available as `type_comment_args`\n- Proper parent-child relationships maintained in the AST\n\n## Actual Results\n\nThe type comments are not properly parsed, resulting in AttributeError exceptions when trying to access the type comment annotations. The parser fails to correctly process the type comments and doesn't establish the proper parent-child relationships in the AST.\n\n## Environment Information\n\n- Python version: 3.10\n- astroid version: latest\n\nThis issue affects code that relies on type comment parsing, particularly for static analysis tools and type checkers that need to extract type information from comments.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.lm_rewrite__bbsdpdkj",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_nodes.py::test_correct_function_type_comment_parent",
+   "tests/test_nodes.py::test_type_comments_arguments",
+   "tests/test_nodes.py::test_type_comments_function",
+   "tests/test_nodes.py::test_type_comments_posonly_arguments"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

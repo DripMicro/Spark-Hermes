@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0049-p09",
+ "round_id": "r0049",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nLambda functions incorrectly classified as methods\n\n#### Description\n\nLambda functions are being incorrectly classified as methods when they should be classified as functions. This affects the `pytype()` method which returns the wrong type classification.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ndata = '''\ndef f():\n    g = lambda: None\n'''\n\nastroid_tree = astroid.parse(data)\ng = next(iter(astroid_tree['f'].ilookup('g')))\nprint(g.pytype())  # Expected: 'builtins.function', Actual: 'builtins.method'\n```\n\nThe lambda function `g` should be classified as a function, but it's being classified as a method instead. This happens because the lambda classification logic is incorrectly determining the type.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__cwpy5vpz",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_scoped_nodes.py::FunctionNodeTest::test_lambda_pytype"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

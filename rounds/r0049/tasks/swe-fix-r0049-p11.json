@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0049-p11",
+ "round_id": "r0049",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCross join optimization broken after removing join reference tracking\n\n#### Description\n\nThe join optimization logic is not working correctly for cross joins. When trying to optimize queries with cross joins, the optimizer fails to properly convert them to inner joins even when there are predicates that could be used for the conversion.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# Example query with cross join that should be optimized\nsql = \"\"\"\nSELECT *\nFROM table1, table2\nWHERE table1.id = table2.id\n\"\"\"\n\n# Parse and optimize\nparsed = sqlglot.parse_one(sql)\noptimized = optimizer.optimize_joins.optimize_joins(parsed)\nprint(optimized.sql())\n```\n\nThe cross join should be converted to an inner join with the WHERE condition moved to the ON clause, but this conversion is not happening.\n\n#### Expected Behavior\n\nCross joins with matching predicates in the WHERE clause should be converted to proper inner joins with ON conditions for better query performance.\n\n#### Actual Behavior\n\nCross joins remain as cross joins and are not optimized, leading to potentially inefficient query execution plans.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_loop__zniotkfk",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_optimize_joins",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds",
+   "tests/test_optimizer.py::TestOptimizer::test_tpch"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

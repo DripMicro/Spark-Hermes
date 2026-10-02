@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0049-p03",
+ "round_id": "r0049",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nto_unicode function returns input data immediately without conversion\n\n#### Description\n\nThe `to_unicode` function in `oauthlib.common` is not properly converting non-unicode data types to unicode strings. It returns the input data immediately without performing any conversion logic.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.common import to_unicode\n\n# Test with bytes\nresult = to_unicode(b'test bytes')\nprint(f\"Expected: 'test bytes' (str), Got: {result!r} ({type(result).__name__})\")\n\n# Test with dict containing bytes\nresult = to_unicode({b'key': b'value'})\nprint(f\"Expected: {{'key': 'value'}} (dict with str keys/values), Got: {result!r}\")\n\n# Test with list containing bytes  \nresult = to_unicode([b'item1', b'item2'])\nprint(f\"Expected: ['item1', 'item2'] (list with str items), Got: {result!r}\")\n```\n\nThe function should convert bytes objects to unicode strings but currently returns them unchanged, causing issues when the library expects unicode strings but receives bytes objects.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_pm_ctrl_shuffle__nn437coj",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth1/rfc5849/test_client.py::ClientConstructorTests::test_convert_to_unicode_resource_owner",
+   "tests/test_common.py::RequestTest::test_non_unicode_params"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
