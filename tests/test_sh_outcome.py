@@ -133,3 +133,35 @@ def test_an_incumbent_three_rounds_without_a_crown_is_dethroned():
     assert dethroned(sealed, None, history=[won, other, lost]) == ["OLD"]  # a round someone else won counts too
     assert dethroned(sealed, None, history=[lost, lost, won]) == []  # crowned last round: streak 1
     assert dethroned(sealed, None, history=[]) == []  # a first round: streak 1
+
+
+def test_one_github_account_competes_once_with_the_bundle_it_signed_last():
+    """An account opening PRs for several hotkeys gets one entry, not one per hotkey it holds."""
+    from sh.validator.orchestrate import one_per_account
+
+    pr = lambda n, at, login: {"number": n, "signed_at": at, "author": {"login": login}}  # noqa: E731
+    keep, refused = one_per_account(
+        {"A": pr(10, 100, "drip"), "B": pr(11, 300, "Drip"), "C": pr(12, 200, "drip"), "D": pr(13, 50, "solo")}
+    )
+    assert set(keep) == {"B", "D"}
+    assert set(refused) == {10, 12} and "superseded by #11" in refused[10] and "GitHub account" in refused[12]
+    # a tie falls to the first PR, as for one hotkey
+    keep, refused = one_per_account({"A": pr(20, 5, "x"), "B": pr(21, 5, "x")})
+    assert set(keep) == {"A"} and set(refused) == {21}
+    # an unknown author is not grouped with anyone
+    keep, refused = one_per_account({"A": {"number": 30, "signed_at": 1}, "B": {"number": 31, "signed_at": 2}})
+    assert set(keep) == {"A", "B"} and refused == {}
+
+
+def test_the_kings_account_competes_through_its_crown_only():
+    """The king's account may defend (its own hotkey) but cannot add a second entry under another hotkey."""
+    from sh.validator.orchestrate import one_per_account
+
+    keep, refused = one_per_account(
+        {
+            "KING": {"number": 40, "signed_at": 9, "author": {"login": "kaivaryn"}},  # defense PR: allowed
+            "ALT": {"number": 41, "signed_at": 10, "author": {"login": "Kaivaryn"}},  # second hotkey: refused
+        },
+        incumbent_accounts={"kaivaryn": "KING"},
+    )
+    assert set(keep) == {"KING"} and set(refused) == {41} and "already competes as the king" in refused[41]
