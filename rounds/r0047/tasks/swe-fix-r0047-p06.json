@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0047-p06",
+ "round_id": "r0047",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDecimal field not handling NaN values and quantization correctly\n\n#### Description\n\nThe Decimal field is not properly handling NaN values when `allow_nan=False` and is applying quantization to non-finite numbers when it shouldn't.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom marshmallow import fields\nimport decimal\n\n# Test case 1: NaN handling with allow_nan=False\nfield = fields.Decimal(allow_nan=False)\nresult = field._format_num(float('nan'))\nprint(f\"Result: {result}\")\nprint(f\"Is NaN: {result.is_nan()}\")\n# Expected: Should raise an error or handle NaN appropriately when allow_nan=False\n\n# Test case 2: Quantization being applied to infinite values\nfield = fields.Decimal(places=2)\nresult = field._format_num(float('inf'))\nprint(f\"Infinite result: {result}\")\n# Expected: Should not apply quantization to infinite values\n\n# Test case 3: Decimal rounding not working as expected\nfield = fields.Decimal(places=1)\nresult = field._format_num('12.355')\nprint(f\"Rounded result: {result}\")\nprint(f\"Expected: 12.4, Got: {result}\")\n```\n\nThe issue appears to be in the `_format_num` method where the logic for handling NaN values and applying quantization seems inverted.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "marshmallow-code__marshmallow.9716fc62.func_basic__gl84vr24",
+  "environment": "jyangballin/swesmith.x86_64.marshmallow-code_1776_marshmallow.9716fc62",
+  "fail_to_pass": [
+   "tests/test_deserialization.py::TestFieldDeserialization::test_decimal_field_special_values",
+   "tests/test_deserialization.py::TestFieldDeserialization::test_decimal_field_with_places",
+   "tests/test_deserialization.py::TestFieldDeserialization::test_decimal_field_with_places_and_rounding",
+   "tests/test_serialization.py::TestFieldSerialization::test_decimal_field",
+   "tests/test_serialization.py::TestFieldSerialization::test_decimal_field_fixed_point_representation",
+   "tests/test_serialization.py::TestFieldSerialization::test_decimal_field_special_values",
+   "tests/test_serialization.py::TestFieldSerialization::test_decimal_field_string"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

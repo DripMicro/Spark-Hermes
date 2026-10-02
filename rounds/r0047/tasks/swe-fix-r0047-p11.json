@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0047-p11",
+ "round_id": "r0047",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nOptimizer simplify function returns expression unchanged\n\n#### Description\n\nThe `remove_complements` function in the optimizer's simplify module is not working correctly. When trying to simplify expressions that should have complements removed, the function returns the original expression without any modifications.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# Parse a simple expression that should be simplified\nexpression = sqlglot.parse_one('TRUE AND TRUE AND TRUE')\n\n# Try to simplify it\nresult = optimizer.simplify.simplify(expression)\n\nprint(\"Original:\", expression)\nprint(\"Simplified:\", result)\nprint(\"Expected: TRUE\")\n```\n\nThe simplification should reduce `TRUE AND TRUE AND TRUE` to just `TRUE`, but instead returns the original expression unchanged.\n\nSimilarly, expressions with WHERE clauses that should simplify are not being processed:\n\n```python\nexpression = sqlglot.parse_one('SELECT a, c, b FROM table1 WHERE 1 = 1')\nwhere_clause = expression.find(sqlglot.expressions.Where)\nsimplified = optimizer.simplify.simplify(optimizer.simplify.simplify(where_clause))\n\nprint(\"Simplified WHERE:\", simplified.sql())\nprint(\"Expected: WHERE TRUE\")\n```\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__bxpd7wow",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_simplify"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

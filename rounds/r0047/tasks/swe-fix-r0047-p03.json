@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0047-p03",
+ "round_id": "r0047",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDID constructor parameters assigned to wrong instance variables\n\n#### Description\n\nWhen creating a DID object, the constructor parameters are being assigned to the wrong instance variables, causing the DID to have incorrect identifier, name, length, and datas values.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a CDD file that contains DID definitions\ndb = cantools.db.load_file('tests/files/cdd/example.cdd', encoding='iso-8859-1')\n\n# Try to access a DID by name\ndid = db.get_did_by_name('ECU_Identification')\n\n# The DID properties are mixed up\nprint(f\"Expected name: ECU_Identification, Got: {did.name}\")\nprint(f\"Expected identifier: 144, Got: {did.identifier}\")\nprint(f\"Expected length: 10, Got: {did.length}\")\nprint(f\"Expected datas to be list, Got: {type(did.datas)}\")\n```\n\nThe output shows that the DID object has incorrect values for its properties. The name, identifier, length, and datas are all mixed up due to incorrect assignment in the constructor.\n\nThis also causes issues when trying to iterate over `did.datas` since it's no longer a list but contains the original identifier value instead.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.combine_file__n3xm99qz",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_cdd_add",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_be_example_cdd_repr",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_datarefs",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_cdd_add",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd",
+   "tests/test_diagnostics_database.py::CanToolsDiagnosticsDatabaseTest::test_le_example_cdd_repr"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

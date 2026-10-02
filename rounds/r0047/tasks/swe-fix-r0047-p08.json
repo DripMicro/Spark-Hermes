@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0047-p08",
+ "round_id": "r0047",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nPlotting Issue: Unexpected Replotting Behavior\n\nI've encountered an issue with the plotting functionality in the latest version. When attempting to plot signals, the system seems to replot signals unexpectedly, even when they have already been plotted with the same label and data points.\n\nHere's a simple reproduction scenario:\n\n```python\n# Assuming 'plot_signal' is a function that plots signals\nplot_signal([0.0, 4.212794, 6.264802, 10.56968, 12.432106], ['reserved', 'reserved', 'With space', 'With space', 'With space'], 'b-', label='Foo.Foo')\nplot_signal([0.0, 4.212794, 6.264802, 10.56968, 12.432106], ['reserved', 'reserved', 'With space', 'With space', 'With space'], 'rd', label='Foo.Foo')\n```\n\nI expected the plot to only show the first set of data with the label 'Foo.Foo', but it seems to replot the same data with a different format ('rd') unexpectedly. This behavior is not consistent with previous versions where the signal would not be replotted unless explicitly desired.\n\nThis issue is affecting the clarity of the plots, as it introduces redundant data points. Any insights or fixes would be appreciated!\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__caz2sbnz",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_plot.py::CanToolsPlotTest::test_do_replot"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

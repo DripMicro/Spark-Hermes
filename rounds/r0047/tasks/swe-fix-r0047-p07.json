@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0047-p07",
+ "round_id": "r0047",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nelevation_angle function returns incorrect values and units\n\n#### Description\n\nThe `elevation_angle` function in `gpxpy.geo` is returning incorrect angle values and appears to have the radians/degrees logic inverted.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy.geo as mod_geo\nimport math\n\n# Create two locations with known elevation difference\nloc1 = mod_geo.Location(0, 0)\nloc2 = mod_geo.Location(0, 1)\nloc1.elevation = 100\nloc2.elevation = loc1.elevation + loc1.distance_2d(loc2)\n\n# This should give us a 45 degree angle (pi/4 radians)\nangle_radians = mod_geo.elevation_angle(loc1, loc2, radians=True)\nangle_degrees = mod_geo.elevation_angle(loc1, loc2, radians=False)\n\nprint(f\"Expected radians: {math.pi / 4}\")\nprint(f\"Actual radians: {angle_radians}\")\nprint(f\"Expected degrees: 45\")\nprint(f\"Actual degrees: {angle_degrees}\")\n```\n\nExpected output:\n```\nExpected radians: 0.7853981633974483\nActual radians: 0.7853981633974483\nExpected degrees: 45\nActual degrees: 45\n```\n\nActual output:\n```\nExpected radians: 0.7853981633974483\nActual radians: -45.0\nExpected degrees: 45\nActual degrees: 0.7853981633974483\n```\n\nThe function appears to be returning degrees when radians are requested and vice versa, and the angle calculation itself seems to be inverted.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_basic__3pbece7x",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_angle",
+   "test.py::GPXTests::test_angle_3",
+   "test.py::GPXTests::test_angle_4"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

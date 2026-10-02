@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0047-p10",
+ "round_id": "r0047",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nInlineShape height setter incorrectly modifies width property\n\n#### Description\n\nWhen setting the height of an InlineShape, the width property gets modified instead of the height. This causes incorrect dimensions to be applied to inline shapes in Word documents.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.shared import Inches\n\n# Create a document and add an image\ndoc = Document()\nparagraph = doc.paragraphs[0]\nrun = paragraph.runs[0] if paragraph.runs else paragraph.add_run()\n\n# Add an inline shape (image)\ninline_shape = run.add_picture('image.png', width=Inches(2), height=Inches(1))\n\n# Try to change the height\noriginal_width = inline_shape.width\ninline_shape.height = Inches(3)\n\n# The width should remain unchanged, but it gets modified instead\nprint(f\"Original width: {original_width}\")\nprint(f\"Current width: {inline_shape.width}\")  # This will be different\nprint(f\"Current height: {inline_shape.height}\")  # This may not be what was set\n```\n\nAlso affects shape type detection - pictures are incorrectly identified as charts and vice versa, and smart art detection returns wrong values.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.combine_file__c4dyf9c4",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/test_shape.py::DescribeInlineShape::it_can_change_its_display_dimensions",
+   "tests/test_shape.py::DescribeInlineShape::it_knows_what_type_of_shape_it_is[chart]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
