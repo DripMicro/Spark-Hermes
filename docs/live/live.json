@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790984686.4654262,
+ "updated": 1790985108.1902938,
  "round_id": "r0051",
  "stage": "evaluate",
  "stages": [
@@ -68,6 +68,14 @@
   {
    "stage": "evaluate_resume",
    "t": 1790984639.589211
+  },
+  {
+   "stage": "resume",
+   "t": 1790984956.0870337
+  },
+  {
+   "stage": "images",
+   "t": 1790984965.966557
   }
  ],
  "window": {
@@ -276,33 +284,6 @@
    "defense": false,
    "github": "Tet-9"
   },
-  "5CovGSVyGsbo4QfcWVBCM2DJj6RZq623B3NLRXr4E6XcPyXf": {
-   "pr": 457,
-   "head": "2ff190063cd779c050913e74b4454c6727d01733",
-   "bundle_sha256": "9b4776b285e154bf29be253186cc234b2185910148ddf2107e3a92bd4a7dd3d7",
-   "incumbent": false,
-   "was_incumbent": false,
-   "defense": false,
-   "github": "DripMicro"
-  },
-  "5HgCgURVVJ3Bn6N4fxtWKyt1FE1zw7zz4sJ2ZHV5hRSX5oCN": {
-   "pr": 458,
-   "head": "1642cafc8533877259b3c257792eababc5eed5c9",
-   "bundle_sha256": "9b4776b285e154bf29be253186cc234b2185910148ddf2107e3a92bd4a7dd3d7",
-   "incumbent": false,
-   "was_incumbent": false,
-   "defense": false,
-   "github": "DripMicro"
-  },
-  "5DvyRhryPsSiivUFPCrV9wLaHDEJGgSM6DextbpoUhWgghmM": {
-   "pr": 460,
-   "head": "d317192cd89668bb18a637e00bc239c16f886918",
-   "bundle_sha256": "9b4776b285e154bf29be253186cc234b2185910148ddf2107e3a92bd4a7dd3d7",
-   "incumbent": false,
-   "was_incumbent": false,
-   "defense": false,
-   "github": "DripMicro"
-  },
   "5EnpoiLaYMaoy46BLLH2DwXXgy7ykVKowiNns6ebKFh8EVRM": {
    "pr": 461,
    "head": "ff08ac2fcb67aab58958f157d97c61f7452024ed",
@@ -331,10 +312,14 @@
    "github": "FranDev132"
   }
  },
- "rejected": {},
+ "rejected": {
+  "457": "removed after the seal: one submission per GitHub account (#463). @DripMicro sealed four hotkeys; #461, the one it signed last, stays in the round; this PR was closed",
+  "458": "removed after the seal: one submission per GitHub account (#463). @DripMicro sealed four hotkeys; #461, the one it signed last, stays in the round; this PR was closed",
+  "460": "removed after the seal: one submission per GitHub account (#463). @DripMicro sealed four hotkeys; #461, the one it signed last, stays in the round; this PR was closed"
+ },
  "progress": {
   "done": 4,
-  "total": 72,
+  "total": 54,
   "by_surface": {
    "null": {
     "n": 4,
