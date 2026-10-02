@@ -1,0 +1,45 @@
+{
+ "schema": "sh-instance-v2",
+ "task_id": "swe-fix-r0047-06",
+ "family": "swe_fix",
+ "behaviour": "act",
+ "round_id": "r0047",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n[Bug]: Nested validation data is lost when validation fails\n\n### Bug summary\n\nWhen using nested schemas, valid data is lost when validation fails. This affects partial loading and nested validation scenarios.\n\n### Code for reproduction\n\n```python\nfrom marshmallow import Schema, fields, ValidationError\n\nclass SchemaA(Schema):\n    x = fields.Integer()\n    y = fields.Integer(validate=lambda n: n > 0)\n    z = fields.Integer()\n\nclass SchemaB(Schema):\n    w = fields.Integer()\n    n = fields.Nested(SchemaA)\n\nsch = SchemaB()\ntry:\n    sch.load({'w': 90, 'n': {'x': 90, 'y': 89, 'z': None}})\nexcept ValidationError as err:\n    print(f\"Error messages: {err.messages}\")\n    print(f\"Valid data: {err.valid_data}\")\n```\n\n### Actual outcome\n\n```\nError messages: {'n': {'z': ['Field may not be null.']}}\nValid data: {'w': 90}\n```\n\nThe valid data from the nested schema is lost. Only the top-level valid data is preserved.\n\n### Expected outcome\n\n```\nError messages: {'n': {'z': ['Field may not be null.']}}\nValid data: {'w': 90, 'n': {'x': 90, 'y': 89}}\n```\n\nThe valid data from the nested schema should be preserved in the ValidationError's valid_data attribute.\n\n### Additional information\n\nThis also affects partial loading of nested schemas. When using `partial=True` with nested schemas, the valid data from nested schemas is not properly preserved when validation fails.\n\n### Marshmallow Version\n\n3.19.0\n</issue>\n",
+ "fixture": {},
+ "setup_commands": [],
+ "protected_paths": [
+  "pyproject.toml",
+  "tests/__init__.py",
+  "tests/base.py",
+  "tests/conftest.py",
+  "tests/foo_serializer.py",
+  "tests/mypy_test_cases/test_validation_error.py",
+  "tests/test_decorators.py",
+  "tests/test_error_store.py",
+  "tests/test_exceptions.py",
+  "tests/test_fields.py",
+  "tests/test_options.py",
+  "tests/test_registry.py",
+  "tests/test_serialization.py",
+  "tests/test_utils.py",
+  "tests/test_validate.py",
+  "tests/test_version_attributes.py",
+  "tox.ini"
+ ],
+ "commands": [],
+ "published": {
+  "predicates": []
+ },
+ "withheld_commitment": "hmac-sha256:a71f727918dc4cf87263017faa1e564c00bc12537971859e4b177933f7e20a13",
+ "image": "swe-task:177448cca6308935",
+ "network": "none",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "workdir": "/testbed",
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "requires_self_check": false
+}
