@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790945868.545708,
+ "updated": 1790946080.3776884,
  "round_id": "r0049",
- "stage": "window",
+ "stage": "evaluate",
  "stages": [
   "open",
   "window",
@@ -24,6 +24,10 @@
   {
    "stage": "open",
    "t": 1790938860.43053
+  },
+  {
+   "stage": "window",
+   "t": 1790946059.757354
   }
  ],
  "window": {
@@ -138,9 +142,68 @@
  },
  "last_round": "r0048",
  "tasks": 6,
- "active": {},
+ "active": {
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "pr": 438,
+   "head": "58364833e25bc3232ba0cc8c47e7c20d97f2666f",
+   "bundle_sha256": "e080c83219b4cd7c986f2501208454f64b78bc93e7d1dcd8a16c67e2309f9377",
+   "incumbent": true,
+   "was_incumbent": false,
+   "defense": true,
+   "github": "harrythomasben"
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "pr": 440,
+   "head": "1409e315528b277750b6622ce696876f1b5f26ac",
+   "bundle_sha256": "8615b4a7139bacc0d5e3a99ebc7aa3abbca6e1f0721cc022039c40e62a6721b2",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "kaivaryn"
+  },
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+   "pr": 441,
+   "head": "3bd53509b97f35e0a9db16f67da98f57cdb54c87",
+   "bundle_sha256": "10a18bb68617cdf20dd034ab19149a4ca74428d842634b3f487fbf9b8c5d973c",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "K-3-LT"
+  },
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "pr": 442,
+   "head": "a8731bfaeb44c0c7d63ec6bc1bf752ff53b6b685",
+   "bundle_sha256": "b588a42faa4ddcf823b281c514baad8d3e31156fb26e2c534d5e8d3302ee1d98",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "kaivexa"
+  },
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "pr": 443,
+   "head": "839b8c4714aadf2865d265295c455f11306be438",
+   "bundle_sha256": "108f655eb1fe1a53526dda134ed55ac2e51d7dd63efb6fea26c8658007347590",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "Tet-9"
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "pr": 439,
+   "head": "098a4b0622e8c898a232bc161c6b6dd9da026d5b",
+   "bundle_sha256": "41a16c0e35b3cac10f40931b91b56613539f0d83487e1bbc5f1ed478fb91fe5d",
+   "incumbent": false,
+   "was_incumbent": false,
+   "defense": false,
+   "github": "dato-bitar"
+  }
+ },
  "rejected": {},
- "progress": {},
+ "progress": {
+  "done": 0,
+  "total": 0,
+  "by_surface": {}
+ },
  "crown": null,
  "scores": null,
  "queue": [
