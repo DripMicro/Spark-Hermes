@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0048-p04",
+ "round_id": "r0048",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nORDER BY clause qualification broken after recent changes\n\n#### Description\n\nThe ORDER BY clause qualification is not working correctly. When qualifying columns in queries with ORDER BY, the ordering expressions are not being properly handled, causing incorrect SQL generation.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# Simple ORDER BY case\nsql = \"SELECT a FROM table1 ORDER BY a\"\nparsed = sqlglot.parse_one(sql)\nqualified = optimizer.qualify_columns.qualify_columns(parsed, schema={}, infer_schema=False)\nprint(qualified.sql())\n# Expected: SELECT table1.a AS a FROM table1 ORDER BY table1.a\n# Actual: Incorrect output\n\n# More complex case with positional reference\nsql = \"SELECT a, b FROM table1 ORDER BY 1\"\nparsed = sqlglot.parse_one(sql)\nqualified = optimizer.qualify_columns.qualify_columns(parsed, schema={}, infer_schema=False)\nprint(qualified.sql())\n# Expected: SELECT table1.a AS a, table1.b AS b FROM table1 ORDER BY table1.a\n# Actual: Incorrect output\n```\n\nThe issue appears to affect various ORDER BY scenarios including positional references and column names. This breaks SQL optimization and qualification functionality.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_cond__inp2m4pw",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_merge_subqueries",
+   "tests/test_optimizer.py::TestOptimizer::test_qualify_columns",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0048-p05",
+ "round_id": "r0048",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nFile encoding error handling changed unexpectedly\n\nWhen loading database files with encoding issues, the behavior has changed. Previously, invalid characters were replaced with the Unicode replacement character, but now they seem to be handled differently.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a file with encoding issues\ndb = cantools.database.load_file('tests/files/dbc/cp1252.dbc', encoding='utf-8')\nprint(repr(db.nodes[0].comment))\n```\n\nExpected output should show replacement characters for invalid bytes, but the actual output shows different character handling.\n\nThe issue appears when loading files where the specified encoding doesn't match the actual file encoding, which used to gracefully handle invalid characters but now produces unexpected results.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__v9doaz73",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_load_file_encoding"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

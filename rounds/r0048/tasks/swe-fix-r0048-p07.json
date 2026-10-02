@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0048-p07",
+ "round_id": "r0048",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nUnionType string representation shows incorrect output\n\n#### Description\n\nWhen using UnionType objects, the string representation shows `UnionType(UnionType)` instead of the expected format. This affects debugging and logging output where the string representation is used.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom astroid import extract_node\nfrom astroid.bases import UnionType\n\ncode = '''\nint | None  #@\n'''\nast_node = extract_node(code)\nunion_type = ast_node.inferred()[0]\nprint(str(union_type))\n```\n\nExpected output: `UnionType(int | None)` or similar meaningful representation\nActual output: `UnionType(UnionType)`\n\nThe issue appears when calling `str()` on UnionType instances, where it displays the class name instead of the actual union content.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__bwcceiyu",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::InferenceTest::test_binary_op_or_union_type"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

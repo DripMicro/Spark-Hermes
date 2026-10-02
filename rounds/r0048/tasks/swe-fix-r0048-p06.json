@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0048-p06",
+ "round_id": "r0048",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDecode function returns empty dict when allow_truncated=True\n\n#### Description\n\nWhen decoding CAN messages with `allow_truncated=True`, the decode function returns an empty dictionary instead of the expected decoded signal values.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\ndb = cantools.db.Database()\ndb.add_dbc_file('tests/files/dbc/motohawk.dbc')\nmsgname = 'ExampleMessage'\n\n# This should return decoded signal values but returns empty dict\ndecoded = db.decode_message(msgname, b'\\x00\\xff', allow_truncated=True)\nprint(f\"Actual: {decoded}\")\nprint(f\"Expected: {{'AverageRadius': 0.0, 'Enable': 'Disabled'}}\")\n\n# Same issue with message.decode()\nmsg = db.get_message_by_name(msgname)\ndecoded = msg.decode(b'\\x00\\xff', allow_truncated=True)\nprint(f\"Actual: {decoded}\")\nprint(f\"Expected: {{'AverageRadius': 0.0, 'Enable': 'Disabled'}}\")\n```\n\nThe decode function should return the available signal values even when the frame is truncated, but instead returns an empty dictionary.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_op_break_chains__crq4f99e",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_motohawk_decode_truncated"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

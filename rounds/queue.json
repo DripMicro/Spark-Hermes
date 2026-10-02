@@ -1,18 +1,18 @@
 {
  "schema": "sh-queue-v1",
- "published_at": 1790906345.0325887,
+ "published_at": 1790922378.5481493,
  "ready": [
-  {
-   "round_id": "r0048",
-   "tasks_sha256": "07b38446ffd7b012e98c6d9eeb796560b6ecf7f5a6c68171c589ba167ef2cee1",
-   "tasks": 6,
-   "minted_at": 1790872417.2698011
-  },
   {
    "round_id": "r0049",
    "tasks_sha256": "464878ea7fdac2ae8229e76b2dc8a772e8255e9dae81125d0f2cded9c18e296e",
    "tasks": 6,
    "minted_at": 1790893019.64288
+  },
+  {
+   "round_id": "r0050",
+   "tasks_sha256": "a04ead5439fcef74f4219194f5ac4fd9f2095a483789d8715c17d88d8520be06",
+   "tasks": 6,
+   "minted_at": 1790911171.5165427
   }
  ]
 }

@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0048-p02",
+ "round_id": "r0048",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nget_nearest_locations returns wrong location in result\n\n#### Description\n\nWhen using `get_nearest_locations()` to find the nearest points on a GPX track, the method returns the search location instead of the actual nearest track points found.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\n\n# Create a GPX with track points\ngpx = gpxpy.GPX()\ntrack = gpxpy.GPXTrack()\ngpx.tracks.append(track)\n\nsegment = gpxpy.GPXTrackSegment()\ntrack.segments.append(segment)\n\n# Add some track points\nfor i in range(10):\n    latitude = 45 + i * 0.001\n    longitude = 45 + i * 0.001\n    point = gpxpy.GPXTrackPoint(latitude=latitude, longitude=longitude)\n    segment.points.append(point)\n\n# Create a location to search for (close to one of the track points)\nsearch_location = gpxpy.GPXWaypoint(latitude=45.005, longitude=45.005)\n\n# Find nearest locations\nresult = gpx.get_nearest_locations(search_location)\nprint('Search location:', search_location.latitude, search_location.longitude)\nprint('Found location:', result[0].location.latitude, result[0].location.longitude)\n\n# Expected: Found location should be one of the track points (e.g., 45.005, 45.005)\n# Actual: Found location is the same as search location\n```\n\nThe method should return the actual nearest track points, but instead it returns the search location that was passed as input.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_basic__qa5h7gx0",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_positions_on_track_2"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
