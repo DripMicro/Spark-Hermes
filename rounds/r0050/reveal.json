@@ -1,0 +1,231 @@
+{
+ "swe-fix-r0050-04": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_decode_single_line_muxed_data"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_single_line_decode"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_single_line_decode_log_format"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_monitor.py::CanToolsMonitorTest::test_display_muxed_data_multiple_single_line"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_monitor.py::CanToolsMonitorTest::test_display_muxed_data_single_line"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_monitor.py::CanToolsMonitorTest::test_display_one_frame_single_line"
+    ]
+   ],
+   "assets_sha256": "f3fdaa29a26cc60273403942fd611d623a2472f41ca8d69af93b5a644434ddbe",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "f19dd0e043f61b1f8e3060dbc4e3087192a3551db526593affd100873fb0059f",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.func_basic__osfq8k96",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0050-07": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_hive.py::TestHive::test_lateral_view"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_spark.py::TestSpark::test_spark"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_spark.py::TestSpark::test_transpile_annotated_exploded_column"
+    ]
+   ],
+   "assets_sha256": "2d77f0d6d2810552064923ea5637ddd7290ba66feb66f0267528a66571e57656",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "2d5610349947de099624727d15603198856c4df00106b658010772a6a22bc235",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.lm_rewrite__mxqbqknc",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0050-08": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_monitor.py::CanToolsMonitorTest::test_filter"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_monitor.py::CanToolsMonitorTest::test_reset"
+    ]
+   ],
+   "assets_sha256": "0d6f6f44b06dbf233921953bcd20913a54ffa2d1f326a8c500b6bb3c769c7279",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "af8c1ba118eeee7aa42d608b4034c61160e637fa09e14b6458d14116f42d9229",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.func_pm_remove_cond__gqe3rcru",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ },
+ "swe-fix-r0050-09": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/clients/test_backend_application.py::BackendApplicationClientTest::test_request_body"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/clients/test_legacy_application.py::LegacyApplicationClientTest::test_prepare_request_body"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/clients/test_legacy_application.py::LegacyApplicationClientTest::test_request_body"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc6749/clients/test_web_application.py::WebApplicationClientTest::test_prepare_request_body"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/oauth2/rfc8628/clients/test_device.py::DeviceClientTest::test_request_body"
+    ]
+   ],
+   "assets_sha256": "5fd66d6403b2202727a96e2d369e55510b9a97f1aa528947bb8d62710c14fd7a",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "30e866cdf5d64f183e42cfded993b56f5624ce4720e0f5875a9e5a52c177e6da",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "oauthlib__oauthlib.1fd52536.lm_rewrite__4st59pwm",
+   "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536"
+  }
+ },
+ "swe-fix-r0050-10": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_inference_calls.py::test_no_return"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_scoped_nodes.py::FunctionNodeTest::test_abstract_methods_are_not_implicitly_none"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_scoped_nodes.py::FunctionNodeTest::test_is_abstract"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_scoped_nodes.py::FunctionNodeTest::test_is_abstract_decorated"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_scoped_nodes.py::FunctionNodeTest::test_only_raises_is_not_implicitly_none"
+    ]
+   ],
+   "assets_sha256": "fc95d8d442fc1be329b75960c42c7c7923506c50b533d9086e3b1f16b0e69c1e",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "029b45dd69c4f436baf7b4544887331e46cc296c918176fca56660246215db55",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__zlo0vtm0",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0050-13": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_add_missing_speeds"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_angle"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_distance_from_line"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_haversine_and_nonhaversine"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_ignore_maximums_for_max_speed"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_location_equator_delta_distance_111120"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_location_equator_delta_distance_50"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "test.py::GPXTests::test_track_points_data"
+    ]
+   ],
+   "assets_sha256": "f0c4f6aafeba9e62a7906e1fef90df370e4835c875b7f827ab1eaaa41fdf552b",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "6626273c0dc86ab0f817d52e3d28d6c9c0f7f2ede65706f2ae206685a458e198",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tkrajina__gpxpy.09fc46b3.func_basic__t25i8zki",
+   "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3"
+  }
+ }
+}
