@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0050-p04",
+ "round_id": "r0050",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nformat_or function throws UnboundLocalError when called\n\n#### Description\n\nThe `format_or` function in `src/cantools/database/utils.py` is throwing an `UnboundLocalError` when called. The variable `string_items` is being referenced before it's assigned.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom cantools.database.utils import format_or\n\n# This should work but throws an error\nresult = format_or([8, 16, 24])\nprint(result)\n```\n\nExpected output: `\"8, 16 or 24\"`\nActual output: `UnboundLocalError: local variable 'string_items' referenced before assignment`\n\nThe same issue occurs when trying to use cantools functionality that relies on this utility function, such as decoding multiplexed CAN messages with invalid multiplexer IDs.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_ctrl_shuffle__2wqz7pcc",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_multiplex_bad_multiplexer",
+   "tests/test_monitor.py::CanToolsMonitorTest::test_reject_muxed_data_invalid_mux_index"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

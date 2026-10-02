@@ -1,0 +1,31 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0050-p07",
+ "round_id": "r0050",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nJSON path extraction fails for list indices when schema is not provided\n\n#### Description\n\nWhen executing queries with JSON path extraction on list elements without providing an explicit schema, the executor raises a `NotImplementedError` instead of properly extracting values from list indices.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom sqlglot import execute\n\n# This should work but raises NotImplementedError\ntables = {'foo': [{'raw': {'name': 'Hello, World', 'a': [{'b': 1}]}}]}\nresult = execute('SELECT raw:a[0].b AS b FROM foo', read='snowflake', tables=tables)\n```\n\nThe error occurs when trying to extract values from JSON arrays using bracket notation like `raw:a[0].b`. The issue appears to be related to how the JSON extraction logic handles list indices when no schema is explicitly provided to the executor.\n\nThis affects queries that use JSON path expressions with array indexing in Snowflake dialect, preventing proper extraction of nested values from JSON arrays.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.combine_module__idagba7w",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_executor.py::TestExecutor::test_aggregate_without_group_by",
+   "tests/test_executor.py::TestExecutor::test_case_sensitivity",
+   "tests/test_executor.py::TestExecutor::test_execute_subqueries",
+   "tests/test_executor.py::TestExecutor::test_execute_tables",
+   "tests/test_executor.py::TestExecutor::test_group_by",
+   "tests/test_executor.py::TestExecutor::test_nested_table_reference",
+   "tests/test_executor.py::TestExecutor::test_nested_values"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

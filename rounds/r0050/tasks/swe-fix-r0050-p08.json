@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0050-p08",
+ "round_id": "r0050",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSYM file message order changed after recent update\n\n#### Description\n\nAfter a recent update, the order of messages when loading SYM files has changed. Messages that were previously loaded in one order are now appearing in reverse order, which breaks compatibility with existing code that depends on message ordering.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load a SYM file with multiple message sections\ndb = cantools.database.load_file('test.sym')\n\n# The message order is now different than expected\nfor i, message in enumerate(db.messages):\n    print(f\"Message {i}: {message.name}\")\n```\n\nWhen loading SYM files that contain both `{SEND}` and `{RECEIVE}` sections, the messages now appear in a different order than before. Previously, `{SEND}` messages would appear first, followed by `{RECEIVE}` messages. Now the order appears to be reversed.\n\nThis affects applications that rely on consistent message ordering when processing SYM database files, particularly when converting between different CAN database formats or when the message index/position matters for the application logic.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__py5jqgud",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_convert.py::CanToolsConvertFullTest::test_sym_to_dbc__compare_databases",
+   "tests/test_convert.py::CanToolsConvertFullTest::test_sym_to_dbc__compare_files",
+   "tests/test_database.py::CanToolsDatabaseTest::test_jopp_6_0_sym",
+   "tests/test_database.py::CanToolsDatabaseTest::test_jopp_6_0_sym_re_read"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

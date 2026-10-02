@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0050-p09",
+ "round_id": "r0050",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# OAuth1 Authorization Endpoint doesn't verify realms properly\n\n## Description\n\nHi,\n\nI've found an issue with the OAuth1 Authorization Endpoint in oauthlib. When creating an authorization response with realms, the endpoint doesn't properly verify that the realms are valid.\n\n## Current Behavior\n\nWhen I try to create an authorization response with realms that should be rejected, the request goes through anyway instead of raising an InvalidRequestError.\n\nHere's a simple reproduction:\n\n```python\nfrom oauthlib.oauth1 import AuthorizationEndpoint\nfrom oauthlib.common import Request\n\n# Setup a validator that should reject certain realms\nclass MockValidator:\n    def verify_request_token(self, token, request):\n        return True\n        \n    def verify_realms(self, token, realms, request):\n        # This should cause the endpoint to reject the request\n        # when realms contains 'invalid_realm'\n        return 'invalid_realm' not in realms\n        \n    def get_redirect_uri(self, token, request):\n        return 'https://client.example.com/cb'\n        \n    def save_verifier(self, token, verifier, request):\n        pass\n\n# Create the endpoint\nendpoint = AuthorizationEndpoint(MockValidator())\n\n# This should fail but doesn't\nuri = 'https://example.com/authorize?oauth_token=abc'\nheaders, body, status = endpoint.create_authorization_response(\n    uri, \n    realms=['invalid_realm']\n)\n\nprint(f\"Status: {status}\")  # Prints 302 instead of raising an error\n```\n\n## Expected Behavior\n\nThe endpoint should check if the realms are valid using the `verify_realms` method of the request validator. If the validator returns False, the endpoint should raise an InvalidRequestError with a description like \"User granted access to realms outside of what the client may request.\"\n\nThis is important for security as it prevents clients from gaining access to realms they shouldn't have permission to.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.lm_rewrite__u0bjva5n",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth1/rfc5849/endpoints/test_authorization.py::AuthorizationEndpointTest::test_verify_realms"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

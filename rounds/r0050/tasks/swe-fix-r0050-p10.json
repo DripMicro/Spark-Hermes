@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0050-p10",
+ "round_id": "r0050",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nInstance.pytype() returns lowercase qualified name instead of proper case\n\n#### Description\n\nThe `pytype()` method on Instance objects is returning lowercase qualified names instead of preserving the original case. This affects type inference and breaks compatibility with code that expects proper case type names.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# Create a simple class and instance\ncode = \"\"\"\nclass MyClass:\n    pass\n\nobj = MyClass()\n\"\"\"\n\nmodule = astroid.parse(code)\ncls = module['MyClass']\ninstance = cls.instantiate_class()\n\nprint(f\"Expected: {cls.qname()}\")\nprint(f\"Actual: {instance.pytype()}\")\n```\n\nExpected output:\n```\nExpected: .MyClass\nActual: .MyClass\n```\n\nActual output:\n```\nExpected: .MyClass  \nActual: .myclass\n```\n\nThe issue also affects more complex qualified names like `numpy.ma.MaskedArray` which becomes `numpy.ma.maskedarray`, breaking type checking and inference logic that relies on proper case sensitivity.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__mbxnoo0p",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/numpy/test_ma.py::TestBrainNumpyMa::test_numpy_ma_returns_maskedarray[masked_invalid-False]",
+   "tests/brain/numpy/test_ma.py::TestBrainNumpyMa::test_numpy_ma_returns_maskedarray[masked_invalid-True]",
+   "tests/brain/numpy/test_ma.py::TestBrainNumpyMa::test_numpy_ma_returns_maskedarray[masked_where-False]",
+   "tests/brain/numpy/test_ma.py::TestBrainNumpyMa::test_numpy_ma_returns_maskedarray[masked_where-True]",
+   "tests/brain/test_enum.py::EnumBrainTest::test_enum_name_and_value_members_override_dynamicclassattr",
+   "tests/brain/test_enum.py::EnumBrainTest::test_simple_enum",
+   "tests/test_inference.py::test_dataclasses_subscript_inference_recursion_error_39",
+   "tests/test_inference.py::test_issue_1090_infer_yield_type_base_class"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

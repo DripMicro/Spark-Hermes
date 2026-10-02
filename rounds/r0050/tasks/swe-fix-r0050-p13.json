@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0050-p13",
+ "round_id": "r0050",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSpeed calculation returns incorrect values\n\n#### Description\n\nWhen calculating speed in GPX track segments, the speed values are significantly incorrect. The speed calculation appears to be using wrong time conversion factors.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\n\n# Load any GPX file with track data\nwith open('test_file.gpx', 'r') as gpx_file:\n    gpx = gpxpy.parse(gpx_file)\n\n# Get moving data which includes speed calculations\nmoving_data = gpx.get_moving_data()\nprint(f\"Max speed: {moving_data.max_speed} m/s\")\n\n# Compare with manual calculation\nmax_speed = 0.0\nfor track in gpx.tracks:\n    for segment in track.segments:\n        for pt_no, pt in enumerate(segment.points):\n            if pt_no > 0:\n                speed = segment.points[pt_no].speed_between(segment.points[pt_no - 1])\n                if speed:\n                    max_speed = max(speed, max_speed)\n\nprint(f\"Expected max speed: {max_speed} m/s\")\n```\n\nThe calculated max speed from `get_moving_data()` doesn't match the expected speed calculated manually between points. The values are off by a significant factor, suggesting an issue with the time unit conversion in the speed calculation formula.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_pm_op_change_const__25nwyn1m",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_ignore_maximums_for_max_speed",
+   "test.py::GPXTests::test_moving_stopped_times",
+   "test.py::GPXTests::test_raw_max_speed"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
