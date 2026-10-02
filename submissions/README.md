@@ -1,7 +1,7 @@
 # Submissions
 
 A round opens with a **2-hour submission window**. During the window you fetch the round's tasks, write a strategy,
-and submit it as one signed pull request per hotkey; you may resubmit as often as you like
+and submit it as one signed pull request; **one per GitHub account**, whatever number of hotkeys it holds. You may resubmit as often as you like
 and each submission replaces the last. When the window closes the validator seals every open strategy PR at
 its head SHA, evaluates, scores, crowns, and opens the next round. Nothing submitted after the close is sealed. If the
 window closes with no valid submission (an incumbent alone does not count), the round is not sealed: it reopens with the same tasks and a fresh window.
@@ -133,7 +133,7 @@ Open any board row to see the per-instance credits every one of these numbers is
 1. **Lint** runs on your PR automatically — and, with private submissions, on the server when you upload, which
    also refuses an answer-copy. It is the whole of what CI does: no code from a submission is ever executed in
    this repository.
-2. **Seal**, when the window closes: one PR per hotkey — the **latest *signed*** counts, not the newest PR (what
+2. **Seal**, when the window closes: one PR per hotkey and **one per GitHub account** — of an account's PRs for several hotkeys only the one it signed last is sealed, the others are refused, and an account holding the crown competes only through it (a defense PR for its own hotkey). Per hotkey the **latest *signed*** counts, not the newest PR (what
    you signed is public, so a newer PR carrying your old bundle cannot displace your real one). With private
    submissions the validator fetches your revealed bundle by the digest your commitment names and re-checks it.
    Your PR must change only your own `submissions/<hotkey>/` directory and nothing else, or it is rejected.

@@ -804,6 +804,42 @@ def one_per_hotkey(prs: list[dict], *, now: float | None = None) -> tuple[dict[s
     return keep, superseded
 
 
+def one_per_account(
+    keep: dict[str, dict], *, incumbent_accounts: dict[str, str] | None = None
+) -> tuple[dict[str, dict], dict[int, str]]:
+    """One submission per **GitHub account**, after one per hotkey: an account that opens PRs for several hotkeys
+    competes once, with the one it signed last (a tie falls to the lowest PR number, as for one hotkey). An account
+    that already holds the crown competes through it: a PR from it for any other hotkey is refused, a defense PR
+    (the king's own hotkey) is not. PRs whose author is unknown are left alone. Pure: `keep` is `one_per_hotkey`'s.
+    `incumbent_accounts` maps a lower-cased GitHub login to the incumbent hotkey it owns."""
+    incumbent_accounts = {k.lower(): v for k, v in (incumbent_accounts or {}).items()}
+    out: dict[str, dict] = {}
+    refused: dict[int, str] = {}
+    by_login: dict[str, list[tuple[str, dict]]] = {}
+    for hotkey, pr in keep.items():
+        login = ((pr.get("author") or {}).get("login") or "").lower()
+        if not login:
+            out[hotkey] = pr
+        elif login in incumbent_accounts and incumbent_accounts[login] != hotkey:
+            refused[pr["number"]] = (
+                f"@{login} already competes as the king with {incumbent_accounts[login][:8]}… "
+                "(one submission per GitHub account; resubmit under that hotkey to replace it)"
+            )
+        else:
+            by_login.setdefault(login, []).append((hotkey, pr))
+    order = lambda hp: (hp[1].get("signed_at") if isinstance(hp[1].get("signed_at"), int) else -1, -hp[1]["number"])  # noqa: E731
+    for login, entries in by_login.items():
+        winner = max(entries, key=order)
+        out[winner[0]] = winner[1]
+        for hotkey, pr in entries:
+            if pr is not winner[1]:
+                refused[pr["number"]] = (
+                    f"superseded by #{winner[1]['number']} (one submission per GitHub account: @{login} signed that "
+                    "one last; close the others)"
+                )
+    return out, refused
+
+
 def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dict], dict[str, str]]:
     """What a seal taken now would contain: `(active, rejected)`, with every bundle materialised under `bundles`.
 
@@ -879,6 +915,14 @@ def candidates(cfg: Config, round_id: str, bundles: Path) -> tuple[dict[str, dic
         )
     keep, superseded = one_per_hotkey(valid)
     rejected.update({str(n): why for n, why in superseded.items()})
+    # ...and one per GitHub account. Who owns the crown comes from the published hotkey → login map (attested at
+    # each seal); a king whose author was never published simply has no account to defend.
+    gh = _read(cfg.repo / LIVE, {}).get("github") or {}
+    kings = {gh[h]: h for h, info in active.items() if info.get("incumbent") and gh.get(h)}
+    keep, refused = one_per_account(keep, incumbent_accounts=kings)
+    rejected.update({str(n): why for n, why in refused.items()})
+    for n in refused:  # a refused PR's bundle was staged for the seal; it is not in the round
+        shutil.rmtree(bundles / f".pr{n}", ignore_errors=True)
     for hotkey, pr in keep.items():
         # A defense is the incumbent itself, now with a PR to merge if it wins. Any other PR from an incumbent's
         # hotkey replaces the bundle it defended with, and that bundle must still be dethroned.

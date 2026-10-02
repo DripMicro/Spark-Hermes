@@ -164,6 +164,23 @@ def _already_submitted(dest: Path, private: bool, digest: str, round_id: str) ->
         return False
 
 
+def _other_submissions(repo: str, base: str, branch: str, owner: str | None) -> list[int]:
+    """Your other open submission PRs (another hotkey's `miner/...` branch). The seal counts one per GitHub account,
+    the one signed last, so the others are refused there; say so now rather than at the close."""
+    out = _run(
+        ["gh", "pr", "list", "--repo", repo, "--base", base, "--state", "open", "--author", owner or "@me",
+         "--json", "number,headRefName", "--limit", "100"],
+        check_rc=False,
+    )  # fmt: skip
+    try:
+        prs = json.loads(out or "[]")
+    except json.JSONDecodeError:
+        return []
+    return sorted(
+        p["number"] for p in prs if p.get("headRefName", "").startswith("miner/") and p["headRefName"] != branch
+    )
+
+
 def submit_bundle(
     bundle: Path,
     keypair,
@@ -276,6 +293,7 @@ def submit_bundle(
             "bundle_sha256": digest,
             "created": created,
             "private": private,
+            "others": _other_submissions(repo, base, branch, head_owner),
         }
     finally:
         _run(["git", "worktree", "remove", "--force", str(wt)], cwd=checkout, check_rc=False)
@@ -334,6 +352,13 @@ def main(argv=None) -> int:
         if r.get("skipped"):
             print(f"{r['hotkey']}: {r['skipped']}")
             return 0
+        if r.get("others"):
+            print(
+                "warning: this GitHub account also has open submission PR(s) "
+                + ", ".join(f"#{n}" for n in r["others"])
+                + ". One submission per GitHub account counts at the seal (the one signed last); close the others.",
+                file=sys.stderr,
+            )
         mode = "prose private, PR carries the commitment" if r.get("private") else "prose in the PR"
         print(
             f"{'opened' if r['created'] else 'updated'} PR #{r['pr']} for {r['hotkey']} in {rid} "
