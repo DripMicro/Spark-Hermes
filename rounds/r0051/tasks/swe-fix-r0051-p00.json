@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0051-p00",
+ "round_id": "r0051",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSYM parser incorrectly handles string and raw signal types\n\n#### Description\n\nWhen loading SYM files with signals of type 'string' or 'raw', the parser throws an \"Enum not defined\" error instead of properly handling these built-in signal types.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# This will fail with: cantools.database.UnsupportedDatabaseFormatError: SYM: \"Enum 'string' is not defined.\"\ndb = cantools.database.load_file('tests/files/sym/signal-types-6.0.sym')\n\n# This will also fail with: cantools.database.UnsupportedDatabaseFormatError: SYM: \"Enum 'raw' is not defined.\"\ndb = cantools.database.load_file('tests/files/sym/special-chars-6.0.sym')\n```\n\nThe error occurs because the parser is treating 'string' and 'raw' as enum types when they should be handled as built-in signal types with specified lengths.\n\nExpected behavior: The parser should successfully load SYM files containing signals with 'string' and 'raw' types, treating them as unsigned integer types with the specified bit length.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_ctrl_invert_if__2y3tqmh4",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_signal_types_6_0_sym",
+   "tests/test_database.py::CanToolsDatabaseTest::test_special_chars_6_0_sym",
+   "tests/test_database.py::CanToolsDatabaseTest::test_variables_color_enum_6_0_sym"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

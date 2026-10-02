@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0051-p03",
+ "round_id": "r0051",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nobject_len returns incorrect values for uninferrable nodes and int subclasses\n\n#### Description\n\nThe `object_len` function in astroid is returning incorrect values in certain edge cases. When dealing with uninferrable nodes or int subclasses, the function returns unexpected results instead of proper error handling or correct inference.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\n# Case 1: Missing variable should raise InferenceError\nnode = astroid.extract_node('len(a)')\nresult = next(node.infer())\nprint(f\"Expected: InferenceError, Got: {result}\")\n\n# Case 2: Int subclass should return 0, not 1\nnode = astroid.extract_node('''\nclass IntSubclass(int):\n    pass\n\nclass F:\n    def __len__(self):\n        return IntSubclass(5)\nlen(F())\n''')\nresult = next(node.infer()).as_string()\nprint(f\"Expected: '0', Got: '{result}'\")\n```\n\nThe first case should raise an `InferenceError` when trying to get the length of an undefined variable, but instead returns a value. The second case should return `'0'` for int subclasses but returns `'1'` instead.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__alsl3dfl",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_brain.py::TestLenBuiltinInference::test_int_subclass_result",
+   "tests/brain/test_brain.py::TestLenBuiltinInference::test_len_failure_missing_variable"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

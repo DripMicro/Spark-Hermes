@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0051-p09",
+ "round_id": "r0051",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSQL comparison grouping broken for NULL keywords\n\n#### Description\n\nWhen parsing SQL statements with NULL comparisons, the parser incorrectly groups tokens, causing issues with comparison detection and formatting.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlparse\nfrom sqlparse import sql\n\n# This should create a proper Comparison token but doesn't\np = sqlparse.parse('foo = NULL')[0]\nprint(f\"Number of tokens: {len(p.tokens)}\")\nprint(f\"Token type: {type(p.tokens[0])}\")\n\n# Expected: 1 token of type Comparison\n# Actual: Multiple tokens, not grouped as Comparison\n\n# Also affects formatting of UPDATE statements with NULL values\nsql_stmt = 'UPDATE \"gallery_photo\" SET \"owner_id\" = 4018, \"deleted_at\" = NULL'\nformatted = sqlparse.format(sql_stmt, reindent=True)\nprint(formatted)\n```\n\nThe issue appears when SQL statements contain comparisons with NULL keywords. The parser fails to properly group these as comparison tokens, which breaks downstream formatting and analysis.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "andialbrecht__sqlparse.e57923b3.func_pm_ctrl_invert_if__m23b5jo7",
+  "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3",
+  "fail_to_pass": [
+   "tests/test_grouping.py::test_comparison_with_keywords",
+   "tests/test_grouping.py::test_grouping_comparison_exclude",
+   "tests/test_regressions.py::test_issue90"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0051-p07",
+ "round_id": "r0051",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nscope_to_list returns non-string elements when passed collections\n\n#### Description\n\nWhen `scope_to_list` is called with a collection (list, tuple, set) containing non-string objects, it now returns the objects as-is instead of converting them to strings. This breaks compatibility with code that expects string elements in the returned list.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth2.rfc6749.utils import scope_to_list\n\nclass ScopeObject:\n    def __init__(self, name):\n        self.name = name\n    \n    def __str__(self):\n        return self.name\n\n# This used to return ['foo', 'bar', 'baz'] but now returns ScopeObject instances\nobj_list_scopes = [ScopeObject('foo'), ScopeObject('bar'), ScopeObject('baz')]\nresult = scope_to_list(obj_list_scopes)\nprint(result)  # Expected: ['foo', 'bar', 'baz'], Actual: [ScopeObject('foo'), ScopeObject('bar'), ScopeObject('baz')]\n```\n\nAlso, when `scope_to_list` is called with `None`, it now returns an empty list instead of `None`:\n\n```python\nresult = scope_to_list(None)\nprint(result)  # Expected: None, Actual: []\n```\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__y1s8zw67",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth2/rfc6749/test_server.py::SignedTokenEndpointTest::test_authorization_grant",
+   "tests/oauth2/rfc6749/test_server.py::TokenEndpointTest::test_authorization_grant",
+   "tests/oauth2/rfc6749/test_utils.py::UtilsTests::test_scope_to_list",
+   "tests/openid/connect/core/test_server.py::TokenEndpointTest::test_authorization_grant"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

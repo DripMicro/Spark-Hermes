@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0051-p11",
+ "round_id": "r0051",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nToken.flatten() returns empty list instead of yielding self\n\n#### Description\n\nThe `flatten()` method on `Token` objects is returning an empty list instead of yielding the token itself when the token doesn't have subgroups.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlparse\nfrom sqlparse import sql, tokens as T\nimport types\n\n# Create a simple token\ntoken = sql.Token(T.Keyword, 'foo')\ngen = token.flatten()\n\n# This should be a generator that yields the token\nprint(f\"Generator type: {isinstance(gen, types.GeneratorType)}\")\nprint(f\"List of flattened tokens: {list(gen)}\")\nprint(f\"Expected: {[token]}\")\n```\n\nExpected output:\n```\nGenerator type: True\nList of flattened tokens: [<Token 'Keyword' at 0x...>]\nExpected: [<Token 'Keyword' at 0x...>]\n```\n\nActual output:\n```\nGenerator type: True\nList of flattened tokens: []\nExpected: [<Token 'Keyword' at 0x...>]\n```\n\nThe issue affects SQL formatting functionality that relies on token flattening, causing various formatting operations to produce incorrect results.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "andialbrecht__sqlparse.e57923b3.func_basic__g9kue6pd",
+  "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3",
+  "fail_to_pass": [
+   "tests/test_format.py::TestFormatReindent::test_case",
+   "tests/test_format.py::TestFormatReindent::test_identifier_list_comment_first",
+   "tests/test_format.py::TestFormatReindent::test_long_identifier_list_with_functions",
+   "tests/test_tokenize.py::test_token_flatten"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
