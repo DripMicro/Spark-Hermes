@@ -1,0 +1,166 @@
+{
+ "swe-fix-r0052-02": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_modutils.py::ModPathFromFileTest::test_modpath_from_file_path_order"
+    ]
+   ],
+   "assets_sha256": "e10ae7e6b55a1132c7be0c91ddffde25cdb8b60faa1b35bdb7cf992b325dc19e",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "3c33a689ddbc66db6750e90110b54f234aa1020bf086f16d4948ba8ab439bcb4",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "pylint-dev__astroid.b114f6b5.pr_2589",
+   "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5"
+  }
+ },
+ "swe-fix-r0052-03": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_deserialization.py::TestFieldDeserialization::test_invalid_timedelta_field_deserialization[9999999999]"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_deserialization.py::TestFieldDeserialization::test_timedelta_field_deserialization"
+    ]
+   ],
+   "assets_sha256": "2630254d6dfd4d4836e1ad86e8458182da4a391a533ef0c0f16122d10091dfc1",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "daa9f4921691d682abf5c37ac06299938cec46c5e43cb222475b3828fe7c2073",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "marshmallow-code__marshmallow.9716fc62.func_basic__xnxp84t9",
+   "environment": "jyangballin/swesmith.x86_64.marshmallow-code_1776_marshmallow.9716fc62"
+  }
+ },
+ "swe-fix-r0052-04": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/opc/test_package.py::DescribeUnmarshaller::it_can_unmarshal_from_a_pkg_reader"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/opc/test_package.py::DescribeUnmarshaller::it_can_unmarshal_parts"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_blkcntnr.py::DescribeBlockItemContainer::it_can_iterate_its_inner_content"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_package.py::DescribePackage::it_gathers_package_image_parts_after_unmarshalling"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_section.py::DescribeSection::it_can_iterate_its_inner_content"
+    ]
+   ],
+   "assets_sha256": "6c3b0a0ebbcba6e560b0375afd61d517b9d5d0c33236056fcae9785fe20baa89",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "3d1ae65168ad996c3030225faf05e979d7eda6b212b482cb9e399f4490722e60",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "python-openxml__python-docx.0cf6d71f.combine_file__o5i4caut",
+   "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f"
+  }
+ },
+ "swe-fix-r0052-05": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_teradata.py::TestTeradata::test_time"
+    ]
+   ],
+   "assets_sha256": "a09ae56f3892d727a9d0a9a55c149dd5739701c0f943285e2effe6ee6b234eec",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "a268767e1d089061e8697f77942abc08e036c8530c01417af21da9adc42559e3",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.func_pm_ctrl_shuffle__3dny185x",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0052-06": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_dialect.py::TestDialect::test_compare_dialect_versions"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/dialects/test_dialect.py::TestDialect::test_get_or_raise"
+    ]
+   ],
+   "assets_sha256": "93216d160cdbdf4894c9bbdfddb6542ac6a821e0392d6a880bad57784f3e5b2e",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "21a81a3f0584ffc452c3792765f972002346f45d59ffcfaae18183e61f54be82",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_loop__alg83sy1",
+   "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba"
+  }
+ },
+ "swe-fix-r0052-09": {
+  "withheld": {
+   "predicates": [
+    [
+     "custom",
+     "swe_test",
+     "tests/test_command_line.py::CanToolsCommandLineTest::test_convert"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_convert.py::CanToolsConvertFullTest::test_kcd_dump_default_sort_signals"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_convert.py::CanToolsConvertFullTest::test_kcd_dump_sort_signals_by_name"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_as_kcd_string"
+    ],
+    [
+     "custom",
+     "swe_test",
+     "tests/test_database.py::CanToolsDatabaseTest::test_vehicle"
+    ]
+   ],
+   "assets_sha256": "d6b53e584b5ec9277a755c823e9d90a0efe21f5a1d606a2ddaeba7660a19de7c",
+   "checks_sha256": "403d3351fb14b2b302689c398daf0d6d3d2c240cf4f57276e5184634be68f0b2"
+  },
+  "salt": "661d2235120d3bd44da1f13e84dee776acaa07e40ca43fcfb83415d207ab2807",
+  "source": {
+   "dataset": "SWE-bench/SWE-smith",
+   "instance_id": "cantools__cantools.0c6a7871.func_pm_remove_cond__1adlrus6",
+   "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871"
+  }
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "schema": "sh-instance-v2",
+ "task_id": "swe-fix-r0052-03",
+ "family": "swe_fix",
+ "behaviour": "act",
+ "round_id": "r0052",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTimeDelta field deserialization broken with incorrect kwargs handling\n\n#### Description\n\nThe TimeDelta field is not deserializing values correctly. When deserializing a simple numeric value like '42', it's returning a timedelta with 42 days instead of 42 seconds as expected.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom marshmallow import fields\nimport datetime as dt\n\nfield = fields.TimeDelta()\nresult = field.deserialize('42')\nprint(f\"Expected: 42 seconds, Got: {result.days} days, {result.seconds} seconds\")\n\n# This should create a timedelta of 42 seconds, but creates 42 days instead\nassert result.days == 0  # This fails\nassert result.seconds == 42  # This also fails because seconds is 0\n```\n\nAlso, when trying to deserialize large values that should raise validation errors, we get TypeError instead:\n\n```python\nfield = fields.TimeDelta(fields.TimeDelta.DAYS)\ntry:\n    field.deserialize(9999999999)\nexcept Exception as e:\n    print(f\"Got {type(e).__name__}: {e}\")\n    # Expected ValidationError but got TypeError: datetime.timedelta() got multiple values for keyword argument 'days'\n```\n\nThe field seems to be passing incorrect keyword arguments to the timedelta constructor, causing both incorrect deserialization results and unexpected error types.\n</issue>\n",
+ "fixture": {},
+ "setup_commands": [],
+ "protected_paths": [
+  "pyproject.toml",
+  "tests/__init__.py",
+  "tests/base.py",
+  "tests/conftest.py",
+  "tests/foo_serializer.py",
+  "tests/mypy_test_cases/test_validation_error.py",
+  "tests/test_decorators.py",
+  "tests/test_error_store.py",
+  "tests/test_exceptions.py",
+  "tests/test_fields.py",
+  "tests/test_options.py",
+  "tests/test_registry.py",
+  "tests/test_schema.py",
+  "tests/test_serialization.py",
+  "tests/test_utils.py",
+  "tests/test_validate.py",
+  "tests/test_version_attributes.py",
+  "tox.ini"
+ ],
+ "commands": [],
+ "published": {
+  "predicates": []
+ },
+ "withheld_commitment": "hmac-sha256:194d5b80d534a39d4ed7615798d9b18cfbd116ab697e11a783ba8c135774aaa6",
+ "image": "swe-task:eb7c1872e5e1b7e9",
+ "network": "none",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "workdir": "/testbed",
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "requires_self_check": false
+}

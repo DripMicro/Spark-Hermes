@@ -1,0 +1,28 @@
+{
+ "schema": "sh-export-manifest-v2",
+ "round_id": "r0052",
+ "king": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
+ "sft_rows": 5,
+ "dpo_pairs": 4,
+ "gates": {
+  "not_king": 54,
+  "void": 0,
+  "no_trajectory": 0,
+  "not_verified": 1,
+  "disqualified": 0,
+  "leaked": 0,
+  "leaked_dpo": 0,
+  "redacted": 0
+ },
+ "families": [
+  "swe_fix"
+ ],
+ "sft_sha256": "66786cfd15b177edc8da6166e1cdb902158c509d0ab61dce82635511bbf0df11",
+ "dpo_sha256": "2f8aa62f3420750d44eec8afd2b7c38bddc264bf107adce339f9a6f13d2e7af5",
+ "leak_scan": {
+  "secrets_checked": 6,
+  "bundle_lines_checked": 44,
+  "rows_refused": 0,
+  "pairs_refused": 0
+ }
+}

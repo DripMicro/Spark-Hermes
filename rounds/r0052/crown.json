@@ -1,0 +1,78 @@
+{
+ "schema": "sh-crown-v1",
+ "round_id": "r0052",
+ "king": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
+ "standings": {
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "n": 6,
+   "verified": 4,
+   "dq": 0,
+   "credit": 0.733333,
+   "delta": 0.083333,
+   "rank": 4
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "n": 6,
+   "verified": 4,
+   "dq": 0,
+   "credit": 0.816667,
+   "delta": 0.166667,
+   "rank": 2
+  },
+  "5D4txntYBCZ7dAXuFDHEubK1f84LYzPjBNCtVELenfUPCQzK": {
+   "n": 6,
+   "verified": 3,
+   "dq": 0,
+   "credit": 0.733333,
+   "delta": 0.083333,
+   "rank": 7
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "n": 6,
+   "verified": 1,
+   "dq": 0,
+   "credit": 0.35,
+   "delta": -0.3
+  },
+  "5DSD14t7dACJcd9f8rPdrkMVngRqLUnM3EnM3dHfHLZTHJGf": {
+   "n": 6,
+   "verified": 4,
+   "dq": 0,
+   "credit": 0.733333,
+   "delta": 0.083333,
+   "rank": 5
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "n": 6,
+   "verified": 3,
+   "dq": 0,
+   "credit": 0.65,
+   "delta": 0.0
+  },
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "n": 6,
+   "verified": 5,
+   "dq": 0,
+   "credit": 0.833333,
+   "delta": 0.183333,
+   "rank": 1
+  },
+  "5ELQSQmfgxAXHiNHk23eqyzvhEwdLZTQqgJZTBt4W1ZSXiaL": {
+   "n": 6,
+   "verified": 4,
+   "dq": 0,
+   "credit": 0.766667,
+   "delta": 0.116667,
+   "rank": 3
+  },
+  "5HbvMH2hCEecnyhMsUMSCo54mJia1ujJGRVwsfg3LbEWBsVj": {
+   "n": 6,
+   "verified": 4,
+   "dq": 0,
+   "credit": 0.733333,
+   "delta": 0.083333,
+   "rank": 6
+  }
+ },
+ "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired, not disqualified; a tie does not dethrone the incumbent; other ties by pooled \u0394c then a round-keyed hash"
+}
