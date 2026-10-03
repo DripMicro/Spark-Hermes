@@ -199,16 +199,34 @@ td.faint { color: var(--faint); }
              box-shadow: 0 0 14px rgba(34, 211, 238, .5); transition: width .9s cubic-bezier(.2, .8, .2, 1); }
 .meter-row { display: flex; justify-content: space-between; gap: 1rem; font-size: .85rem; color: var(--muted); }
 .meter-row b { color: var(--ink); font: 600 .9rem/1.3 var(--display); }
-.track { display: flex; gap: .3rem; margin-top: 1.5rem; overflow-x: auto; scrollbar-width: none; scroll-behavior: smooth; }
+/* the round's steps: a stepper. Done steps are checked on a solid violet line, the current one is lit cyan and
+   pulses, the steps still to come are hollow on a dashed line. */
+.stepper-wrap { margin-top: 1.5rem; }
+.track-cap { font-size: .88rem; color: var(--muted); margin-bottom: .9rem; }
+.track-cap b { color: var(--ink); font-weight: 600; }
+.track { position: relative; display: flex; list-style: none; margin: 0; padding: .3rem 0 .2rem; overflow-x: auto; scrollbar-width: none; scroll-behavior: smooth; }
 @media (max-width: 960px) { .track { mask-image: linear-gradient(90deg, transparent, #000 1.2rem, #000 calc(100% - 1.2rem), transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 1.2rem, #000 calc(100% - 1.2rem), transparent); } }
 .track::-webkit-scrollbar { display: none; }
-.track .st { flex: 1 0 auto; min-width: 5.4rem; padding: .5rem .65rem .45rem; border-radius: var(--r-sm); border: 1px solid var(--line);
-             background: rgba(255, 255, 255, .02); color: var(--faint); font-size: .78rem; line-height: 1.3; }
-.track .st b { display: block; font: 600 .88rem/1.2 var(--display); color: var(--muted); }
-.track .st.done { border-color: rgba(167, 139, 250, .32); background: rgba(167, 139, 250, .07); color: var(--muted); }
-.track .st.done b { color: var(--text); }
-.track .st.now { border-color: var(--cyan); background: rgba(34, 211, 238, .12); color: var(--text); box-shadow: 0 0 22px rgba(34, 211, 238, .22); }
-.track .st.now b { color: var(--ink); }
+.track .st { position: relative; flex: 1 0 5.6rem; min-width: 5.6rem; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 .2rem; }
+.track .st:not(:first-child)::before { content: ""; position: absolute; top: 15px; right: 50%; width: 100%; height: 2px; transform: translateY(-50%); z-index: 0;
+                                       background: repeating-linear-gradient(90deg, rgba(161, 157, 191, .35) 0 6px, transparent 6px 11px); }
+.track .st.done:not(:first-child)::before { background: linear-gradient(90deg, #8b5cf6, var(--violet)); height: 3px; }
+.track .st.now:not(:first-child)::before { background: linear-gradient(90deg, var(--violet), var(--cyan)); height: 3px; box-shadow: 0 0 10px rgba(34, 211, 238, .5); }
+.track .node { position: relative; z-index: 1; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; font: 700 .8rem/1 var(--display);
+               color: var(--faint); background: #0c0a1a; border: 1.5px solid rgba(161, 157, 191, .35); }
+.track .node svg { width: 15px; height: 15px; }
+.track .st.done .node { color: #0d0a1c; background: linear-gradient(180deg, var(--violet-soft), var(--violet)); border-color: transparent; box-shadow: 0 0 0 3px rgba(167, 139, 250, .16); }
+.track .st.now .node { color: #052a33; background: var(--cyan); border-color: transparent; box-shadow: 0 0 0 4px rgba(34, 211, 238, .2), 0 0 22px rgba(34, 211, 238, .65); }
+.track .st.gold .node { background: linear-gradient(180deg, #fde68a, var(--gold)); box-shadow: 0 0 0 3px rgba(245, 197, 66, .2), 0 0 16px rgba(245, 197, 66, .45); }
+.track .st.gold:not(:first-child)::before { background: linear-gradient(90deg, var(--violet), var(--gold)); }
+.track .st.done.gold .lbl { color: var(--gold); }
+.track .st.now .node::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid var(--cyan); animation: ring 1.8s ease-out infinite; }
+@keyframes ring { from { transform: scale(.9); opacity: .9; } to { transform: scale(1.55); opacity: 0; } }
+.track .lbl { margin-top: .55rem; font: 600 .86rem/1.2 var(--display); color: var(--faint); white-space: nowrap; }
+.track .st.done .lbl { color: var(--text); }
+.track .st.now .lbl { color: var(--ink); }
+.track .tm { margin-top: .2rem; font-size: .74rem; line-height: 1.2; color: var(--faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.track .st.now .tm { color: var(--cyan); }
 
 .matchup { display: grid; grid-template-columns: minmax(0, 1.25fr) auto minmax(0, 1fr); gap: 1.2rem; align-items: center; margin-top: 1.6rem; }
 .king-card { position: relative; border-radius: var(--r-lg); padding: 1.1rem 1.2rem; background: transparent; isolation: isolate; }
