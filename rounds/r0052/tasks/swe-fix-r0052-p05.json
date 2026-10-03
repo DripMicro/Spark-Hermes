@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0052-p05",
+ "round_id": "r0052",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nBinary operations produce incorrect results after simplification\n\n#### Description\n\nThe simplify optimizer is producing incorrect results for basic arithmetic operations. When simplifying expressions like `1 + 2`, the operands are being swapped, resulting in wrong calculations for non-commutative operations like division and subtraction.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# Test basic addition - should work but operands get swapped\nexpr = sqlglot.parse_one(\"1 + 2\")\nsimplified = optimizer.simplify.simplify(expr)\nprint(f\"1 + 2 = {simplified}\")  # Should be 3\n\n# Test division - this will give wrong results\nexpr = sqlglot.parse_one(\"6 / 2\") \nsimplified = optimizer.simplify.simplify(expr)\nprint(f\"6 / 2 = {simplified}\")  # Should be 3, but gets 2/6 = 0.333...\n\n# Test subtraction with dates\nexpr = sqlglot.parse_one(\"DATE '2023-01-05' - INTERVAL '2' DAY\")\nsimplified = optimizer.simplify.simplify(expr)\nprint(f\"Date subtraction: {simplified}\")  # Wrong result due to operand swap\n```\n\nThe issue affects various binary operations including:\n- Arithmetic operations (division, subtraction)  \n- Date arithmetic with intervals\n- String comparisons\n- Any non-commutative binary operation\n\nThis appears to be related to the binary expression simplification logic where operands are being processed in the wrong order.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_swap__ol6ro3l1",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_simplify",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds",
+   "tests/test_optimizer.py::TestOptimizer::test_tpch"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

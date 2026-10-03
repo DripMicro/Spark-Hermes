@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0052-p04",
+ "round_id": "r0052",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTIFF image dimensions swapped when loading from stream\n\n#### Description\n\nWhen loading TIFF images using `Image.from_file()` or `Tiff.from_stream()`, the width and height dimensions are being swapped. The image appears to have its width and height values reversed.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx.image.image import Image\n\n# Load a TIFF image\nwith open('test_image.tiff', 'rb') as stream:\n    image = Image.from_file(stream)\n    print(f\"Width: {image.px_width}, Height: {image.px_height}\")\n    # Expected: Width: 400, Height: 300\n    # Actual: Width: 300, Height: 400\n```\n\nThe issue affects any TIFF image where the actual width and height are different values. The dimensions get swapped during parsing, causing incorrect layout calculations when the image is inserted into documents.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_basic__owcq4xnm",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[8]",
+   "tests/image/test_tiff.py::DescribeTiff::it_can_construct_from_a_tiff_stream"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

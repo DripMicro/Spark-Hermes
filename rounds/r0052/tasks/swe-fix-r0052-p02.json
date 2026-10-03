@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0052-p02",
+ "round_id": "r0052",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nCallSite Initialization Fails with Starred Arguments\n\nDescription\n\nHello! We've encountered an issue with the recent changes to the CallSite class initialization. It seems that the handling of starred arguments is not functioning as expected, leading to errors during inference.\n\nSteps to Reproduce:\n1. Create a CallSite instance with a CallContext that includes starred arguments.\n2. Attempt to unpack these arguments within the CallSite initialization.\n\nExpected:\nThe CallSite should correctly unpack and handle starred arguments without any errors.\n\nActual:\nAn error is raised during the unpacking process, indicating a failure to handle starred arguments properly.\n\nThis issue seems to be related to the recent refactoring of the CallSite class, where the unpacking logic might not be correctly applied to starred arguments. Any insights or fixes would be greatly appreciated!\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.lm_rewrite__b2cvusnr",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::ArgumentsTest::test_fail_to_infer_args",
+   "tests/test_inference.py::CallSiteTest::test_call_site_starred_args",
+   "tests/test_inference.py::CallSiteTest::test_call_site_valid_arguments",
+   "tests/test_inference.py::InferenceTest::test_dict_invalid_args",
+   "tests/test_inference.py::test_self_reference_infer_does_not_trigger_recursion_error"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

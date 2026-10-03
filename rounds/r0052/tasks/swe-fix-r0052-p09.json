@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0052-p09",
+ "round_id": "r0052",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### Unexpected Protocol Detection in DBC File\n\n#### Description\nIt seems there's an issue with the protocol detection for certain messages in DBC files. Specifically, the protocol for some messages is being incorrectly identified as 'j1939' when it should be `None`. This discrepancy was observed while working with a DBC file containing multiple messages.\n\n#### Steps/Code to Reproduce\n```python\nimport cantools\n\n# Load the DBC file\nfilename = 'tests/files/dbc/vehicle.dbc'\ndb = cantools.database.load_file(filename)\n\n# Check the protocol of the last message\nmessage = db.messages[216]\nprint(f\"Message Name: {message.name}\")\nprint(f\"Frame ID: {message.frame_id}\")\nprint(f\"Protocol: {message.protocol}\")\n```\n\n#### Expected Results\n```\nMessage Name: RT_SB_Gyro_Rates\nFrame ID: 155872546\nProtocol: None\n```\n\n#### Actual Results\n```\nMessage Name: RT_SB_Gyro_Rates\nFrame ID: 155872546\nProtocol: j1939\n```\n\n#### Additional Information\nThis issue was identified in a setup using the following environment:\n- Python version: 3.10.15\n- cantools version: [insert version here]\n- Operating System: [insert OS here]\n\nThe problem seems to be related to the frame ID pattern used to determine the protocol. Further investigation is needed to ensure accurate protocol detection across all messages.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.lm_rewrite__poay61rl",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_vehicle"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

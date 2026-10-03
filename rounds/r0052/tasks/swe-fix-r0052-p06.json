@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0052-p06",
+ "round_id": "r0052",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nToken end position calculation incorrect for string literals\n\n#### Description\n\nWhen tokenizing SQL strings, the `end` position of string tokens is calculated incorrectly, causing issues with token position tracking.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom sqlglot.tokens import Tokenizer\n\n# Test with simple string literal\ntokens = Tokenizer().tokenize(\"'abc'\")\nprint(f\"Token: {tokens[0]}\")\nprint(f\"Start: {tokens[0].start}, End: {tokens[0].end}\")\nprint(f\"Expected end: 4, Actual end: {tokens[0].end}\")\n\n# Test with triple-quoted string\ntokens = Tokenizer().tokenize(\"'''abc'\")\nprint(f\"Token: {tokens[0]}\")\nprint(f\"Start: {tokens[0].start}, End: {tokens[0].end}\")\nprint(f\"Expected end: 6, Actual end: {tokens[0].end}\")\n```\n\nThe end position should point to the last character of the token, but it's currently off by 2 positions.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_change__uk7pqny5",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_tokens.py::TestTokens::test_token_line_col"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

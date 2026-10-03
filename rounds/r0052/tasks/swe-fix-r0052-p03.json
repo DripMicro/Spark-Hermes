@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0052-p03",
+ "round_id": "r0052",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nget_func_args returns Parameter objects instead of parameter names\n\n#### Description\n\nThe `get_func_args` function is returning `Parameter` objects instead of parameter names as strings. This breaks code that expects a list of string parameter names.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom marshmallow import utils\n\ndef example_func(foo, bar):\n    pass\n\nresult = utils.get_func_args(example_func)\nprint(\"Expected: ['foo', 'bar']\")\nprint(f\"Got: {result}\")\n```\n\nExpected output:\n```\nExpected: ['foo', 'bar']\nGot: ['foo', 'bar']\n```\n\nActual output:\n```\nExpected: ['foo', 'bar']\nGot: [<Parameter \"bar\">, <Parameter \"foo\">]\n```\n\nThe function also returns parameters in reverse order, which is unexpected behavior.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "marshmallow-code__marshmallow.9716fc62.func_basic__5zwgdyxf",
+  "environment": "jyangballin/swesmith.x86_64.marshmallow-code_1776_marshmallow.9716fc62",
+  "fail_to_pass": [
+   "tests/test_utils.py::test_get_func_args"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
