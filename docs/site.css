@@ -202,9 +202,9 @@ td.faint { color: var(--faint); }
 /* the round's steps: a stepper. Done steps are checked on a solid violet line, the current one is lit cyan and
    pulses, the steps still to come are hollow on a dashed line. */
 .stepper-wrap { margin-top: 1.5rem; }
-.track-cap { font-size: .88rem; color: var(--muted); margin-bottom: .9rem; }
+.track-cap { font-size: .88rem; color: var(--muted); margin-bottom: 0; }
 .track-cap b { color: var(--ink); font-weight: 600; }
-.track { position: relative; display: flex; list-style: none; margin: 0; padding: .3rem 0 .2rem; overflow-x: auto; scrollbar-width: none; scroll-behavior: smooth; }
+.track { position: relative; display: flex; list-style: none; margin: 0; padding: 1.4rem 0 .4rem; overflow-x: auto; scrollbar-width: none; scroll-behavior: smooth; }
 @media (max-width: 960px) { .track { mask-image: linear-gradient(90deg, transparent, #000 1.2rem, #000 calc(100% - 1.2rem), transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 1.2rem, #000 calc(100% - 1.2rem), transparent); } }
 .track::-webkit-scrollbar { display: none; }
 .track .st { position: relative; flex: 1 0 5.6rem; min-width: 5.6rem; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 .2rem; }
@@ -221,7 +221,7 @@ td.faint { color: var(--faint); }
 .track .st.gold:not(:first-child)::before { background: linear-gradient(90deg, var(--violet), var(--gold)); }
 .track .st.done.gold .lbl { color: var(--gold); }
 .track .st.now .node::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid var(--cyan); animation: ring 1.8s ease-out infinite; }
-@keyframes ring { from { transform: scale(.9); opacity: .9; } to { transform: scale(1.55); opacity: 0; } }
+@keyframes ring { from { transform: scale(.95); opacity: .9; } to { transform: scale(1.4); opacity: 0; } }
 .track .lbl { margin-top: .55rem; font: 600 .86rem/1.2 var(--display); color: var(--faint); white-space: nowrap; }
 .track .st.done .lbl { color: var(--text); }
 .track .st.now .lbl { color: var(--ink); }
