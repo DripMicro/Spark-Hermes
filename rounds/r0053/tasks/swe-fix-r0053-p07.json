@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0053-p07",
+ "round_id": "r0053",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Empty list multiplication with large integer doesn't work correctly\n\n## Description\n\nI found a bug when multiplying an empty list by a very large integer. The operation should always return an empty list, but it seems to be causing unexpected behavior.\n\n## Steps to Reproduce\n\n```python\n# This should return an empty list\nresult = [] * 1163845194457646539560\nprint(result)  # Expected: []\n```\n\nWhen I try to multiply an empty list by a very large integer, I'm getting unexpected behavior. The operation should always return an empty list regardless of the multiplier size, but it seems the code is not handling this edge case correctly.\n\n## Expected Results\n\nMultiplying an empty list by any integer (including very large ones) should always return an empty list.\n\n```python\n[] * 5  # Returns []\n[] * 0  # Returns []\n[] * -1  # Returns []\n[] * 1163845194457646539560  # Should return []\n```\n\n## Actual Results\n\nWhen multiplying an empty list by a very large integer, the operation doesn't correctly return an empty list. It seems the code is not properly handling the case where the list is empty but the multiplier is extremely large.\n\n## Environment\n- Python 3.10\n- astroid version: latest\n\nThis behavior is inconsistent with Python's standard behavior where multiplying an empty list by any integer always returns an empty list.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.pr_2597",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_protocols.py::ProtocolTests::test_list_multiplication_with_empty_list_and_overflowing_multiplier"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

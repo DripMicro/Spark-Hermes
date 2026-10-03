@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0053-p02",
+ "round_id": "r0053",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# OpenID Connect token refresh not working correctly\n\n## Description\n\nWhen trying to refresh a token with OpenID scope, the id_token is not included in the response when it should be, and included when it shouldn't be.\n\nI have a simple flow where I:\n1. Get an authorization code with openid scope\n2. Exchange it for a token (works fine)\n3. Try to refresh the token\n\nThe refresh token request fails to behave correctly. When the validator is configured to refresh id_tokens, they don't appear in the response. When the validator is configured NOT to refresh id_tokens, they appear in the response anyway.\n\n## Steps to reproduce\n\n```python\n# Set up a client\nclient = OAuth2Client(client_id='me', scope='openid test_scope')\n\n# Get initial token\nauth_response = client.get_authorization_code()\ntoken_response = client.exchange_code_for_token(auth_response.code)\n\n# Try to refresh the token\nrefresh_request = {\n    'grant_type': 'refresh_token',\n    'refresh_token': token_response.refresh_token,\n    'scope': 'openid test_scope'\n}\nrefresh_response = client.refresh_token(refresh_request)\n\n# Problem: id_token missing when it should be present\n# or present when it should be missing\n```\n\nThe behavior is reversed from what's expected. When the validator's `refresh_id_token` returns True, the id_token is missing. When it returns False, the id_token is included.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.combine_module__7fgnf0ep",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/openid/connect/core/endpoints/test_claims_handling.py::TestClaimsHandling::test_claims_stored_on_code_creation",
+   "tests/openid/connect/core/endpoints/test_refresh_token.py::TestRefreshToken::test_refresh_token_with_openid",
+   "tests/openid/connect/core/grant_types/test_refresh_token.py::OpenIDRefreshTokenTest::test_refresh_id_token",
+   "tests/openid/connect/core/grant_types/test_refresh_token.py::OpenIDRefreshTokenTest::test_refresh_id_token_false"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

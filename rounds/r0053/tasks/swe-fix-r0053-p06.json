@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0053-p06",
+ "round_id": "r0053",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nMatchStar node has swapped lineno and col_offset parameters\n\n#### Description\n\nWhen creating a MatchStar node, the lineno and col_offset parameters are being swapped in the constructor call, causing incorrect position information to be stored.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ncode = '''\nmatch x:\n    case (1, 2, *args):\n        pass\n'''\n\ntree = astroid.parse(code)\nmatch_case = tree.body[0].cases[0]\nmatch_star = match_case.pattern.patterns[2]\n\nprint(f\"Expected lineno: 3, col_offset: 16\")\nprint(f\"Actual lineno: {match_star.lineno}, col_offset: {match_star.col_offset}\")\n```\n\nThe MatchStar node should have lineno=3 and col_offset=16, but the values are swapped due to incorrect parameter passing in the constructor.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__mirkazzv",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_nodes_lineno.py::TestLinenoColOffset::test_end_lineno_match"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

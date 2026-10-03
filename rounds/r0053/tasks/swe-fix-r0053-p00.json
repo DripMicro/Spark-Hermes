@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0053-p00",
+ "round_id": "r0053",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nRequest token length validation returns incorrect range\n\n#### Description\n\nThe `request_token_length` property in `RequestValidator` appears to return the min/max values in the wrong order, causing token length validation to fail for valid tokens.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth1.rfc5849.request_validator import RequestValidator\n\nv = RequestValidator()\nprint(\"Request token length range:\", v.request_token_length)\n\n# This should be valid but fails\nvalid_token = 'itsjustaboutlongenough'  # 22 characters\nprint(f\"Token '{valid_token}' (length {len(valid_token)}) is valid:\", v.check_request_token(valid_token))\n\n# Expected: True\n# Actual: False\n```\n\nThe issue affects request token validation where tokens of appropriate length are incorrectly rejected.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__oe4gy7qp",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth1/rfc5849/test_request_validator.py::RequestValidatorTests::test_check_length"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

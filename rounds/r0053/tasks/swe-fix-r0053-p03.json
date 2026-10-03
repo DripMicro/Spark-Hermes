@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0053-p03",
+ "round_id": "r0053",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nOAuth1 Client allows GET/HEAD requests with body parameters\n\n#### Description\n\nThe OAuth1 Client no longer raises a ValueError when GET or HEAD requests include body parameters with form-urlencoded content type. This violates the HTTP 1.1 specification which states that GET and HEAD requests should not have semantic meaning in their body.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth1 import Client\n\nclient = Client('client_key')\n\n# This should raise ValueError but doesn't\nclient.sign(\n    'http://example.com/path?query', \n    http_method='GET', \n    body='a=b', \n    headers={'Content-Type': 'application/x-www-form-urlencoded'}\n)\n\n# Same issue with HEAD requests\nclient.sign(\n    'http://example.com/path?query', \n    http_method='HEAD', \n    body='a=b', \n    headers={'Content-Type': 'application/x-www-form-urlencoded'}\n)\n```\n\nExpected behavior: Both calls should raise `ValueError('GET/HEAD requests should not include body.')`\n\nActual behavior: No exception is raised and the request is signed normally.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_pm_remove_cond__9cfhy48f",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth1/rfc5849/test_client.py::SigningTest::test_sign_get_with_body"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
