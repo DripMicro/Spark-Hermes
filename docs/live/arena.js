@@ -146,17 +146,31 @@
     document.body.classList.toggle("stale", stale);
     $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale, " : "live, ") + (typeof L.updated === "number" ? "updated " + ago(L.updated) : "");
 
-    // the stage track
+    // the stage track: a stepper — done steps checked, the current one lit, the rest still to come
     const stages = (Array.isArray(L.stages) && L.stages.length > 1 ? L.stages : Object.keys(LABEL)).filter((s) => LABEL[s]);
-    const reached = new Set((L.phases || []).map((p) => p.stage));
-    const nowIdx = stages.indexOf(st);
+    const STEP = { open: "Open", window: "Window", seal: "Seal", evaluate: "Evaluate", close: "Score", crown: "Crown",
+                   announce: "Verdict", export: "Export", publish_close: "Publish", done: "Done" };
+    const AS = { start: "open", images: "evaluate", evaluate_resume: "evaluate", resume: null, waiting: "done" };  // sub-stages
+    const curStage = st in AS ? AS[st] : st;
+    let nowIdx = stages.indexOf(curStage);
+    const allDone = st === "done" || st === "waiting";
+    const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     $("track").innerHTML = stages.map((s, i) => {
       const t = phaseTime(s);
-      const state = s === st ? "now" : reached.has(s) || (nowIdx >= 0 && i < nowIdx) || st === "done" ? "done" : "";
-      return '<div class="st ' + state + '"><b>' + esc(LABEL[s]) + "</b>" + (t ? hhmm(t) : "&nbsp;") + "</div>";
+      const state = allDone || (nowIdx >= 0 && i < nowIdx) ? "done" : i === nowIdx ? "now" : "todo";
+      const when = state === "now" ? (t ? "since " + hhmm(t) : "now") : state === "done" && t ? hhmm(t) : "";
+      const gold = state === "done" && i === stages.length - 1 && crowned ? " gold" : "";   // a crowned round ends on the crown's colour
+      return '<li class="st ' + state + gold + '"' + (state === "now" ? ' aria-current="step"' : "") + '><span class="node">' +
+        (state === "done" ? CHECK : String(i + 1)) + '</span><span class="lbl">' + esc(STEP[s] || LABEL[s]) + '</span><span class="tm">' +
+        (when || "&nbsp;") + "</span></li>";
     }).join("");
-    const cur = $("track").querySelector(".st.now");   // on a narrow screen, keep the current stage in view
-    if (cur && $("track").scrollWidth > $("track").clientWidth) { const tr = $("track"); tr.scrollLeft = Math.max(0, cur.offsetLeft - tr.offsetLeft - (tr.clientWidth - cur.offsetWidth) / 2); }
+    const doneCount = allDone ? stages.length : Math.max(0, nowIdx);
+    $("track-cap").innerHTML = allDone
+      ? "<b>All " + stages.length + " steps done</b>" + (st === "waiting" ? ", waiting for the next round's tasks" : "")
+      : nowIdx >= 0 ? "<b>Step " + (nowIdx + 1) + " of " + stages.length + "</b>: " + esc(STEP[curStage] || curStage) + ", " + doneCount + " done, " + (stages.length - nowIdx - 1) + " to go"
+      : "";
+    const cur = $("track").querySelector(".st.now");   // on a narrow screen, keep the current step in view
+    if (cur && $("track").scrollWidth > $("track").clientWidth) { const tr = $("track"); tr.scrollLeft = Math.max(0, cur.offsetLeft - (tr.clientWidth - cur.offsetWidth) / 2); }
 
     // the king and the field
     const rounds = closedRounds();
