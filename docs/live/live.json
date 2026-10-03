@@ -1,6 +1,6 @@
 {
  "schema": "sh-live-v3",
- "updated": 1790996426.8205714,
+ "updated": 1790996993.9404125,
  "round_id": "r0051",
  "stage": "evaluate",
  "stages": [
@@ -318,7 +318,7 @@
   "460": "removed after the seal: one submission per GitHub account (#463). @DripMicro sealed four hotkeys; #461, the one it signed last, stays in the round; this PR was closed"
  },
  "progress": {
-  "done": 32,
+  "done": 34,
   "total": 54,
   "by_surface": {
    "5D4txntYBCZ7dAXuFDHEubK1f84LYzPjBNCtVELenfUPCQzK": {
@@ -365,10 +365,22 @@
     }
    },
    "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
-    "n": 2,
+    "n": 4,
     "verified": 2,
-    "credit": 1.0,
+    "credit": 0.5,
     "tasks": {
+     "swe-fix-r0051-03": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     },
+     "swe-fix-r0051-07": {
+      "credit": 0.0,
+      "verified": false,
+      "void": false,
+      "dq": false
+     },
      "swe-fix-r0051-04": {
       "credit": 1.0,
       "verified": true,
