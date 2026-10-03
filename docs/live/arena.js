@@ -291,7 +291,9 @@
     });
     const rej = Object.entries(L.rejected || {});
     $("rejected").hidden = !rej.length;
-    $("rejected").innerHTML = rej.length ? "Rejected at the seal: " + rej.map(([n, why]) => prLink(n) + " — " + esc(why)).join(" · ") : "";
+    const byWhy = {};   // PRs refused for the same reason share one line
+    rej.forEach(([n, why]) => { (byWhy[why] = byWhy[why] || []).push(n); });
+    $("rejected").innerHTML = rej.length ? "Rejected at the seal: " + Object.entries(byWhy).map(([why, ns]) => ns.map(prLink).join(", ") + " — " + esc(why)).join("<br>") : "";
   }
   function who(h, chips) {
     return '<span class="who">' + avatar(h, "") + '<span class="nm"><b data-tip="' + esc(nameOf(h)) + '">' + esc(nameOf(h)) + "</b>" +
