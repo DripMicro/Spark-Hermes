@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0055-p05",
+ "round_id": "r0055",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nDECODE function with even number of arguments produces incorrect CASE statement\n\nWhen using the DECODE function with an even number of arguments (no default value), the parser incorrectly generates a CASE statement with a default clause instead of no default.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should generate a CASE statement without ELSE clause\nsql = \"SELECT DECODE(a, 1, 'one')\"\nparsed = sqlglot.parse_one(sql)\nresult = parsed.sql()\nprint(\"Result:\", result)\nprint(\"Expected: SELECT CASE WHEN a = 1 THEN 'one' END\")\n\n# Another example\nsql2 = \"SELECT DECODE(a, 1, 'one', 2, 'two')\" \nparsed2 = sqlglot.parse_one(sql2)\nresult2 = parsed2.sql()\nprint(\"Result:\", result2)\nprint(\"Expected: SELECT CASE WHEN a = 1 THEN 'one' WHEN a = 2 THEN 'two' END\")\n```\n\nThe issue occurs because when there's an even number of expressions in DECODE (meaning no default value should be present), the parser still adds the last expression as a default clause in the generated CASE statement.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_change_const__2d4k86ox",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_dialect.py::TestDialect::test_decode",
+   "tests/dialects/test_snowflake.py::TestSnowflake::test_snowflake"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

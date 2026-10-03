@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0055-p20",
+ "round_id": "r0055",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nUphill/downhill calculation returns negative values when elevation is None\n\nWhen calculating uphill and downhill elevation changes, the function returns negative elevation values instead of handling None elevations properly.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\n\n# Create a GPX track with mixed elevation data (some None values)\ngpx = gpxpy.GPX()\ntrack = gpxpy.GPXTrack()\nsegment = gpxpy.GPXTrackSegment()\n\n# Add points with mixed elevation data\nsegment.points.append(gpxpy.GPXTrackPoint(latitude=0, longitude=0, elevation=None))\nsegment.points.append(gpxpy.GPXTrackPoint(latitude=0, longitude=0, elevation=10))\nsegment.points.append(gpxpy.GPXTrackPoint(latitude=0, longitude=0, elevation=20))\n\ntrack.segments.append(segment)\ngpx.tracks.append(track)\n\n# Calculate uphill/downhill\nuphill, downhill = gpx.get_uphill_downhill()\nprint(f\"Uphill: {uphill}, Downhill: {downhill}\")\n```\n\nExpected output: `Uphill: 10, Downhill: 0`\nActual output: Negative values are returned instead\n\nThe issue occurs when elevation data contains None values mixed with actual elevation measurements. The calculation should properly handle missing elevation data and compute the correct uphill/downhill values based on the available elevation points.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_basic__k33rfjrn",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_uphill_downhill_with_no_elevations"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

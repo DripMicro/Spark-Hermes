@@ -1,0 +1,28 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0055-p17",
+ "round_id": "r0055",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nARXML signal encoding produces incorrect byte values after reordering SW-DATA-DEF-PROPS elements\n\n#### Description\n\nWhen loading ARXML files, signals are being encoded with incorrect byte values. This appears to be related to how SW-DATA-DEF-PROPS elements are processed during system loading.\n\n#### Steps/Code to Reproduce\n\n```python\nimport cantools\n\n# Load ARXML database\ndb = cantools.db.load_file('tests/files/arxml/system-4.2.arxml')\n\n# Try encoding a message with mixed signal types\ndecoded_message = {\n    'message1_SeqCounter': 123, \n    'message1_CRC': 456, \n    'signal1': 0.0, \n    'signal5': 100000.0, \n    'signal6': 'zero'\n}\nencoded_message = db.encode_message('Message1', decoded_message)\nprint(\"Encoded:\", encoded_message.hex())\n# Expected: 7b00c8010000005043c347\n# Actual: 7b00c801000000a08601000\n\n# Also affects container message encoding\ndb_msg = db.get_message_by_name('OneToContainThemAll')\norig_msg = [('message1', {\n    'message1_SeqCounter': 123, \n    'message1_CRC': 456, \n    'signal6': 'zero', \n    'signal1': 5.2, \n    'signal5': 3.1415\n})]\nencoded = db_msg.encode(orig_msg)\nprint(\"Container encoded:\", encoded.hex())\n# Expected: 0a0b0c097b00c801045610e4940\n# Actual: 0a0b0c097b00c8010403000000\n```\n\nThe encoded byte values don't match what's expected, suggesting the signal data definitions are being processed in the wrong order during ARXML parsing.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__fi661kj0",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_encode_decode_containers",
+   "tests/test_database.py::CanToolsDatabaseTest::test_encode_mixed_signal",
+   "tests/test_database.py::CanToolsDatabaseTest::test_system_4_arxml",
+   "tests/test_list.py::CanToolsListTest::test_arxml4"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

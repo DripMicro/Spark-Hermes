@@ -1,0 +1,34 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0055-p00",
+ "round_id": "r0055",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### Issue: Incorrect DPI Calculation for PNG Images\n\n#### Description\n\nAfter the recent changes, it seems that the DPI calculation for PNG images is not functioning as expected. The `vert_dpi` property appears to be causing issues, leading to incorrect characterization of known images.\n\n#### Steps to Reproduce\n\n1. Create a PNG image with known DPI settings.\n2. Use the `_PngParser` class to parse the image.\n3. Attempt to retrieve the `vert_dpi` value.\n\n#### Expected Outcome\n\nThe `vert_dpi` should correctly reflect the DPI settings of the image.\n\n#### Actual Outcome\n\nThe `vert_dpi` is not calculated correctly, and defaults to 72 DPI even when the image has a different DPI setting.\n\n#### Additional Information\n\n- The issue seems to be related to the recent changes in the `src/docx/image/png.py` file.\n- The problem is observed in the `Describe_PngParser` tests, specifically when checking the default DPI values.\n\n#### Environment\n\n- Operating System: Linux\n- Python Version: 3.10.15\n- Relevant Libraries: pytest-8.3.4, pluggy-1.5.0\n\nLooking forward to any insights or suggestions on this!\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.lm_rewrite__vyjqlr35",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[4]",
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[5]",
+   "tests/image/test_image.py::DescribeImage::it_correctly_characterizes_known_images[6]",
+   "tests/image/test_image.py::Describe_ImageHeaderFactory::it_constructs_the_right_class_for_a_given_image_stream[call_fixture0]",
+   "tests/image/test_png.py::Describe_PngParser::it_defaults_image_dpi_to_72[no_dpi_fixture0]",
+   "tests/image/test_png.py::Describe_PngParser::it_defaults_image_dpi_to_72[no_dpi_fixture1]",
+   "tests/image/test_png.py::Describe_PngParser::it_defaults_image_dpi_to_72[no_dpi_fixture2]",
+   "tests/image/test_png.py::Describe_PngParser::it_defaults_image_dpi_to_72[no_dpi_fixture3]",
+   "tests/image/test_png.py::Describe_PngParser::it_defaults_image_dpi_to_72[no_dpi_fixture4]",
+   "tests/image/test_png.py::Describe_PngParser::it_knows_the_image_dpi"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

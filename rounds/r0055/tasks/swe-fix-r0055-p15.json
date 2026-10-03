@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0055-p15",
+ "round_id": "r0055",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nProperty pytype returns incorrect type\n\n#### Description\n\nWhen accessing the `pytype()` method on a Property object, it returns `\"builtins.function\"` instead of the expected `\"builtins.property\"`.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ncode = '''\nclass A:\n    @property\n    def test(self):\n        return 42\n'''\n\nmodule = astroid.parse(code)\ncls = module.body[0]\nprop = cls.body[0]\n\n# This should return \"builtins.property\" but returns \"builtins.function\"\nprint(f\"Expected: builtins.property\")\nprint(f\"Actual: {prop.pytype()}\")\n```\n\nExpected output:\n```\nExpected: builtins.property\nActual: builtins.property\n```\n\nActual output:\n```\nExpected: builtins.property\nActual: builtins.function\n```\n\nThe Property object should identify itself as a property type, not a function type, since properties have different behavior and semantics compared to regular functions.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__rcpalyl2",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::test_property_inference"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
