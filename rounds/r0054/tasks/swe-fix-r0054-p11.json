@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0054-p11",
+ "round_id": "r0054",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSubprocess Module Regression: Missing Attributes and Incorrect Output\n\nDescription\n\nIt seems that the recent changes to the subprocess module transformation have introduced a few issues. Specifically, there are missing attributes and incorrect behavior when using certain subprocess functionalities.\n\nReproduction Steps:\n\n1. Import the subprocess module and attempt to access the `Popen` class.\n   ```python\n   import subprocess\n   subprocess.Popen\n   ```\n   Expected: The `Popen` class should have the `__class_getitem__` attribute.\n   Observed: The `__class_getitem__` attribute is missing.\n\n2. Use `subprocess.check_output` to execute a simple command.\n   ```python\n   import subprocess\n   output = subprocess.check_output(['echo', 'hello'])\n   ```\n   Expected: The output should be a string or bytes containing \"hello\".\n   Observed: The output is not as expected, indicating a possible issue with the return type.\n\n3. Create a `Popen` instance and check for the `args` attribute.\n   ```python\n   import subprocess\n   p = subprocess.Popen(['ls'])\n   args = p.args\n   ```\n   Expected: The `args` attribute should exist and be a list.\n   Observed: The `args` attribute is either missing or not behaving as expected.\n\nThese issues seem to be related to the recent changes in the subprocess module transformation logic. It would be great to have these addressed to ensure compatibility and expected behavior.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.lm_rewrite__cn3eajk9",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/brain/test_brain.py::SubprocessTest::test_popen_does_not_have_class_getitem",
+   "tests/brain/test_brain.py::SubprocessTest::test_subprcess_check_output",
+   "tests/brain/test_brain.py::SubprocessTest::test_subprocess_args"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

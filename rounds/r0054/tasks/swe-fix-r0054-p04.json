@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0054-p04",
+ "round_id": "r0054",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n### Issue with `builtin_lookup` Functionality\n\n#### Description\n\nThere seems to be an issue with the `builtin_lookup` function in the `astroid` library after recent changes. The function is not returning the expected results for certain built-in names, specifically `__dict__` and `int`. This behavior was not present in previous versions.\n\n#### Steps to Reproduce\n\n1. Use the `builtin_lookup` function to look up the `__dict__` attribute.\n2. Observe that the returned statements list is not empty as expected.\n3. Attempt to look up the `int` type using the same function.\n4. Note that the returned list does not contain the expected class definition for `int`.\n\n#### Expected Behavior\n\n- When looking up `__dict__`, the function should return an empty list of statements.\n- When looking up `int`, the function should return a list containing a single class definition for `int`.\n\n#### Actual Behavior\n\n- The `builtin_lookup` function returns non-empty results for `__dict__`.\n- The function fails to return the correct class definition for `int`.\n\nThis issue might affect any functionality relying on accurate built-in type inference, especially after clearing the cache manually. Further investigation and a potential fix are needed to restore the expected behavior.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.lm_rewrite__s17m9wth",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_lookup.py::LookupTest::test_builtin_lookup",
+   "tests/test_manager.py::ClearCacheTest::test_builtins_inference_after_clearing_cache_manually",
+   "tests/test_manager.py::ClearCacheTest::test_clear_cache_clears_other_lru_caches"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

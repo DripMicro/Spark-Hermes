@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0054-p01",
+ "round_id": "r0054",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nProperty setter inference broken after decorator filtering change\n\n#### Description\n\nProperty setters are not being inferred correctly. When accessing a property that has a setter defined, the inference fails and returns an `Uninferable` instead of the expected property value.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\n\ncode = \"\"\"\nclass PropertyWithSetter:\n    @property\n    def host(self):\n        return self._host\n\n    @host.setter\n    def host(self, value: str):\n        self._host = value\n\nPropertyWithSetter().host\n\"\"\"\n\nmodule = astroid.parse(code)\nprop_access = list(module.nodes_of_class(astroid.Attribute))[-1]\ninferred = next(prop_access.infer())\nprint(type(inferred))  # Should be a property value, not Uninferable\n```\n\nThis also affects more complex property inference scenarios:\n\n```python\ncode = '''\nclass A:\n    @property\n    def test(self):\n        return 42\n\n    @test.setter\n    def test(self, value):\n        return \"banco\"\n\nA().test\n'''\n\nmodule = astroid.parse(code)\nprop_access = list(module.nodes_of_class(astroid.Attribute))[-1]\ninferred = next(prop_access.infer())\nprint(inferred.value)  # Should print 42\n```\n\nThe property getter should return `42` but inference is failing completely.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__z2mzbkk2",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_inference.py::InferenceTest::test_infer_property_setter",
+   "tests/test_inference.py::test_property_inference"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

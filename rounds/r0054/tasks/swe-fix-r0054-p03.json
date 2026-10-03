@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0054-p03",
+ "round_id": "r0054",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nFirst line indent behavior inverted for negative values\n\n#### Description\n\nWhen setting `first_line_indent` to a negative value, the paragraph formatting incorrectly applies a hanging indent instead of a first line indent, and vice versa.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.shared import Inches\n\ndoc = Document()\nparagraph = doc.add_paragraph(\"This is a test paragraph with first line indent.\")\n\n# Setting negative first line indent should create a first line indent\n# but instead creates a hanging indent\nparagraph.paragraph_format.first_line_indent = Inches(-0.5)\n\n# The XML output shows hanging indent instead of firstLine indent\nprint(paragraph.paragraph_format._element.xml)\n```\n\nExpected behavior: Negative values should set `w:firstLine` attribute in the XML.\nActual behavior: Negative values incorrectly set `w:hanging` attribute instead.\n\nThe issue affects document formatting where negative first line indents are expected to create protruding first lines, but instead create hanging indents where subsequent lines are indented.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_pm_ctrl_invert_if__7dx2mwjs",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/text/test_parfmt.py::DescribeParagraphFormat::it_can_change_its_first_line_indent[first_indent_set_fixture0]",
+   "tests/text/test_parfmt.py::DescribeParagraphFormat::it_can_change_its_first_line_indent[first_indent_set_fixture1]",
+   "tests/text/test_parfmt.py::DescribeParagraphFormat::it_can_change_its_first_line_indent[first_indent_set_fixture2]",
+   "tests/text/test_parfmt.py::DescribeParagraphFormat::it_can_change_its_first_line_indent[first_indent_set_fixture5]",
+   "tests/text/test_parfmt.py::DescribeParagraphFormat::it_can_change_its_first_line_indent[first_indent_set_fixture6]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

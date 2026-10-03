@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0054-p12",
+ "round_id": "r0054",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\n# Encoding container messages with raw data fails\n\nI'm trying to encode container messages with raw data, but I'm getting an error when the header is specified as an integer and the value is bytes.\n\n## Reproduction\n\n```python\nimport cantools\n\n# Load the database\ndb = cantools.db.load_file('system-4.2.arxml')\ndb_msg = db.get_message_by_name('OneToContainThemAll')\n\n# This works fine\norig_msg = [('message1', {'message1_SeqCounter': 123, 'message1_CRC': 456, 'signal6': 'zero', 'signal1': 5.2, 'signal5': 3.1415})]\nencoded = db_msg.encode(orig_msg)\n\n# This fails\norig_msg.append((14544639, b'\\xa0\\xa1\\xa2\\xa3\\xa4'))\nencoded = db_msg.encode(orig_msg)\n```\n\nWhen trying to encode a container message with raw data (integer header and bytes value), I get the following error:\n\n```\ncantools.database.errors.EncodeError: No message corresponding to header 14544639 could be determined\n```\n\nThis used to work in previous versions. It seems like the condition for checking if a message is raw data is inverted.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_pm_ctrl_invert_if__0ge4jx38",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_database.py::CanToolsDatabaseTest::test_encode_decode_containers"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

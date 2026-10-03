@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0054-p06",
+ "round_id": "r0054",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nTabStops.__delitem__ raises NameError when deleting tab stops\n\n#### Description\n\nWhen trying to delete a tab stop using `del tab_stops[idx]`, a NameError is raised because the `tabs` variable is not defined at the point where it's being used.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom docx import Document\nfrom docx.shared import Inches\n\n# Create a document with tab stops\ndoc = Document()\nparagraph = doc.add_paragraph()\ntab_stops = paragraph.paragraph_format.tab_stops\n\n# Add a tab stop\ntab_stops.add_tab_stop(Inches(1))\n\n# Try to delete the tab stop - this should work but raises NameError\ndel tab_stops[0]\n```\n\nThe error occurs when attempting to delete any tab stop from a TabStops collection. The deletion operation fails with a NameError indicating that 'tabs' is not defined.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "python-openxml__python-docx.0cf6d71f.func_pm_ctrl_shuffle__mqsyvyjt",
+  "environment": "jyangballin/swesmith.x86_64.python-openxml_1776_python-docx.0cf6d71f",
+  "fail_to_pass": [
+   "tests/text/test_tabstops.py::DescribeTabStops::it_can_delete_a_tab_stop[del_fixture0]",
+   "tests/text/test_tabstops.py::DescribeTabStops::it_can_delete_a_tab_stop[del_fixture1]",
+   "tests/text/test_tabstops.py::DescribeTabStops::it_can_delete_a_tab_stop[del_fixture2]",
+   "tests/text/test_tabstops.py::DescribeTabStops::it_raises_on_del_idx_invalid[del_raises_fixture0]",
+   "tests/text/test_tabstops.py::DescribeTabStops::it_raises_on_del_idx_invalid[del_raises_fixture1]"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
