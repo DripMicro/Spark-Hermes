@@ -1,0 +1,95 @@
+{
+ "schema": "sh-crown-v1",
+ "round_id": "r0055",
+ "king": "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg",
+ "standings": {
+  "5C5JKnm8M8pyn6neLqwmAKZ7DoyzJf7ZB1Mabv62LwfSEsHh": {
+   "n": 6,
+   "verified": 1,
+   "dq": 0,
+   "credit": 0.473016,
+   "delta": 0.172222,
+   "rank": 10
+  },
+  "5CoTfEgMhZ46ETtT6RSdt3RQkXizYu3vy9Spg33qTSt3eBtQ": {
+   "n": 6,
+   "verified": 2,
+   "dq": 0,
+   "credit": 0.639683,
+   "delta": 0.338889,
+   "rank": 4
+  },
+  "5D4txntYBCZ7dAXuFDHEubK1f84LYzPjBNCtVELenfUPCQzK": {
+   "n": 6,
+   "verified": 2,
+   "dq": 0,
+   "credit": 0.556349,
+   "delta": 0.255556,
+   "rank": 7
+  },
+  "5DPhKi77DLciQzNDr6iCZ2cD41oHcV75vLdf82d3crVnERN6": {
+   "n": 6,
+   "verified": 2,
+   "dq": 0,
+   "credit": 0.556349,
+   "delta": 0.255556,
+   "rank": 8
+  },
+  "5DSD14t7dACJcd9f8rPdrkMVngRqLUnM3EnM3dHfHLZTHJGf": {
+   "n": 6,
+   "verified": 2,
+   "dq": 0,
+   "credit": 0.556349,
+   "delta": 0.255556,
+   "rank": 6
+  },
+  "5Dh9YpJeTYKmgh9weSH9j24AtgEwVWoW37xsXakYGcpqVbKJ": {
+   "n": 6,
+   "verified": 2,
+   "dq": 0,
+   "credit": 0.639683,
+   "delta": 0.338889,
+   "rank": 5
+  },
+  "5Di3Dd8PKn7uQbBc4WrzxkUqqvSL8QS3KVgCPSt3kzPE5KFb": {
+   "n": 6,
+   "verified": 3,
+   "dq": 0,
+   "credit": 0.695238,
+   "delta": 0.394444,
+   "rank": 2
+  },
+  "5E4iMWRACSJrnbnCLNVfWXjHc5VRkgzRfaAzBiB1VXfkqPUg": {
+   "n": 6,
+   "verified": 3,
+   "dq": 0,
+   "credit": 0.695238,
+   "delta": 0.394444,
+   "rank": 1
+  },
+  "5Et8zmN8dq4eFvy7grf2fqtf5PE2mgngTdr1WA6ADJJUUCrE": {
+   "n": 6,
+   "verified": 2,
+   "dq": 0,
+   "credit": 0.556349,
+   "delta": 0.255556,
+   "rank": 9
+  },
+  "5EwAJCVFUV1UwBqQpT7JqcEGSGBsM3gwxiJNehTeVKqKqkqc": {
+   "n": 6,
+   "verified": 0,
+   "dq": 0,
+   "credit": 0.300794,
+   "delta": 0.0
+  },
+  "5HbvMH2hCEecnyhMsUMSCo54mJia1ujJGRVwsfg3LbEWBsVj": {
+   "n": 6,
+   "verified": 3,
+   "dq": 0,
+   "credit": 0.695238,
+   "delta": 0.394444,
+   "rank": 3
+  }
+ },
+ "rule": "highest paired delta vs baseline on this round's instances, > 0, \u2265 4 paired, not disqualified; a tie does not dethrone the incumbent; other ties by pooled \u0394c then a round-keyed hash"
+}
