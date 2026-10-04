@@ -93,12 +93,14 @@
     const L = LIVE, st = L.stage, rs = rounds(), active = L.active || {};
     $("round").textContent = L.round_id || "—";
     const crowned = !!(L.crown && L.crown.king);
-    $("phase").className = "badge " + (st === "window" ? "window" : st === "done" || st === "waiting" ? (crowned ? "crowned" : "") : "evaluate");
-    $("phase-txt").textContent = st === "done" && crowned ? "crowned" : STAGE_TEXT[st] || st;
-    $("arena").classList.toggle("idle", st === "done" || st === "waiting");
-    const stale = typeof L.updated === "number" && Date.now() / 1000 - L.updated > 900;
+    const paused = L.paused || null;   // the competition is paused between rounds on purpose
+    $("phase").className = "badge " + (paused ? "paused" : st === "window" ? "window" : st === "done" || st === "waiting" ? (crowned ? "crowned" : "") : "evaluate");
+    $("phase-txt").textContent = paused ? "paused" : st === "done" && crowned ? "crowned" : STAGE_TEXT[st] || st;
+    $("arena").classList.toggle("idle", !!paused || st === "done" || st === "waiting");
+    const stale = !paused && typeof L.updated === "number" && Date.now() / 1000 - L.updated > 900;
     document.body.classList.toggle("stale", stale);
-    $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale, " : "") + (typeof L.updated === "number" ? "updated " + ago(L.updated) : "");
+    $("status").innerHTML = paused ? '<span class="pulse paused"></span>' + esc(String(paused.message || "paused"))
+      : '<span class="pulse"></span>' + (stale ? "stale, " : "") + (typeof L.updated === "number" ? "updated " + ago(L.updated) : "");
 
     let king = crowned ? L.crown.king : null, how = "crowned this round";
     if (!king) { const inc = Object.keys(active).find((h) => active[h].incumbent); if (inc) { king = inc; how = "defending the crown"; } }

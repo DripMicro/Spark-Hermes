@@ -108,14 +108,15 @@
       const r = await fetch(ROOT + "live/live.json?t=" + Date.now(), { cache: "no-store" });
       if (!r.ok) return;
       const L = await r.json(), st = L.stage, p = L.progress || {};
-      const stale = typeof L.updated === "number" && Date.now() / 1000 - L.updated > 900;
+      const paused = !!L.paused;   // the operator paused the competition between rounds: not stale, on purpose
+      const stale = !paused && typeof L.updated === "number" && Date.now() / 1000 - L.updated > 900;
       const crowned = st === "done" && L.crown && L.crown.king;
-      let what = crowned ? "crowned" : STAGE[st] || st;
+      let what = paused ? "paused" : crowned ? "crowned" : STAGE[st] || st;
       if (st === "evaluate" && p.total) what += " " + (p.done || 0) + "/" + p.total;
       if (st === "window" && L.window) { const left = Math.max(0, L.window.closes_at - Date.now() / 1000); what += " · " + Math.floor(left / 3600) + "h " + String(Math.floor(left % 3600 / 60)).padStart(2, "0") + "m"; }
-      chip.className = "round-chip " + (stale ? "" : crowned ? "crowned" : st === "done" || st === "waiting" ? "" : "live");
+      chip.className = "round-chip " + (paused ? "paused" : stale ? "" : crowned ? "crowned" : st === "done" || st === "waiting" ? "" : "live");
       chip.innerHTML = "<i></i><span>" + String(L.round_id || "").replace(/[^a-z0-9]/gi, "") + "<b> · " + what.replace(/[<>&]/g, "") + (stale ? " (stale)" : "") + "</b></span>";
-      chip.title = "Round " + L.round_id + ": " + what;
+      chip.title = paused && L.paused.message ? String(L.paused.message) : "Round " + L.round_id + ": " + what;
       chip.hidden = false;
     } catch (e) { /* the chip stays hidden offline */ }
   }
