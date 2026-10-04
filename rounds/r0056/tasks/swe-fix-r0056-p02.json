@@ -1,0 +1,32 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0056-p02",
+ "round_id": "r0056",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nNameError in add_missing_data methods after recent changes\n\n#### Description\n\nThe `add_missing_data`, `add_missing_times`, `add_missing_elevations`, and related methods are throwing `NameError: name 'data' is not defined` when called.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\n\n# Create a simple GPX with missing elevation data\ngpx_xml = '''<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gpx>\n<trk>\n<trkseg>\n<trkpt lat=\"12\" lon=\"13\"><ele>10</ele></trkpt>\n<trkpt lat=\"12\" lon=\"14\"></trkpt>\n<trkpt lat=\"12\" lon=\"15\"><ele>20</ele></trkpt>\n</trkseg>\n</trk>\n</gpx>'''\n\ngpx = gpxpy.parse(gpx_xml)\ngpx.add_missing_elevations()  # This should work but throws NameError\n```\n\nThe same issue occurs with:\n- `gpx.add_missing_times()`\n- `gpx.add_missing_data(get_data_function=lambda point: point.elevation, add_missing_function=some_func)`\n\n#### Expected behavior\nThese methods should interpolate missing data between points that have data, as they did before.\n\n#### Actual behavior\n```\nNameError: name 'data' is not defined\n```\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_pm_remove_assign__racwin5m",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_add_missing_data_no_intervals",
+   "test.py::GPXTests::test_add_missing_data_one_interval",
+   "test.py::GPXTests::test_add_missing_data_one_interval_and_empty_points_on_start_and_end",
+   "test.py::GPXTests::test_add_missing_elevations",
+   "test.py::GPXTests::test_add_missing_elevations_without_ele",
+   "test.py::GPXTests::test_add_missing_speeds",
+   "test.py::GPXTests::test_add_missing_times",
+   "test.py::GPXTests::test_add_missing_times_2"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

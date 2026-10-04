@@ -1,0 +1,30 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0056-p06",
+ "round_id": "r0056",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nSQL optimizer not sorting or deduplicating expressions in uniq_sort function\n\n#### Description\n\nThe `uniq_sort` function in the SQL optimizer is not properly sorting or deduplicating expressions. When expressions like `A AND C AND B` are processed, they should be sorted to `A AND B AND C` and duplicates should be removed, but this functionality appears to be broken.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\n\n# Test case showing sorting issue\nsql = \"SELECT * FROM table WHERE A AND C AND B\"\nparsed = sqlglot.parse_one(sql)\noptimized = optimizer.optimize(parsed)\nprint(optimized.sql())  # Should show sorted conditions but doesn't\n\n# Test case showing deduplication issue  \nsql_with_dups = \"SELECT * FROM table WHERE A AND A AND B\"\nparsed_dups = sqlglot.parse_one(sql_with_dups)\noptimized_dups = optimizer.optimize(parsed_dups)\nprint(optimized_dups.sql())  # Should remove duplicate A but doesn't\n```\n\nThe optimizer should be sorting boolean expressions alphabetically and removing duplicates, but currently returns expressions in their original order without deduplication.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_remove_loop__lr3c6mbb",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_normalize",
+   "tests/test_optimizer.py::TestOptimizer::test_optimize",
+   "tests/test_optimizer.py::TestOptimizer::test_pushdown_predicates",
+   "tests/test_optimizer.py::TestOptimizer::test_simplify",
+   "tests/test_optimizer.py::TestOptimizer::test_tpcds",
+   "tests/test_optimizer.py::TestOptimizer::test_tpch"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

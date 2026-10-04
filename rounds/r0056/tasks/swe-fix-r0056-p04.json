@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0056-p04",
+ "round_id": "r0056",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nFunction.get_window() returns integer instead of None when no window exists\n\n#### Description\n\nWhen calling `get_window()` on a Function object that doesn't have a window clause, the method returns `0` instead of `None`.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlparse\nfrom sqlparse import sql\n\n# Parse a simple function without window clause\np = sqlparse.parse('foo()')[0]\nfunc = p.tokens[0]\n\n# This should return None but returns 0\nwindow = func.get_window()\nprint(f\"Window result: {window}\")\nprint(f\"Type: {type(window)}\")\n```\n\nExpected output:\n```\nWindow result: None\nType: <class 'NoneType'>\n```\n\nActual output:\n```\nWindow result: 0\nType: <class 'int'>\n```\n\nThe issue also affects functions with parameters but no window clause:\n\n```python\np = sqlparse.parse('foo(null, bar)')[0]\nfunc = p.tokens[0]\nwindow = func.get_window()\nprint(f\"Window result: {window}\")  # Also returns 0 instead of None\n```\n\nThis breaks code that expects `None` when no window exists and tries to check the window type or perform operations on it.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "andialbrecht__sqlparse.e57923b3.func_basic__p23ch4fh",
+  "environment": "jyangballin/swesmith.x86_64.andialbrecht_1776_sqlparse.e57923b3",
+  "fail_to_pass": [
+   "tests/test_grouping.py::test_grouping_function"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

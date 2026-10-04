@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0056-p07",
+ "round_id": "r0056",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nUrl field parameters incorrectly assigned\n\n#### Description\n\nThe Url field constructor is incorrectly assigning parameter values, causing URL validation to behave unexpectedly. When creating a Url field with specific parameters like `relative`, `absolute`, or `require_tld`, the values get mixed up internally.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom marshmallow import fields, Schema, ValidationError\n\n# Test 1: require_tld=False should allow URLs without top-level domains\nclass NoTldTestSchema(Schema):\n    url = fields.Url(require_tld=False, schemes=['marshmallow'])\n\nschema = NoTldTestSchema()\ndata = {'url': 'marshmallow://app/discounts'}\nresult = schema.load(data)  # This should work but raises ValidationError\n```\n\n```python\n# Test 2: Basic URL validation behaving incorrectly\nfield = fields.Url()\ntry:\n    field.deserialize('/foo/bar')  # Should raise ValidationError\nexcept ValidationError as e:\n    print(f\"Error message: {e.args[0][0]}\")  # Shows wrong error message\n```\n\nThe field parameters seem to be getting swapped around internally, causing validation logic to use the wrong settings.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "marshmallow-code__marshmallow.9716fc62.func_basic__76txszjp",
+  "environment": "jyangballin/swesmith.x86_64.marshmallow-code_1776_marshmallow.9716fc62",
+  "fail_to_pass": [
+   "tests/test_deserialization.py::TestFieldDeserialization::test_url_field_deserialization",
+   "tests/test_deserialization.py::TestSchemaDeserialization::test_multiple_errors_can_be_stored_for_a_url_field",
+   "tests/test_schema.py::TestLoadOnly::test_url_field_requre_tld_false"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
