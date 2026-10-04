@@ -139,12 +139,16 @@
     $("round").textContent = L.round_id || "—";
     const crowned = !!(L.crown && L.crown.king);
     const cls = st === "window" ? "window" : st === "done" || st === "waiting" ? (crowned ? "crowned" : "") : "evaluate";
-    $("phase").className = "badge " + cls;
-    $("phase-txt").textContent = st === "done" && crowned ? "crowned" : STAGE_TEXT[st] || st;
-    $("arena").classList.toggle("idle", st === "done" || st === "waiting");
-    const stale = typeof L.updated === "number" && Date.now() / 1000 - L.updated > 900;
+    const paused = L.paused || null;   // the competition is paused between rounds on purpose
+    $("phase").className = "badge " + (paused ? "paused" : cls);
+    $("phase-txt").textContent = paused ? "paused" : st === "done" && crowned ? "crowned" : STAGE_TEXT[st] || st;
+    $("arena").classList.toggle("idle", !!paused || st === "done" || st === "waiting");
+    const stale = !paused && typeof L.updated === "number" && Date.now() / 1000 - L.updated > 900;
     document.body.classList.toggle("stale", stale);
-    $("status").innerHTML = '<span class="pulse"></span>' + (stale ? "stale, " : "live, ") + (typeof L.updated === "number" ? "updated " + ago(L.updated) : "");
+    $("status").innerHTML = paused ? '<span class="pulse paused"></span>paused' + (paused.since ? " since " + when(paused.since) : "")
+      : '<span class="pulse"></span>' + (stale ? "stale, " : "live, ") + (typeof L.updated === "number" ? "updated " + ago(L.updated) : "");
+    $("pause-note").hidden = !paused;
+    $("pause-note").textContent = paused ? String(paused.message || "The competition is paused between rounds") : "";
 
     // the stage track: a stepper — done steps checked, the current one lit, the rest still to come
     const stages = (Array.isArray(L.stages) && L.stages.length > 1 ? L.stages : Object.keys(LABEL)).filter((s) => LABEL[s]);
