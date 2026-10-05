@@ -1,0 +1,26 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0058-p16",
+ "round_id": "r0058",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nMatchMapping constructor swaps keys and patterns parameters\n\n#### Description\n\nThe `MatchMapping` node constructor incorrectly assigns the `keys` parameter to `self.patterns` and the `patterns` parameter to `self.keys`, causing the attributes to be swapped.\n\n#### Steps/Code to Reproduce\n\n```python\nimport astroid\nimport textwrap\n\ncode = textwrap.dedent('''\n    match status:\n        case {0: x, 1: _}:\n            pass\n        case {**rest}:\n            pass\n    ''').strip()\n\nnode = astroid.builder.extract_node(code)\ncase0 = node.cases[0]\npattern = case0.pattern\n\n# Expected: keys should contain Const nodes with values 0 and 1\n# Actual: keys contains MatchAs nodes instead\nprint(\"Keys:\", [type(k).__name__ for k in pattern.keys])\nprint(\"Patterns:\", [type(p).__name__ for p in pattern.patterns])\n\n# This should work but fails due to swapped attributes\nfor i, key in enumerate(pattern.keys):\n    print(f\"Key {i} value:\", key.value)  # AttributeError: MatchAs has no attribute 'value'\n```\n\nThe issue causes the `keys` attribute to contain pattern nodes (like `MatchAs`) instead of the actual key nodes (like `Const`), and vice versa for the `patterns` attribute.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "pylint-dev__astroid.b114f6b5.func_basic__ww5vy4b8",
+  "environment": "jyangballin/swesmith.x86_64.pylint-dev_1776_astroid.b114f6b5",
+  "fail_to_pass": [
+   "tests/test_nodes.py::TestPatternMatching::test_match_mapping",
+   "tests/test_nodes_lineno.py::TestLinenoColOffset::test_end_lineno_match"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

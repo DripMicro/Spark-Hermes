@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0058-p02",
+ "round_id": "r0058",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nWildcard table parsing fails when wildcard condition is checked before table name validation\n\n#### Description\n\nWhen parsing table names with wildcards, the parser incorrectly evaluates the wildcard condition before ensuring a valid table name exists, causing parsing failures for certain table patterns.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\n\n# This should parse successfully but fails\nsql = \"SELECT * FROM dataset.table*\"\ntry:\n    parsed = sqlglot.parse_one(sql, dialect=\"bigquery\")\n    print(\"Parsed successfully:\", parsed)\nexcept Exception as e:\n    print(\"Parse error:\", e)\n\n# Expected behavior - should handle wildcard tables\nsql2 = \"SELECT * FROM `dataset.table*`\"\ntry:\n    parsed2 = sqlglot.parse_one(sql2, dialect=\"bigquery\")\n    print(\"Quoted version works:\", parsed2)\nexcept Exception as e:\n    print(\"Quoted version error:\", e)\n```\n\nThe issue occurs when the parser encounters table names ending with `*` where the wildcard matching logic is evaluated before proper table name validation, leading to incorrect parsing behavior.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_swap__i4eeig23",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/dialects/test_bigquery.py::TestBigQuery::test_bigquery"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

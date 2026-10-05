@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0058-p22",
+ "round_id": "r0058",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nNamedSignalConversion.choice_to_number() returns -1 instead of raising KeyError for invalid choices\n\n#### Description\n\nWhen calling `choice_to_number()` on a `NamedSignalConversion` with an invalid choice, the method now returns -1 instead of raising a `KeyError` as expected.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom cantools.database.conversion import NamedSignalConversion\nfrom cantools.database.can.signal import NamedSignalValue\n\n# Create a conversion with some choices\nconversion = NamedSignalConversion({0: 'Choice1', 1: 'Choice2'})\n\n# Try to convert an invalid choice\ninvalid_choice = NamedSignalValue(2, 'Invalid')\nresult = conversion.choice_to_number(invalid_choice)\n\nprint(f\"Result: {result}\")  # Prints: Result: -1\n# Expected: KeyError should be raised\n```\n\nThe method should raise a `KeyError` when the choice is not found in the available choices, but instead it silently returns -1.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "cantools__cantools.0c6a7871.func_basic__tbdua0cd",
+  "environment": "jyangballin/swesmith.x86_64.cantools_1776_cantools.0c6a7871",
+  "fail_to_pass": [
+   "tests/test_conversion.py::TestNamedSignalConversion::test_choice_to_number_with_invalid_choice"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

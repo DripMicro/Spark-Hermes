@@ -1,0 +1,27 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0058-p08",
+ "round_id": "r0058",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nOAuth2 Server grant types incorrectly assigned\n\n#### Description\n\nThe OAuth2 Server class appears to have incorrect grant type assignments. When trying to use password grant or implicit grant flows, the server behaves unexpectedly and doesn't process the requests correctly.\n\n#### Steps/Code to Reproduce\n\n```python\nfrom oauthlib.oauth2 import Server\nfrom oauthlib.oauth2.rfc6749 import RequestValidator\n\nclass MyRequestValidator(RequestValidator):\n    def authenticate_client(self, request):\n        return True\n    \n    def validate_client_id(self, client_id, request):\n        return True\n    \n    def validate_redirect_uri(self, client_id, redirect_uri, request):\n        return True\n    \n    def save_authorization_code(self, client_id, code, request):\n        pass\n    \n    def authenticate_client_id(self, client_id, request):\n        return True\n    \n    def validate_code(self, client_id, code, client, request):\n        return True\n    \n    def confirm_redirect_uri(self, client_id, code, redirect_uri, client, request):\n        return True\n    \n    def save_bearer_token(self, token, request):\n        pass\n    \n    def validate_user(self, username, password, client, request):\n        return True\n    \n    def get_default_scopes(self, client_id, request):\n        return ['all', 'of', 'them']\n\nserver = Server(MyRequestValidator())\n\n# Try password grant\nbody = 'grant_type=password&username=a&password=hello&scope=all+of+them'\nheaders, response_body, status_code = server.create_token_response('', body=body)\nprint(\"Password grant response:\", response_body)\n\n# Try authorization code grant  \nbody = 'client_id=me&redirect_uri=http%3A%2F%2Fback.to%2Fme&grant_type=authorization_code&code=abc&scope=all+of+them'\nheaders, response_body, status_code = server.create_token_response('', body=body)\nprint(\"Auth code grant response:\", response_body)\n```\n\nThe server doesn't handle these grant types properly and returns unexpected responses or errors.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "oauthlib__oauthlib.1fd52536.func_basic__zq4exy0n",
+  "environment": "jyangballin/swesmith.x86_64.oauthlib_1776_oauthlib.1fd52536",
+  "fail_to_pass": [
+   "tests/oauth2/rfc6749/test_server.py::SignedTokenEndpointTest::test_authorization_grant",
+   "tests/oauth2/rfc6749/test_server.py::SignedTokenEndpointTest::test_password_grant",
+   "tests/oauth2/rfc6749/test_server.py::SignedTokenEndpointTest::test_scopes_and_user_id_stored_in_access_token"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

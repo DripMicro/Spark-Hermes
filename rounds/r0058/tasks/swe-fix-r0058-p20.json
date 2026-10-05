@@ -1,0 +1,25 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0058-p20",
+ "round_id": "r0058",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nColumn qualification fails with USING clause joins when source table is None\n\n#### Description\n\nWhen processing SQL queries with USING clause joins, the column qualification optimizer incorrectly handles cases where the source table is None, leading to incorrect table assignment for join columns.\n\n#### Steps/Code to Reproduce\n\n```python\nimport sqlglot\nfrom sqlglot import optimizer\nfrom sqlglot.schema import MappingSchema\n\n# This query should work but fails due to incorrect table assignment\nsql = \"\"\"\nSELECT id, dt, v FROM (\n    SELECT t1.id, t1.dt, sum(coalesce(t2.v, 0)) AS v \n    FROM t1 AS t1 \n    LEFT JOIN lkp AS lkp USING (id) \n    LEFT JOIN t2 AS t2 USING (other_id, dt, common) \n    WHERE t1.id > 10 \n    GROUP BY 1, 2\n) AS _q_0\n\"\"\"\n\nschema = {\n    't1': {'id': 'int64', 'dt': 'date', 'common': 'int64'}, \n    'lkp': {'id': 'int64', 'other_id': 'int64', 'common': 'int64'}, \n    't2': {'other_id': 'int64', 'dt': 'date', 'v': 'int64', 'common': 'int64'}\n}\n\nparsed = sqlglot.parse_one(sql, dialect='bigquery')\nqualified = optimizer.qualify_columns.qualify_columns(\n    parsed, \n    schema=MappingSchema(schema=schema, dialect='bigquery')\n)\nprint(qualified.sql(dialect='bigquery'))\n```\n\nThe issue occurs in the `_expand_using` function where table assignment logic for join columns gets confused when the source table is None, causing incorrect column-to-table mappings in USING clause expansions.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tobymao__sqlglot.036601ba.func_pm_op_swap__3ctak4gd",
+  "environment": "jyangballin/swesmith.x86_64.tobymao_1776_sqlglot.036601ba",
+  "fail_to_pass": [
+   "tests/test_optimizer.py::TestOptimizer::test_qualify_columns"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}

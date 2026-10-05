@@ -1,0 +1,29 @@
+{
+ "schema": "sh-preview-v1",
+ "task_id": "swe-fix-r0058-p13",
+ "round_id": "r0058",
+ "family": "swe_fix",
+ "prompt": "The repository at /testbed has a bug, described below. Fix it by changing the source code; do not modify or\nadd tests. When you are done, the project's existing test suite should pass.\n\n<issue>\nGPX XML serialization broken for dependent fields\n\nWhen serializing GPX objects to XML, the logic for handling dependent fields appears to be broken. Fields that should be suppressed until their dependencies are met are not being handled correctly, causing malformed XML output.\n\n#### Steps/Code to Reproduce\n\n```python\nimport gpxpy\n\n# Create a simple GPX object\ngpx = gpxpy.gpx.GPX()\ngpx.name = 'Test GPX'\n\n# Try to serialize to XML\nxml_output = gpx.to_xml()\nprint(xml_output)\n```\n\nThe XML output contains malformed structure where dependent fields are not properly suppressed or included based on their dependencies.\n\n#### Expected vs Actual Behavior\n\nExpected: Clean XML with proper field dependencies respected\nActual: XML with incorrect field ordering/suppression logic\n\nThis affects various GPX serialization scenarios including version conversion between GPX 1.0 and 1.1 formats, custom schema locations, and general XML encoding/decoding operations.\n</issue>\n",
+ "workdir": "/testbed",
+ "tools": [
+  "terminal",
+  "file"
+ ],
+ "max_turns": 100,
+ "timeout_s": 1800,
+ "token_budget": 600000,
+ "grading": "share of the tests the bug breaks that pass, counted only if no kept test fails",
+ "source": {
+  "dataset": "SWE-bench/SWE-smith",
+  "instance_id": "tkrajina__gpxpy.09fc46b3.func_pm_ctrl_invert_if__mt9bnk3w",
+  "environment": "jyangballin/swesmith.x86_64.tkrajina_1776_gpxpy.09fc46b3",
+  "fail_to_pass": [
+   "test.py::GPXTests::test_10_to_11_conversion",
+   "test.py::GPXTests::test_custom_schema_locations",
+   "test.py::GPXTests::test_default_schema_locations",
+   "test.py::GPXTests::test_gpx_11_fields",
+   "test.py::GPXTests::test_xml_chars_encode_decode"
+  ]
+ },
+ "note": "A practice bug. The round is scored on different, hidden bugs from the same repository."
+}
