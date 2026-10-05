@@ -1,8 +1,8 @@
 {
  "schema": "sh-live-v3",
- "updated": 1791082589.0811849,
+ "updated": 1791233874.2936876,
  "round_id": "r0055",
- "stage": "done",
+ "stage": "waiting",
  "stages": [
   "open",
   "window",
@@ -60,6 +60,14 @@
   {
    "stage": "export",
    "t": 1791081457.6414275
+  },
+  {
+   "stage": "publish_close",
+   "t": 1791081461.5248137
+  },
+  {
+   "stage": "done",
+   "t": 1791081464.025207
   }
  ],
  "window": {
@@ -1153,12 +1161,6 @@
   "commitments_ok": true
  },
  "queue": [
-  {
-   "round_id": "r0056",
-   "tasks_sha256": "a00be7c739c44c66c9b2268b62c6642a4feb56ce3b8904bd94d43488523d847a",
-   "tasks": 6,
-   "minted_at": 1791027096.4499314
-  },
   {
    "round_id": "r0057",
    "tasks_sha256": "4f086565406ef7c6a2d19a2df08ce9190d0471f90859477f4cc5413e76b5f8e9",
@@ -3763,9 +3765,5 @@
  "repo": "gittensor-model-hub/Spark-Hermes",
  "branch": "main",
  "hf_repo": "gittensor-model-hub/spark-hermes-rounds",
- "submit_server": "https://169.58.162.29/sh",
- "paused": {
-  "since": 1791082589.081183,
-  "message": "Paused after r0055 while we train the next model. Rounds resume in a new era when it is ready; submission PRs opened meanwhile are closed."
- }
+ "submit_server": "https://169.58.162.29/sh"
 }
