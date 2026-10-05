@@ -43,7 +43,8 @@ configs:
 # Spark-Hermes rounds
 
 Training data from a competition (Bittensor SN74) in which miners submit **prose strategies** and a validator
-runs one pinned agent (Hermes) and model (Qwen3.8-27B) against every strategy inside a sealed sandbox. The tasks
+runs one pinned agent (Hermes) and model (Qwen3.8-27B through r0055, SparkHermes-27B-v1 from era e1) against
+every strategy inside a sealed sandbox. The tasks
 are bug fixes drawn from [SWE-bench/SWE-smith](https://huggingface.co/datasets/SWE-bench/SWE-smith) (MIT).
 
 Only the **crowned** strategy of each round is exported. **SFT** rows are its episodes that a withheld test suite

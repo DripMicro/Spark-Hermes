@@ -1656,6 +1656,7 @@ def main(argv=None) -> int:
     ap.add_argument("--worker-port", type=int, default=int(os.environ.get("SH_WORKER_PORT", "40301")))
     ap.add_argument("--window", type=int, default=8, help="rounds pooled for payment")
     ap.add_argument("--window-from", default="r0001", help="the first round pooled")
+    ap.add_argument("--era", default="e0", help="the pins era every closed round is labelled with (docs/pins.md)")
     ap.add_argument("--window-minutes", type=int, default=120, help="the submission window")
     ap.add_argument("--min-paired", type=int, default=4)
     ap.add_argument("--canon-every", type=int, default=8, help="run the reference strategy every n-th round")
@@ -1679,6 +1680,7 @@ def main(argv=None) -> int:
         pkg=Path(a.pkg),
         window=a.window,
         window_from=a.window_from,
+        era=a.era,
         worker=a.worker,
         worker_port=a.worker_port,
         window_s=a.window_minutes * 60,
